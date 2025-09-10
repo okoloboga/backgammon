@@ -8,7 +8,68 @@ importers:
 
   .: {}
 
-  backend:
+  client:
+    dependencies:
+      '@tma.js/sdk-react':
+        specifier: ^2.2.8
+        version: 2.2.8(@types/react@18.3.24)(react@18.3.1)
+      '@tonconnect/ui-react':
+        specifier: ^2.2.0
+        version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      lucide-react:
+        specifier: ^0.542.0
+        version: 0.542.0(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^7.8.2
+        version: 7.8.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.3.1
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.8(@types/react@18.3.24)(react@18.3.1)
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.33.0
+        version: 9.34.0
+      '@types/react':
+        specifier: ^18.3.24
+        version: 18.3.24
+      '@types/react-dom':
+        specifier: ^18.3.7
+        version: 18.3.7(@types/react@18.3.24)
+      '@vitejs/plugin-react':
+        specifier: ^5.0.0
+        version: 5.0.2(vite@7.1.4(@types/node@22.18.0)(terser@5.43.1))
+      eslint:
+        specifier: ^9.33.0
+        version: 9.34.0
+      eslint-plugin-react-hooks:
+        specifier: ^5.2.0
+        version: 5.2.0(eslint@9.34.0)
+      eslint-plugin-react-refresh:
+        specifier: ^0.4.20
+        version: 0.4.20(eslint@9.34.0)
+      globals:
+        specifier: ^16.3.0
+        version: 16.3.0
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      typescript-eslint:
+        specifier: ^8.39.1
+        version: 8.42.0(eslint@9.34.0)(typescript@5.8.3)
+      vite:
+        specifier: ^7.1.2
+        version: 7.1.4(@types/node@22.18.0)(terser@5.43.1)
+
+  server:
     dependencies:
       '@colyseus/core':
         specifier: ^0.16.19
@@ -125,67 +186,6 @@ importers:
       typescript-eslint:
         specifier: ^8.20.0
         version: 8.42.0(eslint@9.34.0)(typescript@5.8.3)
-
-  frontend:
-    dependencies:
-      '@tma.js/sdk-react':
-        specifier: ^2.2.8
-        version: 2.2.8(@types/react@18.3.24)(react@18.3.1)
-      '@tonconnect/ui-react':
-        specifier: ^2.2.0
-        version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      lucide-react:
-        specifier: ^0.542.0
-        version: 0.542.0(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      react-router-dom:
-        specifier: ^7.8.2
-        version: 7.8.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwind-merge:
-        specifier: ^3.3.1
-        version: 3.3.1
-      zustand:
-        specifier: ^5.0.8
-        version: 5.0.8(@types/react@18.3.24)(react@18.3.1)
-    devDependencies:
-      '@eslint/js':
-        specifier: ^9.33.0
-        version: 9.34.0
-      '@types/react':
-        specifier: ^18.3.24
-        version: 18.3.24
-      '@types/react-dom':
-        specifier: ^18.3.7
-        version: 18.3.7(@types/react@18.3.24)
-      '@vitejs/plugin-react':
-        specifier: ^5.0.0
-        version: 5.0.2(vite@7.1.4(@types/node@22.18.0)(terser@5.43.1))
-      eslint:
-        specifier: ^9.33.0
-        version: 9.34.0
-      eslint-plugin-react-hooks:
-        specifier: ^5.2.0
-        version: 5.2.0(eslint@9.34.0)
-      eslint-plugin-react-refresh:
-        specifier: ^0.4.20
-        version: 0.4.20(eslint@9.34.0)
-      globals:
-        specifier: ^16.3.0
-        version: 16.3.0
-      typescript:
-        specifier: ~5.8.3
-        version: 5.8.3
-      typescript-eslint:
-        specifier: ^8.39.1
-        version: 8.42.0(eslint@9.34.0)(typescript@5.8.3)
-      vite:
-        specifier: ^7.1.2
-        version: 7.1.4(@types/node@22.18.0)(terser@5.43.1)
 
 packages:
 

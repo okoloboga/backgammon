@@ -32,11 +32,14 @@ ENV NODE_ENV=production
 # Create and use a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
+
+# Copy the pruned workspace from the prod-deps stage
+COPY --from=prod-deps --chown=nodejs:nodejs /app /app
+
+# Copy the build artifacts from the builder stage
+COPY --from=builder --chown=nodejs:nodejs /app/server/dist ./server/dist
+
 USER nodejs
 
-# Copy production dependencies and build artifacts
-COPY --from=prod-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/server/dist ./dist
-
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["node", "server/dist/main.js"]

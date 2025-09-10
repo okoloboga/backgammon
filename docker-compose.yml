@@ -22,11 +22,13 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    # volumes:
-      # - /path/to/your/letsencrypt:/etc/letsencrypt
+    user: root
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
 
   postgres:
     image: postgres:15-alpine
+  
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password

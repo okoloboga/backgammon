@@ -15,7 +15,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+  createUser(@Body() createUserDto: CreateUserDto): User {
     return this.usersService.createUser(
       createUserDto.walletAddress,
       createUserDto.username,
@@ -23,25 +23,25 @@ export class UsersController {
   }
 
   @Get()
-  async getAllUsers(): Promise<User[]> {
+  getAllUsers(): User[] {
     return this.usersService.getAllUsers();
   }
 
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<User | null> {
+  getUserById(@Param('id') id: string): User | null {
     return this.usersService.getUserById(id);
   }
 
   @Get('wallet/:address')
-  async getUserByWalletAddress(@Param('address') address: string): Promise<User | null> {
+  getUserByWalletAddress(@Param('address') address: string): User | null {
     return this.usersService.getUserByWalletAddress(address);
   }
 
   @Put(':id/balance')
-  async updateUserBalance(
+  updateUserBalance(
     @Param('id') id: string,
     @Body() updateBalanceDto: UpdateBalanceDto,
-  ): Promise<User | null> {
+  ): User | null {
     return this.usersService.updateUserBalance(id, updateBalanceDto.balance);
   }
-} 
+}

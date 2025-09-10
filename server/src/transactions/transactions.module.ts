@@ -10,4 +10,4 @@ import { TonModule } from '../ton/ton.module';
   providers: [TransactionsService],
   exports: [TransactionsService],
 })
-export class TransactionsModule {} 
+export class TransactionsModule {}

@@ -22,45 +22,53 @@ export class TonController {
       const balance = await this.tonService.getWalletBalance(address);
       return { address, balance };
     } catch (error) {
-      return { error: error.message };
+      return {
+        error: error instanceof Error ? error.message : 'unknown error',
+      };
     }
   }
 
   @Get('wallet/:address/history')
-  async getTransactionHistory(
+  getTransactionHistory(
     @Param('address') address: string,
-    @Body() body: { limit?: number }
+    @Body() body: { limit?: number },
   ) {
     try {
       const limit = body.limit || 10;
-      const history = await this.tonService.getTransactionHistory(address, limit);
+      const history = this.tonService.getTransactionHistory(address, limit);
       return { address, history };
     } catch (error) {
-      return { error: error.message };
+      return {
+        error: error instanceof Error ? error.message : 'unknown error',
+      };
     }
   }
 
   @Post('verify')
-  async verifyTransaction(@Body() body: VerifyTransactionDto) {
+  verifyTransaction(@Body() body: VerifyTransactionDto) {
     try {
-      const verified = await this.tonService.verifyTransaction(
+      const verified = this.tonService.verifyTransaction(
         body.txHash,
         body.expectedAmount,
-        body.expectedTo
+        body.expectedTo,
       );
       return { verified, txHash: body.txHash };
     } catch (error) {
-      return { error: error.message };
+      return {
+        error: error instanceof Error ? error.message : 'unknown error',
+      };
     }
   }
 
   @Post('wallet/create')
-  async createWallet() {
+  createWallet() {
     try {
-      const wallet = await this.tonService.createWallet();
+      const wallet = this.tonService.createWallet();
       return wallet;
     } catch (error) {
-      return { error: error.message };
+      return {
+        error: error instanceof Error ? error.message : 'unknown error',
+      };
     }
   }
-} 
+}

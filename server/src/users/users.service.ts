@@ -13,7 +13,7 @@ export interface User {
 export class UsersService {
   private users: Map<string, User> = new Map();
 
-  async createUser(walletAddress: string, username?: string): Promise<User> {
+  createUser(walletAddress: string, username?: string): User {
     const user: User = {
       id: this.generateId(),
       walletAddress,
@@ -27,11 +27,11 @@ export class UsersService {
     return user;
   }
 
-  async getUserById(id: string): Promise<User | null> {
+  getUserById(id: string): User | null {
     return this.users.get(id) || null;
   }
 
-  async getUserByWalletAddress(walletAddress: string): Promise<User | null> {
+  getUserByWalletAddress(walletAddress: string): User | null {
     for (const user of this.users.values()) {
       if (user.walletAddress === walletAddress) {
         return user;
@@ -40,7 +40,7 @@ export class UsersService {
     return null;
   }
 
-  async updateUserBalance(id: string, newBalance: number): Promise<User | null> {
+  updateUserBalance(id: string, newBalance: number): User | null {
     const user = this.users.get(id);
     if (!user) return null;
 
@@ -50,11 +50,11 @@ export class UsersService {
     return user;
   }
 
-  async getAllUsers(): Promise<User[]> {
+  getAllUsers(): User[] {
     return Array.from(this.users.values());
   }
 
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
   }
-} 
+}

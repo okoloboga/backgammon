@@ -11,4 +11,4 @@ import configuration from './configuration';
     }),
   ],
 })
-export class AppConfigModule {} 
+export class AppConfigModule {}

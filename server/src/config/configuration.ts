@@ -16,4 +16,4 @@ export default () => ({
     secret: 'your-secret-key',
     expiresIn: '24h',
   },
-}); 
+});

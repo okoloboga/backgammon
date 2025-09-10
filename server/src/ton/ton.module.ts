@@ -7,4 +7,4 @@ import { TonController } from './ton.controller';
   providers: [TonService],
   exports: [TonService],
 })
-export class TonModule {} 
+export class TonModule {}

@@ -5,11 +5,18 @@ export interface User {
   walletAddress: string;
   username?: string;
   avatar?: string;
-  balance: number;
+  // Игровая статистика (НЕ балансы!)
   games: number;
   wins: number;
   loses: number;
   winrate: number;
+  currentStreak: number;
+  bestStreak: number;
+  level: number;
+  experience: number;
+  // Социальные данные
+  friends: string[];
+  achievements: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,11 +31,18 @@ export class UsersService {
       walletAddress,
       username,
       avatar,
-      balance: 0,
+      // Игровая статистика
       games: 0,
       wins: 0,
       loses: 0,
       winrate: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      level: 1,
+      experience: 0,
+      // Социальные данные
+      friends: [],
+      achievements: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -50,15 +64,7 @@ export class UsersService {
     return null;
   }
 
-  updateUserBalance(id: string, newBalance: number): User | null {
-    const user = this.users.get(id);
-    if (!user) return null;
-
-    user.balance = newBalance;
-    user.updatedAt = new Date();
-    this.users.set(id, user);
-    return user;
-  }
+  // Удаляем метод updateUserBalance - балансы теперь в смарт-контракте
 
   getAllUsers(): User[] {
     return Array.from(this.users.values());
@@ -71,12 +77,29 @@ export class UsersService {
     user.games += 1;
     if (won) {
       user.wins += 1;
+      user.currentStreak += 1;
+      if (user.currentStreak > user.bestStreak) {
+        user.bestStreak = user.currentStreak;
+      }
+      // Даем опыт за победу
+      user.experience += 100;
     } else {
       user.loses += 1;
+      user.currentStreak = 0; // Сбрасываем серию
+      // Даем опыт за поражение
+      user.experience += 25;
     }
+    
     user.winrate = user.games > 0 ? user.wins / user.games : 0;
+    
+    // Проверяем повышение уровня
+    const newLevel = Math.floor(user.experience / 1000) + 1;
+    if (newLevel > user.level) {
+      user.level = newLevel;
+      // Можно добавить уведомление о повышении уровня
+    }
+    
     user.updatedAt = new Date();
-
     this.users.set(id, user);
     return user;
   }
@@ -90,6 +113,31 @@ export class UsersService {
     user.updatedAt = new Date();
 
     this.users.set(id, user);
+    return user;
+  }
+
+  // Социальные функции
+  addFriend(userId: string, friendWalletAddress: string): User | null {
+    const user = this.users.get(userId);
+    if (!user) return null;
+
+    if (!user.friends.includes(friendWalletAddress)) {
+      user.friends.push(friendWalletAddress);
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+    }
+    return user;
+  }
+
+  addAchievement(userId: string, achievement: string): User | null {
+    const user = this.users.get(userId);
+    if (!user) return null;
+
+    if (!user.achievements.includes(achievement)) {
+      user.achievements.push(achievement);
+      user.updatedAt = new Date();
+      this.users.set(userId, user);
+    }
     return user;
   }
 

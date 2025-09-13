@@ -2,141 +2,107 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { TonService } from '../ton/ton.service';
 
-export interface Transaction {
+// Игровые логи (НЕ финансовые транзакции!)
+export interface GameLog {
   id: string;
   userId: string;
-  type: 'DEPOSIT' | 'WITHDRAWAL' | 'GAME_BET' | 'GAME_WIN';
-  amount: number;
-  status: 'PENDING' | 'COMPLETED' | 'FAILED';
-  txHash?: string;
+  action: 'GAME_CREATED' | 'GAME_JOINED' | 'GAME_FINISHED' | 'ACHIEVEMENT_UNLOCKED' | 'LEVEL_UP';
+  gameId?: string;
+  details: Record<string, any>; // Дополнительные данные
   createdAt: Date;
-  updatedAt: Date;
 }
 
-export interface CreateTransactionDto {
+export interface CreateGameLogDto {
   userId: string;
-  type: Transaction['type'];
-  amount: number;
+  action: GameLog['action'];
+  gameId?: string;
+  details?: Record<string, any>;
 }
 
 @Injectable()
-export class TransactionsService {
-  private readonly logger = new Logger(TransactionsService.name);
-  private transactions: Map<string, Transaction> = new Map();
+export class GameLogService {
+  private readonly logger = new Logger(GameLogService.name);
+  private gameLogs: Map<string, GameLog> = new Map();
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly tonService: TonService,
   ) {}
 
-  async createTransaction(
-    createTransactionDto: CreateTransactionDto,
-  ): Promise<Transaction> {
-    const transaction: Transaction = {
+  async createGameLog(
+    createGameLogDto: CreateGameLogDto,
+  ): Promise<GameLog> {
+    const gameLog: GameLog = {
       id: this.generateId(),
-      userId: createTransactionDto.userId,
-      type: createTransactionDto.type,
-      amount: createTransactionDto.amount,
-      status: 'PENDING',
+      userId: createGameLogDto.userId,
+      action: createGameLogDto.action,
+      gameId: createGameLogDto.gameId,
+      details: createGameLogDto.details || {},
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
 
-    this.transactions.set(transaction.id, transaction);
+    this.gameLogs.set(gameLog.id, gameLog);
+    this.logger.log(`Game log created: ${gameLog.action} for user ${gameLog.userId}`);
 
-    // Если это депозит, обрабатываем его
-    if (transaction.type === 'DEPOSIT') {
-      await this.processDeposit(transaction);
-    }
-
-    return transaction;
+    return gameLog;
   }
 
-  getTransactionById(id: string): Transaction | null {
-    return this.transactions.get(id) || null;
+  getGameLogById(id: string): GameLog | null {
+    return this.gameLogs.get(id) || null;
   }
 
-  getUserTransactions(userId: string): Transaction[] {
-    return Array.from(this.transactions.values()).filter(
-      (tx) => tx.userId === userId,
+  getUserGameLogs(userId: string): GameLog[] {
+    return Array.from(this.gameLogs.values()).filter(
+      (log) => log.userId === userId,
     );
   }
 
-  updateTransactionStatus(
-    id: string,
-    status: Transaction['status'],
-    txHash?: string,
-  ): Transaction | null {
-    const transaction = this.transactions.get(id);
-    if (!transaction) return null;
-
-    transaction.status = status;
-    if (txHash) transaction.txHash = txHash;
-    transaction.updatedAt = new Date();
-
-    this.transactions.set(id, transaction);
-    return transaction;
+  getGameLogsByAction(action: GameLog['action']): GameLog[] {
+    return Array.from(this.gameLogs.values()).filter(
+      (log) => log.action === action,
+    );
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async processDeposit(transaction: Transaction): Promise<void> {
-    try {
-      this.logger.log(
-        `Processing deposit transaction ${transaction.id} for user ${transaction.userId}`,
-      );
-
-      // Здесь будет логика для проверки TON транзакции
-      // Пока что просто симулируем успешную обработку
-      this.updateTransactionStatus(transaction.id, 'COMPLETED');
-
-      // Обновляем баланс пользователя
-      const user = this.usersService.getUserById(transaction.userId);
-      if (user) {
-        this.usersService.updateUserBalance(
-          user.id,
-          user.balance + transaction.amount,
-        );
-      }
-
-      this.logger.log(
-        `Deposit transaction ${transaction.id} completed successfully`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Error processing deposit transaction ${transaction.id}:`,
-        error,
-      );
-      this.updateTransactionStatus(transaction.id, 'FAILED');
-    }
+  // Игровые события
+  async logGameCreated(userId: string, gameId: string, betAmount: number, currency: string): Promise<GameLog> {
+    return this.createGameLog({
+      userId,
+      action: 'GAME_CREATED',
+      gameId,
+      details: { betAmount, currency }
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async verifyTonTransaction(
-    txHash: string,
-    expectedAmount: number,
-    expectedTo: string,
-  ): Promise<boolean> {
-    try {
-      this.logger.log(`Verifying TON transaction: ${txHash}`);
+  async logGameJoined(userId: string, gameId: string): Promise<GameLog> {
+    return this.createGameLog({
+      userId,
+      action: 'GAME_JOINED',
+      gameId
+    });
+  }
 
-      // Используем TON сервис для проверки транзакции
-      const verified = this.tonService.verifyTransaction(
-        txHash,
-        expectedAmount,
-        expectedTo,
-      );
+  async logGameFinished(userId: string, gameId: string, won: boolean, duration: number): Promise<GameLog> {
+    return this.createGameLog({
+      userId,
+      action: 'GAME_FINISHED',
+      gameId,
+      details: { won, duration }
+    });
+  }
 
-      if (verified) {
-        this.logger.log(`TON transaction ${txHash} verified successfully`);
-      } else {
-        this.logger.warn(`TON transaction ${txHash} verification failed`);
-      }
+  async logAchievementUnlocked(userId: string, achievement: string): Promise<GameLog> {
+    return this.createGameLog({
+      userId,
+      action: 'ACHIEVEMENT_UNLOCKED',
+      details: { achievement }
+    });
+  }
 
-      return verified;
-    } catch (error) {
-      this.logger.error(`Error verifying TON transaction ${txHash}:`, error);
-      return false;
-    }
+  async logLevelUp(userId: string, newLevel: number): Promise<GameLog> {
+    return this.createGameLog({
+      userId,
+      action: 'LEVEL_UP',
+      details: { newLevel }
+    });
   }
 
   private generateId(): string {

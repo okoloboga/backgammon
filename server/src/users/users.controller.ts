@@ -10,9 +10,7 @@ export class CreateUserDto {
   avatar?: string;
 }
 
-export class UpdateBalanceDto {
-  balance: number;
-}
+// Удаляем UpdateBalanceDto - балансы теперь в смарт-контракте
 
 export class UpdateProfileDto {
   username?: string;
@@ -67,7 +65,13 @@ export class UsersController {
         walletAddress: { type: 'string' },
         username: { type: 'string' },
         avatar: { type: 'string' },
-        balance: { type: 'number' },
+        // balance удален - теперь в смарт-контракте
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
         games: { type: 'number' },
         wins: { type: 'number' },
         loses: { type: 'number' },
@@ -105,7 +109,13 @@ export class UsersController {
           walletAddress: { type: 'string' },
           username: { type: 'string' },
           avatar: { type: 'string' },
-          balance: { type: 'number' },
+          // balance удален - теперь в смарт-контракте
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
           games: { type: 'number' },
           wins: { type: 'number' },
           loses: { type: 'number' },
@@ -141,7 +151,13 @@ export class UsersController {
         walletAddress: { type: 'string' },
         username: { type: 'string' },
         avatar: { type: 'string' },
-        balance: { type: 'number' },
+        // balance удален - теперь в смарт-контракте
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
         games: { type: 'number' },
         wins: { type: 'number' },
         loses: { type: 'number' },
@@ -176,7 +192,13 @@ export class UsersController {
         walletAddress: { type: 'string' },
         username: { type: 'string' },
         avatar: { type: 'string' },
-        balance: { type: 'number' },
+        // balance удален - теперь в смарт-контракте
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
         games: { type: 'number' },
         wins: { type: 'number' },
         loses: { type: 'number' },
@@ -191,66 +213,7 @@ export class UsersController {
     return this.usersService.getUserByWalletAddress(address);
   }
 
-  @Put(':id/balance')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
-    summary: 'Update user balance',
-    description: 'Updates user balance (only for own account)'
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'User ID',
-    example: 'abc123def'
-  })
-  @ApiBody({
-    description: 'New balance',
-    schema: {
-      type: 'object',
-      properties: {
-        balance: {
-          type: 'number',
-          description: 'New balance in TON',
-          example: 10.5
-        }
-      },
-      required: ['balance']
-    }
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Balance successfully updated',
-    schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        walletAddress: { type: 'string' },
-        username: { type: 'string' },
-        avatar: { type: 'string' },
-        balance: { type: 'number' },
-        games: { type: 'number' },
-        wins: { type: 'number' },
-        loses: { type: 'number' },
-        winrate: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'No permission to update this user' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  updateUserBalance(
-    @Param('id') id: string,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-    @CurrentUser() currentUser: User,
-  ): User | null {
-    // Check that user can only update their own balance
-    if (currentUser.id !== id) {
-      throw new Error('Unauthorized: Can only update your own balance');
-    }
-    return this.usersService.updateUserBalance(id, updateBalanceDto.balance);
-  }
+  // Удаляем endpoint для обновления баланса - балансы теперь в смарт-контракте
 
   @Put(':id/profile')
   @UseGuards(JwtAuthGuard)

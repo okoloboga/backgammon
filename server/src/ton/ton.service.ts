@@ -164,6 +164,26 @@ export class TonService {
     }
   }
 
+  async getWalletPublicKey(address: string): Promise<Buffer | null> {
+    try {
+      console.log(`[TonService] Getting public key for address: ${address}`);
+      
+      const parsedAddress = Address.parse(address);
+      const result = await this.tonClient.runMethod(parsedAddress, 'get_public_key', []);
+      const publicKey = Buffer.from(result.stack.readBigNumber().toString(16).padStart(64, '0'), 'hex');
+      
+      return publicKey;
+    } catch (error) {
+      console.error(`[TonService] Error getting public key for ${address}:`, error);
+      return null;
+    }
+  }
+
+  // Expose client for ChallengeService
+  get client() {
+    return this.tonClient;
+  }
+
   getNetworkInfo(): { network: string; endpoint: string } {
     return {
       network: this.config.network,

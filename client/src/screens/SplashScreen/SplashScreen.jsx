@@ -1,5 +1,6 @@
 import '../../styles/SplashScreen.css'
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 
 // Экран приветствия приложения
 const SplashScreen = ({ onNewGame, onContinue }) => {
@@ -55,6 +56,11 @@ const SplashScreen = ({ onNewGame, onContinue }) => {
       </div>
     </div>
   )
+}
+
+SplashScreen.propTypes = {
+  onNewGame: PropTypes.func.isRequired,
+  onContinue: PropTypes.func.isRequired
 }
 
 export default SplashScreen

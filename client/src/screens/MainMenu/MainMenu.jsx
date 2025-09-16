@@ -8,14 +8,6 @@ const MainMenu = () => {
   return (
     <div className="main-menu">
       <div className="container">
-        <div className="hamburger-placeholder">
-          <div className="hamburger-button">
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
-          </div>
-        </div>
-
         <div className="menu-content">
           <ProfileCard />
           <ActionButtons />

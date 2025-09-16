@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 // Основной компонент приложения
 function App() {
-  const test = 'lint-test';
   const [currentScreen, setCurrentScreen] = useState('splash')
 
   const handleNewGame = () => {

@@ -3,7 +3,7 @@ import '../../../styles/ProfileCard.css'
 
 // Компонент профиля пользователя
 const ProfileCard = () => {
-  const { username, balance, level, winRate, totalGames, wins, losses } = mockProfile
+  const { username, balance, level, winRate, wins, losses } = mockProfile
 
   return (
     <div className="profile-card">

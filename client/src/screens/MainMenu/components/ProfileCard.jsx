@@ -3,7 +3,7 @@ import '../../../styles/ProfileCard.css'
 
 // Компонент профиля пользователя
 const ProfileCard = () => {
-  const { username, balance, level, winRate, totalGames, wins, losses } = mockProfile
+  const { username, balance, winRate, wins, losses } = mockProfile
 
   return (
     <div className="profile-card">
@@ -26,24 +26,20 @@ const ProfileCard = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="stats-grid">
-        <div className="stat-item">
-          <div className="stat-value">{level}</div>
-          <div className="stat-label">Level</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{winRate}</div>
-          <div className="stat-label">Win Rate</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{wins}</div>
-          <div className="stat-label">Wins</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{losses}</div>
-          <div className="stat-label">Losses</div>
+        
+        <div className="stats-horizontal">
+          <div className="stat-item">
+            <div className="stat-value">{winRate}</div>
+            <div className="stat-label">Win Rate</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-value">{wins}</div>
+            <div className="stat-label">Wins</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-value">{losses}</div>
+            <div className="stat-label">Losses</div>
+          </div>
         </div>
       </div>
     </div>

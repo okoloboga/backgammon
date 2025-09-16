@@ -1,9 +1,14 @@
 .profile-card {
-  background: rgba(3, 20, 42, 0.7);
-  border: 1px solid rgba(0, 255, 85, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 30px;
-  margin-bottom: 30px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 900px;
+  animation: fadeIn 0.5s ease-out;
+  margin-bottom: 15px;
   transition: all 0.3s ease;
 }
 
@@ -15,17 +20,26 @@
 
 .profile-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 25px;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 15px;
 }
 
 .avatar-container {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
+}
+
+.stats-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 25px;
+  border-radius: 12px;
 }
 
 .avatar {
@@ -33,7 +47,8 @@
   height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #00FF55;
+  border: 3px solid #e0a93e;
+  box-shadow: 0 0 15px rgba(224, 169, 62, 0.5);
   transition: all 0.3s ease;
 }
 
@@ -42,8 +57,8 @@
 }
 
 .balance-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   margin-right: 8px;
   transition: all 0.3s ease;
 }
@@ -53,19 +68,19 @@
 }
 
 .user-info h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #FFFFFF;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #fff;
 }
 
 .user-info .balance {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #00FF55;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0a93e;
 }
 
 .stats-grid {
@@ -77,13 +92,30 @@
 
 .stat-item {
   text-align: center;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:not(:last-child):after {
+  content: "";
+  position: absolute;
+  right: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
 }
 
 .stat-value {
   font-size: 1.3rem;
   font-weight: 700;
-  margin-bottom: 5px;
-  color: #00FF55;
+  margin-bottom: 3px;
+  color: #fff;
   transition: all 0.3s ease;
 }
 
@@ -92,81 +124,32 @@
 }
 
 .stat-label {
-  font-size: 0.8rem;
-  color: #B0B0B0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-  .profile-card {
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
   .profile-header {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+  }
+  
+  .stats-horizontal {
+    width: 100%;
+    justify-content: space-around;
     gap: 15px;
   }
-
-  .avatar-container {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-
-  .avatar {
-    width: 60px;
-    height: 60px;
-  }
-
-  .user-info h2 {
-    font-size: 1.3rem;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
-
-  .user-info .balance {
-    font-size: 1.1rem;
-    justify-content: center;
-  }
-
-  .stat-value {
-    font-size: 1.1rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
+  
+  .stat-item:not(:last-child):after {
+    display: none;
   }
 }
 
-@media (max-width: 480px) {
-  .profile-card {
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .user-info h2 {
-    font-size: 1.1rem;
-    line-height: 1.2;
-  }
-
-  .user-info .balance {
-    font-size: 1rem;
-  }
-
-  .stat-value {
-    font-size: 1rem;
-  }
-
-  .stat-label {
-    font-size: 0.7rem;
-  }
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

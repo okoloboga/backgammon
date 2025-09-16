@@ -13,7 +13,7 @@
 .menu-content {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 8px;
 }
 
 @media (max-width: 768px) {

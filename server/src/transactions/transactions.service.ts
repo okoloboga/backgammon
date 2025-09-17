@@ -6,7 +6,12 @@ import { TonService } from '../ton/ton.service';
 export interface GameLog {
   id: string;
   userId: string;
-  action: 'GAME_CREATED' | 'GAME_JOINED' | 'GAME_FINISHED' | 'ACHIEVEMENT_UNLOCKED' | 'LEVEL_UP';
+  action:
+    | 'GAME_CREATED'
+    | 'GAME_JOINED'
+    | 'GAME_FINISHED'
+    | 'ACHIEVEMENT_UNLOCKED'
+    | 'LEVEL_UP';
   gameId?: string;
   details: Record<string, any>; // Дополнительные данные
   createdAt: Date;
@@ -24,13 +29,9 @@ export class GameLogService {
   private readonly logger = new Logger(GameLogService.name);
   private gameLogs: Map<string, GameLog> = new Map();
 
-  constructor(
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
-  async createGameLog(
-    createGameLogDto: CreateGameLogDto,
-  ): Promise<GameLog> {
+  async createGameLog(createGameLogDto: CreateGameLogDto): Promise<GameLog> {
     const gameLog: GameLog = {
       id: this.generateId(),
       userId: createGameLogDto.userId,
@@ -41,7 +42,9 @@ export class GameLogService {
     };
 
     this.gameLogs.set(gameLog.id, gameLog);
-    this.logger.log(`Game log created: ${gameLog.action} for user ${gameLog.userId}`);
+    this.logger.log(
+      `Game log created: ${gameLog.action} for user ${gameLog.userId}`,
+    );
 
     return gameLog;
   }
@@ -63,12 +66,17 @@ export class GameLogService {
   }
 
   // Игровые события
-  async logGameCreated(userId: string, gameId: string, betAmount: number, currency: string): Promise<GameLog> {
+  async logGameCreated(
+    userId: string,
+    gameId: string,
+    betAmount: number,
+    currency: string,
+  ): Promise<GameLog> {
     return this.createGameLog({
       userId,
       action: 'GAME_CREATED',
       gameId,
-      details: { betAmount, currency }
+      details: { betAmount, currency },
     });
   }
 
@@ -76,24 +84,32 @@ export class GameLogService {
     return this.createGameLog({
       userId,
       action: 'GAME_JOINED',
-      gameId
+      gameId,
     });
   }
 
-  async logGameFinished(userId: string, gameId: string, won: boolean, duration: number): Promise<GameLog> {
+  async logGameFinished(
+    userId: string,
+    gameId: string,
+    won: boolean,
+    duration: number,
+  ): Promise<GameLog> {
     return this.createGameLog({
       userId,
       action: 'GAME_FINISHED',
       gameId,
-      details: { won, duration }
+      details: { won, duration },
     });
   }
 
-  async logAchievementUnlocked(userId: string, achievement: string): Promise<GameLog> {
+  async logAchievementUnlocked(
+    userId: string,
+    achievement: string,
+  ): Promise<GameLog> {
     return this.createGameLog({
       userId,
       action: 'ACHIEVEMENT_UNLOCKED',
-      details: { achievement }
+      details: { achievement },
     });
   }
 
@@ -101,7 +117,7 @@ export class GameLogService {
     return this.createGameLog({
       userId,
       action: 'LEVEL_UP',
-      details: { newLevel }
+      details: { newLevel },
     });
   }
 

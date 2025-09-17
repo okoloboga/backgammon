@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { UsersService, User } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -27,9 +42,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new user',
-    description: 'Creates a new user with the specified wallet address'
+    description: 'Creates a new user with the specified wallet address',
   })
   @ApiBody({
     description: 'User creation data',
@@ -39,21 +54,21 @@ export class UsersController {
         walletAddress: {
           type: 'string',
           description: 'TON wallet address',
-          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
+          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
         },
         username: {
           type: 'string',
           description: 'Username (optional)',
-          example: 'Player1'
+          example: 'Player1',
         },
         avatar: {
           type: 'string',
           description: 'Avatar URL (optional)',
-          example: 'https://example.com/avatar.jpg'
-        }
+          example: 'https://example.com/avatar.jpg',
+        },
       },
-      required: ['walletAddress']
-    }
+      required: ['walletAddress'],
+    },
   })
   @ApiResponse({
     status: 201,
@@ -77,9 +92,9 @@ export class UsersController {
         loses: { type: 'number' },
         winrate: { type: 'number' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'Invalid request data' })
   createUser(@Body() createUserDto: CreateUserDto): User {
@@ -93,9 +108,9 @@ export class UsersController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all users',
-    description: 'Returns list of all users (requires authentication)'
+    description: 'Returns list of all users (requires authentication)',
   })
   @ApiResponse({
     status: 200,
@@ -110,21 +125,21 @@ export class UsersController {
           username: { type: 'string' },
           avatar: { type: 'string' },
           // balance удален - теперь в смарт-контракте
-        currentStreak: { type: 'number' },
-        bestStreak: { type: 'number' },
-        level: { type: 'number' },
-        experience: { type: 'number' },
-        friends: { type: 'array', items: { type: 'string' } },
-        achievements: { type: 'array', items: { type: 'string' } },
+          currentStreak: { type: 'number' },
+          bestStreak: { type: 'number' },
+          level: { type: 'number' },
+          experience: { type: 'number' },
+          friends: { type: 'array', items: { type: 'string' } },
+          achievements: { type: 'array', items: { type: 'string' } },
           games: { type: 'number' },
           wins: { type: 'number' },
           loses: { type: 'number' },
           winrate: { type: 'number' },
           createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getAllUsers(): User[] {
@@ -132,14 +147,14 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get user by ID',
-    description: 'Returns user data by unique identifier'
+    description: 'Returns user data by unique identifier',
   })
   @ApiParam({
     name: 'id',
     description: 'Unique user identifier',
-    example: 'abc123def'
+    example: 'abc123def',
   })
   @ApiResponse({
     status: 200,
@@ -163,9 +178,9 @@ export class UsersController {
         loses: { type: 'number' },
         winrate: { type: 'number' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   getUserById(@Param('id') id: string): User | null {
@@ -173,14 +188,14 @@ export class UsersController {
   }
 
   @Get('wallet/:address')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get user by wallet address',
-    description: 'Returns user data by TON wallet address'
+    description: 'Returns user data by TON wallet address',
   })
   @ApiParam({
     name: 'address',
     description: 'TON wallet address',
-    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
+    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
   })
   @ApiResponse({
     status: 200,
@@ -204,9 +219,9 @@ export class UsersController {
         loses: { type: 'number' },
         winrate: { type: 'number' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   getUserByWalletAddress(@Param('address') address: string): User | null {
@@ -218,14 +233,14 @@ export class UsersController {
   @Put(':id/profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update user profile',
-    description: 'Updates username and/or avatar (only for own account)'
+    description: 'Updates username and/or avatar (only for own account)',
   })
   @ApiParam({
     name: 'id',
     description: 'User ID',
-    example: 'abc123def'
+    example: 'abc123def',
   })
   @ApiBody({
     description: 'Profile update data',
@@ -235,22 +250,25 @@ export class UsersController {
         username: {
           type: 'string',
           description: 'New username (optional)',
-          example: 'NewPlayerName'
+          example: 'NewPlayerName',
         },
         avatar: {
           type: 'string',
           description: 'New avatar URL (optional)',
-          example: 'https://example.com/new-avatar.jpg'
-        }
-      }
-    }
+          example: 'https://example.com/new-avatar.jpg',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
-    description: 'Profile successfully updated'
+    description: 'Profile successfully updated',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'No permission to update this user' })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to update this user',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   updateUserProfile(
     @Param('id') id: string,
@@ -271,14 +289,14 @@ export class UsersController {
   @Put(':id/stats')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update game statistics',
-    description: 'Updates user game statistics (only for own account)'
+    description: 'Updates user game statistics (only for own account)',
   })
   @ApiParam({
     name: 'id',
     description: 'User ID',
-    example: 'abc123def'
+    example: 'abc123def',
   })
   @ApiBody({
     description: 'Game result',
@@ -288,18 +306,21 @@ export class UsersController {
         won: {
           type: 'boolean',
           description: 'Whether the user won the game',
-          example: true
-        }
+          example: true,
+        },
       },
-      required: ['won']
-    }
+      required: ['won'],
+    },
   })
   @ApiResponse({
     status: 200,
-    description: 'Statistics successfully updated'
+    description: 'Statistics successfully updated',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'No permission to update this user' })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to update this user',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   updateUserStats(
     @Param('id') id: string,

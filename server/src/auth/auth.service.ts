@@ -29,10 +29,10 @@ export class AuthService {
 
   async validateUser(walletAddress: string): Promise<User | null> {
     this.logger.log(`Validating user with wallet: ${walletAddress}`);
-    
+
     // Ищем пользователя по адресу кошелька
     const user = this.usersService.getUserByWalletAddress(walletAddress);
-    
+
     if (user) {
       this.logger.log(`User found: ${user.id}`);
       return user;
@@ -42,7 +42,11 @@ export class AuthService {
     return null;
   }
 
-  async login(walletAddress: string, username?: string, avatar?: string): Promise<AuthResponse> {
+  async login(
+    walletAddress: string,
+    username?: string,
+    avatar?: string,
+  ): Promise<AuthResponse> {
     this.logger.log(`Login attempt for wallet: ${walletAddress}`);
 
     // Проверяем, есть ли пользователь
@@ -55,7 +59,11 @@ export class AuthService {
     } else {
       // Обновляем профиль существующего пользователя, если переданы данные
       if (username !== undefined || avatar !== undefined) {
-        const updatedUser = this.usersService.updateUserProfile(user.id, username, avatar);
+        const updatedUser = this.usersService.updateUserProfile(
+          user.id,
+          username,
+          avatar,
+        );
         if (updatedUser) {
           user = updatedUser;
         }
@@ -83,29 +91,37 @@ export class AuthService {
     };
   }
 
-  async generateChallenge(clientId?: string): Promise<{ challenge: string; validUntil: number; clientId: string }> {
+  async generateChallenge(
+    clientId?: string,
+  ): Promise<{ challenge: string; validUntil: number; clientId: string }> {
     return this.challengeService.generateChallenge(clientId);
   }
 
   async verifyTonProof(verifyData: VerifyProofDto): Promise<AuthResponse> {
-    this.logger.log(`Verifying TonProof for wallet: ${verifyData.account.address}`);
+    this.logger.log(
+      `Verifying TonProof for wallet: ${verifyData.account.address}`,
+    );
 
     // 1. Verify the TonProof signature using ChallengeService
     const isValidProof = await this.challengeService.verifyTonProof(
       verifyData.account,
       verifyData.tonProof,
-      verifyData.clientId
+      verifyData.clientId,
     );
-    
+
     if (!isValidProof) {
       throw new Error('Invalid TonProof signature');
     }
 
     // 2. Get or create user
-    let user = this.usersService.getUserByWalletAddress(verifyData.account.address);
-    
+    let user = this.usersService.getUserByWalletAddress(
+      verifyData.account.address,
+    );
+
     if (!user) {
-      this.logger.log(`Creating new user for verified wallet: ${verifyData.account.address}`);
+      this.logger.log(
+        `Creating new user for verified wallet: ${verifyData.account.address}`,
+      );
       user = this.usersService.createUser(verifyData.account.address);
     }
 

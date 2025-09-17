@@ -35,7 +35,7 @@ export class TonProofService {
       // 1. Compare stateInit.code with known wallet contract codes
       // 2. Parse data section according to wallet version
       // 3. Extract public key from the correct position
-      
+
       // For now, we'll return null to force fallback to on-chain method
       return null;
     } catch {
@@ -48,13 +48,17 @@ export class TonProofService {
    */
   async checkProof(
     payload: CheckProofRequestDto,
-    getWalletPublicKey: (address: string) => Promise<Buffer | null>
+    getWalletPublicKey: (address: string) => Promise<Buffer | null>,
   ): Promise<boolean> {
     try {
-      const stateInit = loadStateInit(Cell.fromBase64(payload.proof.state_init).beginParse());
+      const stateInit = loadStateInit(
+        Cell.fromBase64(payload.proof.state_init).beginParse(),
+      );
 
       // 1. Try to get public key from stateInit first
-      let publicKey = this.tryParsePublicKey(stateInit) ?? await getWalletPublicKey(payload.address);
+      const publicKey =
+        this.tryParsePublicKey(stateInit) ??
+        (await getWalletPublicKey(payload.address));
       if (!publicKey) {
         return false;
       }
@@ -94,7 +98,7 @@ export class TonProofService {
         signature: Buffer.from(payload.proof.signature, 'base64'),
         payload: payload.proof.payload,
         stateInit: payload.proof.state_init,
-        timestamp: payload.proof.timestamp
+        timestamp: payload.proof.timestamp,
       };
 
       // Build message components

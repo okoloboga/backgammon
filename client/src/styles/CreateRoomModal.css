@@ -1,0 +1,213 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.create-room-modal {
+  background: linear-gradient(135deg, #03142A 0%, #020f1f 100%);
+  border: 1px solid rgba(0, 255, 85, 0.3);
+  border-radius: 12px;
+  width: 350px;
+  height: auto;
+  min-height: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-form {
+  flex: 1;
+  padding: 24px 24px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  color: #FFFFFF;
+  outline: none;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus {
+  border-color: #00FF55;
+  box-shadow: 0 0 10px rgba(0, 255, 85, 0.2);
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group input[type="number"]::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  padding: 14px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  flex: 1;
+  min-height: 48px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-sizing: border-box;
+}
+
+.radio-option:hover {
+  background: rgba(0, 255, 85, 0.1);
+  border-color: rgba(0, 255, 85, 0.3);
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: #00FF55;
+  width: 18px;
+  height: 18px;
+  transform: scale(1.2);
+}
+
+.radio-label {
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.radio-option:hover .radio-label {
+  color: #00FF55;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 20px;
+  padding: 15px 24px 20px 24px;
+  justify-content: center;
+}
+
+.cancel-button,
+.create-button {
+  flex: 1;
+  padding: 14px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.cancel-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.create-button {
+  background: linear-gradient(135deg, #00FF55, #00B8FF);
+  color: #03142A;
+  border: 1px solid transparent;
+}
+
+.create-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 85, 0.4);
+}
+
+.create-button.disabled,
+.create-button:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.create-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+  .create-room-modal {
+    width: 90%;
+    max-width: 320px;
+    height: auto;
+    min-height: 280px;
+  }
+  
+  .modal-form {
+    gap: 10px;
+  }
+  
+  .radio-group {
+    gap: 15px;
+  }
+}

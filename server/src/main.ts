@@ -8,7 +8,9 @@ async function bootstrap() {
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('Backgammon API')
-    .setDescription('API for online backgammon game with TON blockchain integration')
+    .setDescription(
+      'API for online backgammon game with TON blockchain integration',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -35,7 +37,11 @@ async function bootstrap() {
   });
 
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Server running on http://localhost:${process.env.PORT ?? 3000}`);
-  console.log(`📚 Swagger docs available at http://localhost:${process.env.PORT ?? 3000}/api`);
+  console.log(
+    `🚀 Server running on http://localhost:${process.env.PORT ?? 3000}`,
+  );
+  console.log(
+    `📚 Swagger docs available at http://localhost:${process.env.PORT ?? 3000}/api`,
+  );
 }
 void bootstrap();

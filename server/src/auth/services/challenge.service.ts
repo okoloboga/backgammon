@@ -20,12 +20,16 @@ export class ChallengeService {
    * @param clientId - Optional client ID; if not provided, a new UUID is generated.
    * @returns {Promise<{ challenge: string, validUntil: number, clientId: string }>} Challenge data including the challenge string, expiration time, and client ID.
    */
-  async generateChallenge(clientId?: string): Promise<{ challenge: string; validUntil: number; clientId: string }> {
+  async generateChallenge(
+    clientId?: string,
+  ): Promise<{ challenge: string; validUntil: number; clientId: string }> {
     const newClientId = clientId || uuidv4();
     const challenge = randomBytes(32).toString('hex');
     const validUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
     this.challenges.set(newClientId, { challenge, validUntil });
-    this.logger.log(`Generated challenge for clientId ${newClientId}: ${challenge}`);
+    this.logger.log(
+      `Generated challenge for clientId ${newClientId}: ${challenge}`,
+    );
     return { challenge, validUntil, clientId: newClientId };
   }
 
@@ -37,8 +41,18 @@ export class ChallengeService {
    * @returns {Promise<boolean>} True if the proof is valid, false otherwise.
    * @throws {BadRequestException} If account, proof, or client ID is invalid.
    */
-  async verifyTonProof(account: Account, tonProof: TonProof, clientId: string): Promise<boolean> {
-    if (!account?.address || !account.publicKey || !account.walletStateInit || !tonProof?.proof || !clientId) {
+  async verifyTonProof(
+    account: Account,
+    tonProof: TonProof,
+    clientId: string,
+  ): Promise<boolean> {
+    if (
+      !account?.address ||
+      !account.publicKey ||
+      !account.walletStateInit ||
+      !tonProof?.proof ||
+      !clientId
+    ) {
       this.logger.error('Invalid account, proof, or clientId');
       throw new BadRequestException('Invalid account, proof, or clientId');
     }
@@ -52,7 +66,9 @@ export class ChallengeService {
 
     const receivedChallenge = tonProof.proof.payload;
     if (storedChallenge.challenge !== receivedChallenge) {
-      this.logger.error(`Challenge mismatch for clientId ${clientId}: expected ${storedChallenge.challenge}, received ${receivedChallenge}`);
+      this.logger.error(
+        `Challenge mismatch for clientId ${clientId}: expected ${storedChallenge.challenge}, received ${receivedChallenge}`,
+      );
       return false;
     }
 
@@ -66,7 +82,9 @@ export class ChallengeService {
     };
 
     try {
-      const stateInitCell = Cell.fromBoc(Buffer.from(payload.proof.state_init, 'base64'))[0];
+      const stateInitCell = Cell.fromBoc(
+        Buffer.from(payload.proof.state_init, 'base64'),
+      )[0];
       const client = this.tonService['client'];
       if (!client) {
         this.logger.error('TON client not initialized');
@@ -78,9 +96,14 @@ export class ChallengeService {
 
       try {
         const result = await client.runMethod(address, 'get_public_key', []);
-        publicKey = Buffer.from(result.stack.readBigNumber().toString(16).padStart(64, '0'), 'hex');
+        publicKey = Buffer.from(
+          result.stack.readBigNumber().toString(16).padStart(64, '0'),
+          'hex',
+        );
       } catch (error) {
-        this.logger.log('get_public_key failed, using state_init for verification');
+        this.logger.log(
+          'get_public_key failed, using state_init for verification',
+        );
 
         const publicKeyFromStateInit = Buffer.from(payload.public_key, 'hex');
         if (!publicKeyFromStateInit || publicKeyFromStateInit.length !== 32) {
@@ -96,7 +119,10 @@ export class ChallengeService {
 
         const wantedAddress = Address.parse(payload.address);
         const stateInitHash = stateInitCell.hash();
-        const addressFromStateInit = new Address(wantedAddress.workChain, stateInitHash);
+        const addressFromStateInit = new Address(
+          wantedAddress.workChain,
+          stateInitHash,
+        );
         if (!addressFromStateInit.equals(wantedAddress)) {
           this.logger.error('Addresses do not match');
           return false;
@@ -124,7 +150,10 @@ export class ChallengeService {
 
       const wantedAddress = Address.parse(payload.address);
       const stateInitHash = stateInitCell.hash();
-      const addressFromStateInit = new Address(wantedAddress.workChain, stateInitHash);
+      const addressFromStateInit = new Address(
+        wantedAddress.workChain,
+        stateInitHash,
+      );
       if (!addressFromStateInit.equals(wantedAddress)) {
         this.logger.error('Addresses do not match');
         return false;
@@ -135,11 +164,15 @@ export class ChallengeService {
         this.logger.error('Proof is too old');
         return false;
       }
-      this.logger.log(`Removing challenge for clientId ${clientId} after successful verification`);
+      this.logger.log(
+        `Removing challenge for clientId ${clientId} after successful verification`,
+      );
       this.challenges.delete(clientId);
       return true;
     } catch (error) {
-      this.logger.error(`Failed to verify TON Proof for clientId ${clientId}: ${(error as Error).message}`);
+      this.logger.error(
+        `Failed to verify TON Proof for clientId ${clientId}: ${(error as Error).message}`,
+      );
       return false;
     }
   }

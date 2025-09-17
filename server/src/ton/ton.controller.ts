@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { TonService } from './ton.service';
 
 export class VerifyTransactionDto {
@@ -14,9 +20,9 @@ export class TonController {
   constructor(private readonly tonService: TonService) {}
 
   @Get('network')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get TON network information',
-    description: 'Returns information about connected TON network'
+    description: 'Returns information about connected TON network',
   })
   @ApiResponse({
     status: 200,
@@ -27,29 +33,29 @@ export class TonController {
         network: {
           type: 'string',
           description: 'Network name',
-          example: 'mainnet'
+          example: 'mainnet',
         },
         endpoint: {
           type: 'string',
           description: 'Network endpoint',
-          example: 'https://toncenter.com/api/v2/jsonRPC'
-        }
-      }
-    }
+          example: 'https://toncenter.com/api/v2/jsonRPC',
+        },
+      },
+    },
   })
   getNetworkInfo() {
     return this.tonService.getNetworkInfo();
   }
 
   @Get('wallet/:address/balance')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get TON wallet balance',
-    description: 'Returns current balance of TON wallet'
+    description: 'Returns current balance of TON wallet',
   })
   @ApiParam({
     name: 'address',
     description: 'TON wallet address',
-    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
+    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
   })
   @ApiResponse({
     status: 200,
@@ -59,15 +65,15 @@ export class TonController {
       properties: {
         address: {
           type: 'string',
-          description: 'Wallet address'
+          description: 'Wallet address',
         },
         balance: {
           type: 'number',
           description: 'Balance in TON',
-          example: 10.5
-        }
-      }
-    }
+          example: 10.5,
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -77,10 +83,10 @@ export class TonController {
       properties: {
         error: {
           type: 'string',
-          description: 'Error description'
-        }
-      }
-    }
+          description: 'Error description',
+        },
+      },
+    },
   })
   async getWalletBalance(@Param('address') address: string) {
     try {
@@ -94,14 +100,14 @@ export class TonController {
   }
 
   @Get('wallet/:address/history')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get TON wallet transaction history',
-    description: 'Returns transaction history of TON wallet'
+    description: 'Returns transaction history of TON wallet',
   })
   @ApiParam({
     name: 'address',
     description: 'TON wallet address',
-    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
+    example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
   })
   @ApiBody({
     description: 'Request parameters',
@@ -112,10 +118,10 @@ export class TonController {
           type: 'number',
           description: 'Maximum number of transactions',
           example: 10,
-          default: 10
-        }
-      }
-    }
+          default: 10,
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -125,7 +131,7 @@ export class TonController {
       properties: {
         address: {
           type: 'string',
-          description: 'Wallet address'
+          description: 'Wallet address',
         },
         history: {
           type: 'array',
@@ -137,12 +143,12 @@ export class TonController {
               amount: { type: 'number' },
               from: { type: 'string' },
               to: { type: 'string' },
-              timestamp: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
+              timestamp: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -152,10 +158,10 @@ export class TonController {
       properties: {
         error: {
           type: 'string',
-          description: 'Error description'
-        }
-      }
-    }
+          description: 'Error description',
+        },
+      },
+    },
   })
   getTransactionHistory(
     @Param('address') address: string,
@@ -173,9 +179,9 @@ export class TonController {
   }
 
   @Post('verify')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verify TON transaction',
-    description: 'Verifies TON transaction on blockchain'
+    description: 'Verifies TON transaction on blockchain',
   })
   @ApiBody({
     description: 'Transaction verification data',
@@ -185,21 +191,21 @@ export class TonController {
         txHash: {
           type: 'string',
           description: 'TON transaction hash',
-          example: '0x1234567890abcdef...'
+          example: '0x1234567890abcdef...',
         },
         expectedAmount: {
           type: 'number',
           description: 'Expected transaction amount in TON',
-          example: 5.0
+          example: 5.0,
         },
         expectedTo: {
           type: 'string',
           description: 'Expected recipient address',
-          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
-        }
+          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
+        },
       },
-      required: ['txHash', 'expectedAmount', 'expectedTo']
-    }
+      required: ['txHash', 'expectedAmount', 'expectedTo'],
+    },
   })
   @ApiResponse({
     status: 200,
@@ -210,14 +216,14 @@ export class TonController {
         verified: {
           type: 'boolean',
           description: 'Whether transaction is verified',
-          example: true
+          example: true,
         },
         txHash: {
           type: 'string',
-          description: 'Hash of verified transaction'
-        }
-      }
-    }
+          description: 'Hash of verified transaction',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -227,10 +233,10 @@ export class TonController {
       properties: {
         error: {
           type: 'string',
-          description: 'Error description'
-        }
-      }
-    }
+          description: 'Error description',
+        },
+      },
+    },
   })
   verifyTransaction(@Body() body: VerifyTransactionDto) {
     try {
@@ -248,9 +254,9 @@ export class TonController {
   }
 
   @Post('wallet/create')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new TON wallet',
-    description: 'Creates a new TON wallet (for demonstration)'
+    description: 'Creates a new TON wallet (for demonstration)',
   })
   @ApiResponse({
     status: 201,
@@ -261,18 +267,18 @@ export class TonController {
         address: {
           type: 'string',
           description: 'Address of new wallet',
-          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
+          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
         },
         mnemonic: {
           type: 'array',
           description: 'Mnemonic phrase for wallet recovery',
           items: {
-            type: 'string'
+            type: 'string',
           },
-          example: ['word1', 'word2', 'word3', '...']
-        }
-      }
-    }
+          example: ['word1', 'word2', 'word3', '...'],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -282,10 +288,10 @@ export class TonController {
       properties: {
         error: {
           type: 'string',
-          description: 'Error description'
-        }
-      }
-    }
+          description: 'Error description',
+        },
+      },
+    },
   })
   createWallet() {
     try {

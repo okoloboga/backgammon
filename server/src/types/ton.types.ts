@@ -1,14 +1,14 @@
 export interface Account {
   address: string;
   publicKey: string;
-  chain: string;           // Added chain field
+  chain: string; // Added chain field
   walletStateInit?: string; // Made optional
 }
 
 export interface TonProof {
   proof: {
     timestamp: number;
-    domain: string;        // Changed from object to string
+    domain: string; // Changed from object to string
     payload: string;
     signature: string;
   };

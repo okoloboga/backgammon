@@ -20,8 +20,8 @@ services:
       context: .
       dockerfile: client/Dockerfile
     ports:
-      - "80:80"
-      - "443:443"
+      - "8001:80"
+      - "8002:443"
     user: root
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt

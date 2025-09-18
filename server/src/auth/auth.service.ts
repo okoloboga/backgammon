@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService, User } from '../users/users.service';
 import { ChallengeService } from './services/challenge.service';
 import { JwtUtils } from './utils/jwt.utils';
-import { Account, TonProof, VerifyProofRequest } from '../types/ton.types';
 import { VerifyProofDto } from './dto/auth.dto';
 
 export interface AuthPayload {
@@ -27,73 +26,11 @@ export class AuthService {
     private readonly jwtUtils: JwtUtils,
   ) {}
 
-  async validateUser(walletAddress: string): Promise<User | null> {
-    this.logger.log(`Validating user with wallet: ${walletAddress}`);
-
-    // Ищем пользователя по адресу кошелька
-    const user = this.usersService.getUserByWalletAddress(walletAddress);
-
-    if (user) {
-      this.logger.log(`User found: ${user.id}`);
-      return user;
-    }
-
-    this.logger.log(`User not found, will create new user`);
-    return null;
-  }
-
-  async login(
-    walletAddress: string,
-    username?: string,
-    avatar?: string,
-  ): Promise<AuthResponse> {
-    this.logger.log(`Login attempt for wallet: ${walletAddress}`);
-
-    // Проверяем, есть ли пользователь
-    let user = this.usersService.getUserByWalletAddress(walletAddress);
-
-    if (!user) {
-      // Создаем нового пользователя
-      this.logger.log(`Creating new user for wallet: ${walletAddress}`);
-      user = this.usersService.createUser(walletAddress, username, avatar);
-    } else {
-      // Обновляем профиль существующего пользователя, если переданы данные
-      if (username !== undefined || avatar !== undefined) {
-        const updatedUser = this.usersService.updateUserProfile(
-          user.id,
-          username,
-          avatar,
-        );
-        if (updatedUser) {
-          user = updatedUser;
-        }
-      }
-    }
-
-    // Проверяем, что пользователь создан/найден
-    if (!user) {
-      throw new Error('Failed to create or find user');
-    }
-
-    // Создаем JWT токен
-    const payload: AuthPayload = {
-      walletAddress: user.walletAddress,
-      sub: user.id,
-    };
-
-    const access_token = this.jwtService.sign(payload);
-
-    this.logger.log(`User ${user.id} logged in successfully`);
-
-    return {
-      access_token,
-      user,
-    };
-  }
-
-  async generateChallenge(
-    clientId?: string,
-  ): Promise<{ challenge: string; validUntil: number; clientId: string }> {
+  generateChallenge(clientId?: string): {
+    challenge: string;
+    validUntil: number;
+    clientId: string;
+  } {
     return this.challengeService.generateChallenge(clientId);
   }
 
@@ -130,7 +67,7 @@ export class AuthService {
     }
 
     // 3. Generate auth token
-    const authToken = await this.jwtUtils.createAuthToken({
+    const authToken = this.jwtUtils.createAuthToken({
       address: verifyData.account.address,
       network: 'mainnet', // You might want to pass this as parameter
     });
@@ -143,7 +80,7 @@ export class AuthService {
     };
   }
 
-  async validateJwtPayload(payload: AuthPayload): Promise<User | null> {
+  validateJwtPayload(payload: AuthPayload): User | null {
     return this.usersService.getUserById(payload.sub);
   }
 }

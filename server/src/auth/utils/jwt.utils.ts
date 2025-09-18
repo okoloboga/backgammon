@@ -15,14 +15,14 @@ export interface AuthTokenData {
 export class JwtUtils {
   constructor(private readonly jwtService: JwtService) {}
 
-  async createPayloadToken(data: PayloadTokenData): Promise<string> {
+  createPayloadToken(data: PayloadTokenData): string {
     return this.jwtService.sign(data, {
       expiresIn: '5m', // Short expiration for payload tokens
       secret: process.env.JWT_SECRET || 'default-secret',
     });
   }
 
-  async verifyPayloadToken(token: string): Promise<PayloadTokenData | null> {
+  verifyPayloadToken(token: string): PayloadTokenData | null {
     try {
       return this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET || 'default-secret',
@@ -32,14 +32,14 @@ export class JwtUtils {
     }
   }
 
-  async createAuthToken(data: AuthTokenData): Promise<string> {
+  createAuthToken(data: AuthTokenData): string {
     return this.jwtService.sign(data, {
       expiresIn: '24h', // Long expiration for auth tokens
       secret: process.env.JWT_SECRET || 'default-secret',
     });
   }
 
-  async verifyAuthToken(token: string): Promise<AuthTokenData | null> {
+  verifyAuthToken(token: string): AuthTokenData | null {
     try {
       return this.jwtService.verify(token, {
         secret: process.env.JWT_SECRET || 'default-secret',

@@ -16,75 +16,13 @@ import {
 } from '@nestjs/swagger';
 import { AuthService, AuthResponse } from './auth.service';
 import { User } from '../users/users.service';
-import { ChallengeResponse, VerifyProofRequest } from '../types/ton.types';
-import { AuthDto, GenerateChallengeDto, VerifyProofDto } from './dto/auth.dto';
-
-export class LoginDto {
-  walletAddress: string;
-  username?: string;
-  avatar?: string;
-}
+import { ChallengeResponse } from '../types/ton.types';
+import { GenerateChallengeDto, VerifyProofDto } from './dto/auth.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Post('login')
-  @ApiOperation({
-    summary: 'Authentication via TON wallet',
-    description:
-      'Authenticate user by TON wallet address. If user does not exist, a new one is created.',
-  })
-  @ApiBody({
-    description: 'Authentication data',
-    schema: {
-      type: 'object',
-      properties: {
-        walletAddress: {
-          type: 'string',
-          description: 'TON wallet address',
-          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
-        },
-        username: {
-          type: 'string',
-          description: 'Username (optional)',
-          example: 'Player1',
-        },
-        avatar: {
-          type: 'string',
-          description: 'Avatar URL (optional)',
-          example: 'https://example.com/avatar.jpg',
-        },
-      },
-      required: ['walletAddress'],
-    },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Successful authentication',
-    schema: {
-      type: 'object',
-      properties: {
-        access_token: {
-          type: 'string',
-          description: 'JWT token for authentication',
-        },
-        user: {
-          type: 'object',
-          description: 'User data',
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 400, description: 'Invalid request data' })
-  async login(@Body() loginDto: LoginDto): Promise<AuthResponse> {
-    return this.authService.login(
-      loginDto.walletAddress,
-      loginDto.username,
-      loginDto.avatar,
-    );
-  }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
@@ -173,9 +111,7 @@ export class AuthController {
       },
     },
   })
-  async generateChallenge(
-    @Body() body?: GenerateChallengeDto,
-  ): Promise<ChallengeResponse> {
+  generateChallenge(@Body() body?: GenerateChallengeDto): ChallengeResponse {
     return this.authService.generateChallenge(body?.clientId);
   }
 

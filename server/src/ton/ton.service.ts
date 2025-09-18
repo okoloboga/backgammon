@@ -65,9 +65,9 @@ export class TonService {
 
   verifyTransaction(
     txHash: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _expectedAmount: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _expectedTo: string,
   ): boolean {
     try {
@@ -89,7 +89,7 @@ export class TonService {
 
   getTransactionHistory(
     walletAddress: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _limit = 10,
   ): TonTransaction[] {
     try {
@@ -115,13 +115,12 @@ export class TonService {
   }
 
   sendTransaction(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _fromWallet: WalletContractV4,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _toAddress: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _amount: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _secretKey: Buffer,
   ): string {
     try {

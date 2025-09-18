@@ -90,9 +90,15 @@ importers:
       '@nestjs/swagger':
         specifier: ^11.2.0
         version: 11.2.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+      '@ton/core':
+        specifier: ^0.61.0
+        version: 0.61.0(@ton/crypto@3.3.0)
       '@ton/crypto':
         specifier: ^3.3.0
         version: 3.3.0
+      '@ton/ton':
+        specifier: ^15.3.1
+        version: 15.3.1(@ton/core@0.61.0(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)
       '@tonconnect/sdk':
         specifier: ^3.2.0
         version: 3.2.0
@@ -1448,11 +1454,22 @@ packages:
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
+  '@ton/core@0.61.0':
+    resolution: {integrity: sha512-0qyVfP2dDue2bq80ydXggo2MlufcmzuFk6G94qRrZxvyQ3NSe4UeBTeRf1gQmN7tywgTsX2gS61e4yvJrlUu4Q==}
+    peerDependencies:
+      '@ton/crypto': '>=3.2.0'
+
   '@ton/crypto-primitives@2.1.0':
     resolution: {integrity: sha512-PQesoyPgqyI6vzYtCXw4/ZzevePc4VGcJtFwf08v10OevVJHVfW238KBdpj1kEDQkxWLeuNHEpTECNFKnP6tow==}
 
   '@ton/crypto@3.3.0':
     resolution: {integrity: sha512-/A6CYGgA/H36OZ9BbTaGerKtzWp50rg67ZCH2oIjV1NcrBaCK9Z343M+CxedvM7Haf3f/Ee9EhxyeTp0GKMUpA==}
+
+  '@ton/ton@15.3.1':
+    resolution: {integrity: sha512-+UuvbE0o0VIU/0W90STO+emRIDr3Vs39LdbX5ySm/Ra+RQJSiH0KX6TDOFqWDmD2Wzk4/zw21KwSiZ6Xjk8zlw==}
+    peerDependencies:
+      '@ton/core': '>=0.60.0'
+      '@ton/crypto': '>=3.2.0'
 
   '@tonconnect/isomorphic-eventsource@0.0.2':
     resolution: {integrity: sha512-B4UoIjPi0QkvIzZH5fV3BQLWrqSYABdrzZQSI9sJA9aA+iC0ohOzFwVVGXanlxeDAy1bcvPbb29f6sVUk0UnnQ==}
@@ -1980,6 +1997,9 @@ packages:
 
   axios@0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
+
+  axios@1.12.2:
+    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
 
   b4a@1.6.7:
     resolution: {integrity: sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==}
@@ -4111,6 +4131,9 @@ packages:
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
+
+  proxy-from-env@1.1.0:
+    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
   psl@1.15.0:
     resolution: {integrity: sha512-JZd3gMVBAVQkSs6HdNZo9Sdo0LNcQeMNP3CozBJb3JYC/QUYZTnKxP+f8oWRX4rHP5EurWxqAHTSwUCjlNKa1w==}
@@ -6353,6 +6376,11 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
+  '@ton/core@0.61.0(@ton/crypto@3.3.0)':
+    dependencies:
+      '@ton/crypto': 3.3.0
+      symbol.inspect: 1.0.1
+
   '@ton/crypto-primitives@2.1.0':
     dependencies:
       jssha: 3.2.0
@@ -6362,6 +6390,18 @@ snapshots:
       '@ton/crypto-primitives': 2.1.0
       jssha: 3.2.0
       tweetnacl: 1.0.3
+
+  '@ton/ton@15.3.1(@ton/core@0.61.0(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)':
+    dependencies:
+      '@ton/core': 0.61.0(@ton/crypto@3.3.0)
+      '@ton/crypto': 3.3.0
+      axios: 1.12.2
+      dataloader: 2.2.3
+      symbol.inspect: 1.0.1
+      teslabot: 1.5.0
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - debug
 
   '@tonconnect/isomorphic-eventsource@0.0.2':
     dependencies:
@@ -7054,6 +7094,14 @@ snapshots:
   axios@0.25.0:
     dependencies:
       follow-redirects: 1.15.11
+    transitivePeerDependencies:
+      - debug
+
+  axios@1.12.2:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
 
@@ -9560,6 +9608,8 @@ snapshots:
     dependencies:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
+
+  proxy-from-env@1.1.0: {}
 
   psl@1.15.0:
     dependencies:

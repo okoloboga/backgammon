@@ -28,7 +28,7 @@ export class TonProofService {
    * This is a simplified version - in production you should implement
    * proper wallet version detection and parsing
    */
-  private tryParsePublicKey(stateInit: any): Buffer | null {
+  private tryParsePublicKey(): Buffer | null {
     try {
       // This is a simplified implementation
       // In production, you should:
@@ -57,8 +57,7 @@ export class TonProofService {
 
       // 1. Try to get public key from stateInit first
       const publicKey =
-        this.tryParsePublicKey(stateInit) ??
-        (await getWalletPublicKey(payload.address));
+        this.tryParsePublicKey() ?? (await getWalletPublicKey(payload.address));
       if (!publicKey) {
         return false;
       }
@@ -140,7 +139,8 @@ export class TonProofService {
       // Verify signature
       return sign.detached.verify(result, message.signature, publicKey);
     } catch (e) {
-      console.error('TonProof verification error:', e);
+      const message = e instanceof Error ? e.message : String(e);
+      console.error('TonProof verification error:', message);
       return false;
     }
   }

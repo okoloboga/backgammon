@@ -1,9 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { GameService } from './game/game.service';
+import * as http from 'http';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Initialize Colyseus
+  const gameService = app.get(GameService);
+  gameService.initialize(app.getHttpServer() as http.Server);
 
   // Swagger configuration
   const config = new DocumentBuilder()
@@ -27,6 +33,7 @@ async function bootstrap() {
     .addTag('Users', 'User management')
     .addTag('Transactions', 'TON transactions')
     .addTag('TON', 'TON blockchain integration')
+    .addTag('Game', 'Game server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

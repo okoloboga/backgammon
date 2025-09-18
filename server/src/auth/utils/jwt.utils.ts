@@ -24,7 +24,7 @@ export class JwtUtils {
 
   verifyPayloadToken(token: string): PayloadTokenData | null {
     try {
-      return this.jwtService.verify(token, {
+      return this.jwtService.verify<PayloadTokenData>(token, {
         secret: process.env.JWT_SECRET || 'default-secret',
       });
     } catch {
@@ -41,7 +41,7 @@ export class JwtUtils {
 
   verifyAuthToken(token: string): AuthTokenData | null {
     try {
-      return this.jwtService.verify(token, {
+      return this.jwtService.verify<AuthTokenData>(token, {
         secret: process.env.JWT_SECRET || 'default-secret',
       });
     } catch {

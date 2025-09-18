@@ -66,6 +66,9 @@ importers:
       '@colyseus/core':
         specifier: ^0.16.19
         version: 0.16.19(@colyseus/schema@3.0.60)
+      '@colyseus/schema':
+        specifier: ^3.0.60
+        version: 3.0.60
       '@colyseus/ws-transport':
         specifier: ^0.16.5
         version: 0.16.5(@colyseus/core@0.16.19(@colyseus/schema@3.0.60))

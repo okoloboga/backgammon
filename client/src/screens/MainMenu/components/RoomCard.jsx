@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import '../../../styles/RoomCard.css'
+import PropTypes from 'prop-types'
 
 // Карточка игровой комнаты с оппонентом и ставкой
 const RoomCard = ({ room, onEnter }) => {
@@ -53,6 +53,15 @@ const RoomCard = ({ room, onEnter }) => {
       </div>
     </div>
   )
+}
+
+RoomCard.propTypes = {
+  room: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    opponent: PropTypes.string.isRequired,
+    bet: PropTypes.number.isRequired
+  }).isRequired,
+  onEnter: PropTypes.func.isRequired
 }
 
 export default RoomCard

@@ -40,7 +40,11 @@ export const CheckProofResponseSchema = z.object({
   token: z.string(),
 });
 
-export type TonProofItemReplySuccess = z.infer<typeof TonProofItemReplySuccessSchema>;
+export type TonProofItemReplySuccess = z.infer<
+  typeof TonProofItemReplySuccessSchema
+>;
 export type CheckProofRequestDto = z.infer<typeof CheckProofRequestSchema>;
-export type GeneratePayloadResponseDto = z.infer<typeof GeneratePayloadResponseSchema>;
+export type GeneratePayloadResponseDto = z.infer<
+  typeof GeneratePayloadResponseSchema
+>;
 export type CheckProofResponseDto = z.infer<typeof CheckProofResponseSchema>;

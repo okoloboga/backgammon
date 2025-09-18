@@ -8,34 +8,23 @@
 .container {
   max-width: 800px;
   margin: 0 auto;
+  transition: filter 0.3s ease;
+}
+
+.blur-background {
+  filter: blur(5px);
+  pointer-events: none;
 }
 
 .menu-content {
   display: flex;
   flex-direction: column;
-  gap: 30px;
-}
+  gap: 8px;
 
-.ton-connect-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 0;
-  margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
   .main-menu {
     padding: 20px 15px;
-  }
-
-  .ton-connect-header {
-    padding: 15px 0;
-    margin-bottom: 15px;
-  }
-
-  .hamburger-line {
-    width: 25px;
-    height: 2px;
   }
 }

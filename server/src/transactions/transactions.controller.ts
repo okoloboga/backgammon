@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import {
   TransactionsService,
   Transaction,
@@ -17,9 +32,9 @@ export class TransactionsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new transaction',
-    description: 'Creates a new transaction for the current user'
+    description: 'Creates a new transaction for the current user',
   })
   @ApiBody({
     description: 'Transaction creation data',
@@ -30,16 +45,16 @@ export class TransactionsController {
           type: 'string',
           enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'],
           description: 'Transaction type',
-          example: 'DEPOSIT'
+          example: 'DEPOSIT',
         },
         amount: {
           type: 'number',
           description: 'Transaction amount in TON',
-          example: 5.0
-        }
+          example: 5.0,
+        },
       },
-      required: ['type', 'amount']
-    }
+      required: ['type', 'amount'],
+    },
   })
   @ApiResponse({
     status: 201,
@@ -49,14 +64,17 @@ export class TransactionsController {
       properties: {
         id: { type: 'string' },
         userId: { type: 'string' },
-        type: { type: 'string', enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'] },
+        type: {
+          type: 'string',
+          enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'],
+        },
         amount: { type: 'number' },
         status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
         txHash: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Invalid request data' })
@@ -70,9 +88,10 @@ export class TransactionsController {
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all transactions',
-    description: 'Returns list of all transactions (in real app should have pagination)'
+    description:
+      'Returns list of all transactions (in real app should have pagination)',
   })
   @ApiResponse({
     status: 200,
@@ -84,15 +103,18 @@ export class TransactionsController {
         properties: {
           id: { type: 'string' },
           userId: { type: 'string' },
-          type: { type: 'string', enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'] },
+          type: {
+            type: 'string',
+            enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'],
+          },
           amount: { type: 'number' },
           status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
           txHash: { type: 'string' },
           createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
   })
   getAllTransactions(): Transaction[] {
     // In real app should have pagination and filtering
@@ -100,14 +122,14 @@ export class TransactionsController {
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get transaction by ID',
-    description: 'Returns transaction data by unique identifier'
+    description: 'Returns transaction data by unique identifier',
   })
   @ApiParam({
     name: 'id',
     description: 'Unique transaction identifier',
-    example: 'tx_abc123def'
+    example: 'tx_abc123def',
   })
   @ApiResponse({
     status: 200,
@@ -117,14 +139,17 @@ export class TransactionsController {
       properties: {
         id: { type: 'string' },
         userId: { type: 'string' },
-        type: { type: 'string', enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'] },
+        type: {
+          type: 'string',
+          enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'],
+        },
         amount: { type: 'number' },
         status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
         txHash: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   getTransactionById(@Param('id') id: string): Transaction | null {
@@ -134,14 +159,15 @@ export class TransactionsController {
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get user transactions',
-    description: 'Returns list of transactions for specific user (only own transactions)'
+    description:
+      'Returns list of transactions for specific user (only own transactions)',
   })
   @ApiParam({
     name: 'userId',
     description: 'User ID',
-    example: 'abc123def'
+    example: 'abc123def',
   })
   @ApiResponse({
     status: 200,
@@ -153,18 +179,24 @@ export class TransactionsController {
         properties: {
           id: { type: 'string' },
           userId: { type: 'string' },
-          type: { type: 'string', enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'] },
+          type: {
+            type: 'string',
+            enum: ['DEPOSIT', 'WITHDRAWAL', 'GAME_BET', 'GAME_WIN'],
+          },
           amount: { type: 'number' },
           status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
           txHash: { type: 'string' },
           createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'No permission to view this user transactions' })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to view this user transactions',
+  })
   getUserTransactions(
     @Param('userId') userId: string,
     @CurrentUser() currentUser: User,
@@ -177,14 +209,14 @@ export class TransactionsController {
   }
 
   @Put(':id/status')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update transaction status',
-    description: 'Updates transaction status (usually used by system)'
+    description: 'Updates transaction status (usually used by system)',
   })
   @ApiParam({
     name: 'id',
     description: 'Transaction ID',
-    example: 'tx_abc123def'
+    example: 'tx_abc123def',
   })
   @ApiBody({
     description: 'New transaction status',
@@ -195,20 +227,20 @@ export class TransactionsController {
           type: 'string',
           enum: ['PENDING', 'COMPLETED', 'FAILED'],
           description: 'New transaction status',
-          example: 'COMPLETED'
+          example: 'COMPLETED',
         },
         txHash: {
           type: 'string',
           description: 'TON transaction hash (optional)',
-          example: '0x1234567890abcdef...'
-        }
+          example: '0x1234567890abcdef...',
+        },
       },
-      required: ['status']
-    }
+      required: ['status'],
+    },
   })
   @ApiResponse({
     status: 200,
-    description: 'Transaction status successfully updated'
+    description: 'Transaction status successfully updated',
   })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   updateTransactionStatus(
@@ -225,9 +257,9 @@ export class TransactionsController {
   @Post('verify-ton')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verify TON transaction',
-    description: 'Verifies TON transaction on blockchain'
+    description: 'Verifies TON transaction on blockchain',
   })
   @ApiBody({
     description: 'TON transaction verification data',
@@ -237,21 +269,21 @@ export class TransactionsController {
         txHash: {
           type: 'string',
           description: 'TON transaction hash',
-          example: '0x1234567890abcdef...'
+          example: '0x1234567890abcdef...',
         },
         expectedAmount: {
           type: 'number',
           description: 'Expected transaction amount in TON',
-          example: 5.0
+          example: 5.0,
         },
         expectedTo: {
           type: 'string',
           description: 'Expected recipient address',
-          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi'
-        }
+          example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
+        },
       },
-      required: ['txHash', 'expectedAmount', 'expectedTo']
-    }
+      required: ['txHash', 'expectedAmount', 'expectedTo'],
+    },
   })
   @ApiResponse({
     status: 200,
@@ -262,10 +294,10 @@ export class TransactionsController {
         verified: {
           type: 'boolean',
           description: 'Whether transaction is verified',
-          example: true
-        }
-      }
-    }
+          example: true,
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Invalid request data' })

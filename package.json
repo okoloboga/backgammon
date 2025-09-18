@@ -7,14 +7,13 @@
   "scripts": {
     "lint": "pnpm --parallel run lint",
     "format": "pnpm --parallel run format",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build:contracts": "pnpm --filter contracts... run build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@tact-lang/compiler": "^1.6.13",
-    "@ton/blueprint": "^0.40.0"
+  "dependencies": {
+    "lint": "^0.8.19",
+    "prop-types": "^15.8.1"
   }
 }

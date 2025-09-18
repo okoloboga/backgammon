@@ -89,22 +89,26 @@ export class UsersService {
       // Даем опыт за поражение
       user.experience += 25;
     }
-    
+
     user.winrate = user.games > 0 ? user.wins / user.games : 0;
-    
+
     // Проверяем повышение уровня
     const newLevel = Math.floor(user.experience / 1000) + 1;
     if (newLevel > user.level) {
       user.level = newLevel;
       // Можно добавить уведомление о повышении уровня
     }
-    
+
     user.updatedAt = new Date();
     this.users.set(id, user);
     return user;
   }
 
-  updateUserProfile(id: string, username?: string, avatar?: string): User | null {
+  updateUserProfile(
+    id: string,
+    username?: string,
+    avatar?: string,
+  ): User | null {
     const user = this.users.get(id);
     if (!user) return null;
 

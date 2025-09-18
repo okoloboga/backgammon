@@ -1,10 +1,6 @@
 import { Controller, Post } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Game')
 @Controller('game')

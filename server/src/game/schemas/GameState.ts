@@ -6,8 +6,8 @@ export class Point extends Schema {
 }
 
 export class GameState extends Schema {
-    @type({ map: Point })
-    board = new MapSchema<Point>();
+  @type({ map: Point })
+  board = new MapSchema<Point>();
 
   @type({ map: 'number' })
   bar = new MapSchema<number>({ white: 0, black: 0 });

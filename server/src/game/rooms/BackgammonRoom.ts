@@ -1,21 +1,28 @@
 import { Room, Client } from '@colyseus/core';
 import { GameState, Point } from '../schemas/GameState';
 
-// This interface is used for virtual board states during move calculation.
 interface VirtualBoard {
   points: Map<string, { player: string; checkers: number }>;
   bar: { white: number; black: number };
 }
 
+interface Move {
+  from: number | 'bar';
+  to: number | 'off';
+  die: number;
+}
+
 export class BackgammonRoom extends Room<GameState> {
-  private possibleMoves: any[] = [];
+  private possibleMoves: Move[][] = [];
 
   onCreate(_options: any) {
     this.setState(new GameState());
     this.setupBoard();
 
     this.onMessage('rollDice', (client) => this.handleRollDice(client));
-    this.onMessage('move', (client, message) => this.handleMove(client, message));
+    this.onMessage('move', (client, message: string) =>
+      this.handleMove(client, message),
+    );
   }
 
   onJoin(client: Client, _options: any) {
@@ -32,7 +39,6 @@ export class BackgammonRoom extends Room<GameState> {
   onLeave(client: Client, _consented: boolean) {
     console.log(client.sessionId, 'left!');
     this.state.players.delete(client.sessionId);
-    // TODO: Handle game over if a player leaves during a match
   }
 
   onDispose() {
@@ -53,7 +59,10 @@ export class BackgammonRoom extends Room<GameState> {
 
   handleRollDice(client: Client) {
     const playerColor = this.state.players.get(client.sessionId);
-    if (this.state.currentPlayer !== playerColor || this.state.dice.length > 0) {
+    if (
+      this.state.currentPlayer !== playerColor ||
+      this.state.dice.length > 0
+    ) {
       return;
     }
 
@@ -136,8 +145,9 @@ export class BackgammonRoom extends Room<GameState> {
     return (this.state.off.get(player) ?? 0) === 15;
   }
 
-  private calculatePossibleMoves(): any[] {
+  private calculatePossibleMoves(): Move[][] {
     const player = this.state.currentPlayer;
+    if (!player) return [];
     const dice: number[] = Array.from(this.state.dice);
 
     const initialBoard: VirtualBoard = {
@@ -164,7 +174,11 @@ export class BackgammonRoom extends Room<GameState> {
       const dieUsed = allSequences[0][0].die;
       const maxDie = Math.max(...dice);
       if (dieUsed < maxDie) {
-        const maxDieMoves = this.findAllSingleMoves(initialBoard, maxDie, player);
+        const maxDieMoves = this.findAllSingleMoves(
+          initialBoard,
+          maxDie,
+          player,
+        );
         if (maxDieMoves.length > 0) {
           return [];
         }
@@ -173,12 +187,16 @@ export class BackgammonRoom extends Room<GameState> {
     return allSequences;
   }
 
-  private findMoveSequences(board: VirtualBoard, dice: number[], player: string): any[][] {
+  private findMoveSequences(
+    board: VirtualBoard,
+    dice: number[],
+    player: string,
+  ): Move[][] {
     if (dice.length === 0) {
       return [[]];
     }
 
-    let sequences: any[][] = [];
+    const sequences: Move[][] = [];
     const uniqueDice = [...new Set(dice)];
 
     for (const die of uniqueDice) {
@@ -189,7 +207,11 @@ export class BackgammonRoom extends Room<GameState> {
 
         for (const move of possibleSingleMoves) {
           const nextBoard = this.applyMove(board, move, player);
-          const nextSequences = this.findMoveSequences(nextBoard, remainingDice, player);
+          const nextSequences = this.findMoveSequences(
+            nextBoard,
+            remainingDice,
+            player,
+          );
           for (const seq of nextSequences) {
             sequences.push([move, ...seq]);
           }
@@ -199,65 +221,93 @@ export class BackgammonRoom extends Room<GameState> {
     return sequences.length > 0 ? sequences : [[]];
   }
 
-  private findAllSingleMoves(board: VirtualBoard, die: number, player: string): any[] {
-    const moves: any[] = [];
+  private findAllSingleMoves(
+    board: VirtualBoard,
+    die: number,
+    player: string,
+  ): Move[] {
+    const moves: Move[] = [];
     const direction = player === 'white' ? -1 : 1;
-    const playerBarCount = board.bar[player] ?? 0;
+    const playerBarCount = board.bar[player as 'white' | 'black'] ?? 0;
 
     if (playerBarCount > 0) {
       const from = player === 'white' ? 24 : -1;
       const to = from + die * direction;
       const targetPoint = board.points.get(to.toString());
-      if (to >= 0 && to < 24 && (!targetPoint || targetPoint.player === player || targetPoint.checkers <= 1)) {
+      if (
+        to >= 0 &&
+        to < 24 &&
+        (!targetPoint ||
+          targetPoint.player === player ||
+          targetPoint.checkers <= 1)
+      ) {
         moves.push({ from: 'bar', to, die });
       }
     } else {
       let canBearOff = true;
-      board.points.forEach((point, key) => {
+      for (const [key, point] of board.points.entries()) {
         if (point.player === player) {
           const pointNum = parseInt(key);
           if (player === 'white' ? pointNum > 5 : pointNum < 18) {
             canBearOff = false;
+            break;
           }
         }
-      });
+      }
 
-      board.points.forEach((point, key) => {
-        if (point.player !== player) return;
+      for (const [key, point] of board.points.entries()) {
+        if (point.player === player) {
+          const from = parseInt(key);
+          const to = from + die * direction;
 
-        const from = parseInt(key);
-        const to = from + die * direction;
+          if (canBearOff) {
+            if (to < 0 || to > 23) {
+              moves.push({ from, to: 'off', die });
+            } else {
+              let isHighest = true;
+              for (let i = from + 1; i < 24; i++) {
+                if (player === 'white' && board.points.has(i.toString())) {
+                  isHighest = false;
+                  break;
+                }
+              }
+              for (let i = from - 1; i >= 0; i--) {
+                if (player === 'black' && board.points.has(i.toString())) {
+                  isHighest = false;
+                  break;
+                }
+              }
 
-        if (canBearOff) {
-          if (to < 0 || to > 23) {
-            moves.push({ from, to: 'off', die });
-          } else {
-            let isHighest = true;
-            for (let i = from + direction; i >= 0 && i < 24; i += direction) {
-              const p = board.points.get(i.toString());
-              if (p && p.player === player) {
-                isHighest = false;
-                break;
+              if (
+                isHighest &&
+                (player === 'white' ? from < die : 23 - from < die)
+              ) {
+                moves.push({ from, to: 'off', die });
               }
             }
-            if (isHighest && (player === 'white' ? from < die : 23 - from < die)) {
-              moves.push({ from, to: 'off', die });
+          }
+
+          if (to >= 0 && to <= 23) {
+            const targetPoint = board.points.get(to.toString());
+            if (
+              !targetPoint ||
+              targetPoint.player === player ||
+              targetPoint.checkers <= 1
+            ) {
+              moves.push({ from, to, die });
             }
           }
         }
-
-        if (to >= 0 && to <= 23) {
-          const targetPoint = board.points.get(to.toString());
-          if (!targetPoint || targetPoint.player === player || targetPoint.checkers <= 1) {
-            moves.push({ from, to, die });
-          }
-        }
-      });
+      }
     }
     return moves;
   }
 
-  private applyMove(board: VirtualBoard, move: any, player: string): VirtualBoard {
+  private applyMove(
+    board: VirtualBoard,
+    move: Move,
+    player: string,
+  ): VirtualBoard {
     const newBoard: VirtualBoard = {
       points: new Map(board.points),
       bar: { ...board.bar },
@@ -305,7 +355,8 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.dice.clear();
     this.state.possibleMoves.clear();
     this.possibleMoves = [];
-    this.state.currentPlayer = this.state.currentPlayer === 'white' ? 'black' : 'white';
+    this.state.currentPlayer =
+      this.state.currentPlayer === 'white' ? 'black' : 'white';
     console.log(`Turn ended. Current player: ${this.state.currentPlayer}`);
   }
 }

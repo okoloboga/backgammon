@@ -1,0 +1,621 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; Escrow_Escrow.headers.fc
+;;
+;; Header files for Escrow
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_store_address_opt
+builder __tact_store_address_opt(builder b, slice address) inline;
+
+;; __tact_not_null
+forall X -> X __tact_not_null(X x) impure inline;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; __tact_slice_eq_bits_nullable_right
+int __tact_slice_eq_bits_nullable_right(slice a, slice b) inline;
+
+;; __tact_dict_get_uint_cell
+cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline;
+
+;; __tact_dict_set_uint_cell
+(cell, ()) __tact_dict_set_uint_cell(cell d, int kl, int k, cell v) inline;
+
+;; $Game$_store
+builder $Game$_store(builder build_0, (int, slice, slice, slice, int, int, int, int, slice, int) v) inline;
+
+;; $Game$_store_cell
+cell $Game$_store_cell((int, slice, slice, slice, int, int, int, int, slice, int) v, builder b) inline;
+
+;; $Game$_load
+(slice, ((int, slice, slice, slice, int, int, int, int, slice, int))) $Game$_load(slice sc_0) inline;
+
+;; $Game$_as_optional
+tuple $Game$_as_optional((int, slice, slice, slice, int, int, int, int, slice, int) v) inline;
+
+;; $Game$_load_opt
+tuple $Game$_load_opt(cell cl) inline;
+
+;; $JettonPayload$_load
+(slice, ((int, int))) $JettonPayload$_load(slice sc_0) inline;
+
+;; $Escrow$_store
+builder $Escrow$_store(builder build_0, (int, slice, slice, int, cell) v) inline;
+
+;; $Escrow$_load
+(slice, ((int, slice, slice, int, cell))) $Escrow$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $Game$_not_null
+((int, slice, slice, slice, int, int, int, int, slice, int)) $Game$_not_null(tuple v) inline;
+
+;; $Escrow$init$_load
+(slice, ((slice, slice))) $Escrow$init$_load(slice sc_0) inline;
+
+;; $Escrow$_contract_init
+(int, slice, slice, int, cell) $Escrow$_contract_init(slice $adminAddr, slice $feeWalletAddr) impure inline;
+
+;; $Escrow$_contract_load
+(int, slice, slice, int, cell) $Escrow$_contract_load() impure inline;
+
+;; $Escrow$_contract_store
+() $Escrow$_contract_store((int, slice, slice, int, cell) v) impure inline;
+
+;; $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed
+((int, slice, slice, slice, int, int, int, int, slice, int)) $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed(int $id, slice $creator, slice $joiner, slice $jettonMaster, int $amount, int $state, int $createdAt, int $joinedAt, slice $winner, int $claimed) inline;
+
+;; $MessageParameters$_constructor_to_value_mode
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_mode(slice $to, int $value, int $mode) inline;
+
+;; $MessageParameters$_constructor_to_value_bounce_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_bounce_body(slice $to, int $value, int $bounce, cell $body) inline;
+
+
+;; Escrow_Escrow.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+(slice, slice) __tact_load_address_opt(slice cs) asm """
+
+            b{00} SDBEGINSQ
+            IF:<{
+              PUSHNULL
+            }>ELSE<{
+              LDMSGADDR
+              SWAP
+            }>
+
+""";
+
+builder __tact_store_addr_none(builder b) asm "b{00} STSLICECONST";
+
+builder __tact_store_address_opt(builder b, slice address) inline {
+    if (null?(address)) {
+        return __tact_store_addr_none(b);
+    } else {
+        return b.store_slice(address);
+    }
+}
+
+forall X -> X __tact_not_null(X x) impure inline {
+    throw_if(128, null?(x)); return x;
+}
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+int __tact_slice_eq_bits_nullable_right(slice a, slice b) inline {
+    return (null?(b)) ? (false) : (equal_slices_bits(a, b));
+}
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9 -> tuple __tact_tuple_create_10((X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) v) asm """
+    10 TUPLE
+""";
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9 -> (X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) __tact_tuple_destroy_10(tuple v) asm """
+    10 UNTUPLE
+""";
+
+cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline {
+    var (r, ok) = udict_get_ref?(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_uint_cell(cell d, int kl, int k, cell v) inline {
+    if (null?(v)) {
+        var (r, ok) = udict_delete?(d, kl, k);
+        return (r, ());
+    } else {
+        return (udict_set_ref(d, kl, k, v), ());
+    }
+}
+
+builder $global_beginCell() impure asm """
+    NEWC
+""";
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+int $global_now() impure asm """
+    NOW
+""";
+
+builder $Builder$_fun_storeBit(int $value, builder $self) impure asm """
+    1 STI
+""";
+
+builder $Builder$_fun_storeCoins(builder $self, int $value) impure asm """
+    STVARUINT16
+""";
+
+builder $Builder$_fun_storeRef(cell $cell, builder $self) impure asm """
+    STREF
+""";
+
+cell $Builder$_fun_endCell(builder $self) impure asm """
+    ENDC
+""";
+
+builder $Builder$_fun_storeAddress(builder $self, slice $address) impure asm """
+    STSLICER
+""";
+
+;; Escrow_Escrow.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_mode(slice $to, int $value, int $mode) inline {
+    return ($mode, null(), $value, $to, true);
+}
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_bounce_body(slice $to, int $value, int $bounce, cell $body) inline {
+    return (0, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: Game
+;; TLB: _ id:uint64 creator:address joiner:address jettonMaster:address amount:coins state:int257 createdAt:uint32 joinedAt:Maybe int257 winner:address claimed:bool = Game
+;;
+
+builder $Game$_store(builder build_0, (int, slice, slice, slice, int, int, int, int, slice, int) v) inline {
+    var (v'id, v'creator, v'joiner, v'jettonMaster, v'amount, v'state, v'createdAt, v'joinedAt, v'winner, v'claimed) = v;
+    build_0 = build_0.store_uint(v'id, 64);
+    build_0 = build_0.store_slice(v'creator);
+    build_0 = __tact_store_address_opt(build_0, v'joiner);
+    build_0 = __tact_store_address_opt(build_0, v'jettonMaster);
+    build_0 = build_0.store_varuint16(v'amount);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_int(v'state, 257);
+    build_1 = build_1.store_uint(v'createdAt, 32);
+    build_1 = ~ null?(v'joinedAt) ? build_1.store_int(true, 1).store_int(v'joinedAt, 257) : build_1.store_int(false, 1);
+    build_1 = __tact_store_address_opt(build_1, v'winner);
+    build_1 = build_1.store_int(v'claimed, 1);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+cell $Game$_store_cell((int, slice, slice, slice, int, int, int, int, slice, int) v, builder b) inline {
+    return $Game$_store(b, v).end_cell();
+}
+
+(slice, ((int, slice, slice, slice, int, int, int, int, slice, int))) $Game$_load(slice sc_0) inline {
+    var v'id = sc_0~load_uint(64);
+    var v'creator = sc_0~load_msg_addr();
+    var v'joiner = sc_0~__tact_load_address_opt();
+    var v'jettonMaster = sc_0~__tact_load_address_opt();
+    var v'amount = sc_0~load_varuint16();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'state = sc_1~load_int(257);
+    var v'createdAt = sc_1~load_uint(32);
+    var v'joinedAt = sc_1~load_int(1) ? sc_1~load_int(257) : null();
+    var v'winner = sc_1~__tact_load_address_opt();
+    var v'claimed = sc_1~load_int(1);
+    return (sc_0, (v'id, v'creator, v'joiner, v'jettonMaster, v'amount, v'state, v'createdAt, v'joinedAt, v'winner, v'claimed));
+}
+
+tuple $Game$_as_optional((int, slice, slice, slice, int, int, int, int, slice, int) v) inline {
+    var (v'id, v'creator, v'joiner, v'jettonMaster, v'amount, v'state, v'createdAt, v'joinedAt, v'winner, v'claimed) = v;
+    return __tact_tuple_create_10(v'id, v'creator, v'joiner, v'jettonMaster, v'amount, v'state, v'createdAt, v'joinedAt, v'winner, v'claimed);
+}
+
+tuple $Game$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $Game$_as_optional(sc~$Game$_load());
+}
+
+((int, slice, slice, slice, int, int, int, int, slice, int)) $Game$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (int vvv'id, slice vvv'creator, slice vvv'joiner, slice vvv'jettonMaster, int vvv'amount, int vvv'state, int vvv'createdAt, int vvv'joinedAt, slice vvv'winner, int vvv'claimed) = __tact_tuple_destroy_10(v);
+    return (vvv'id, vvv'creator, vvv'joiner, vvv'jettonMaster, vvv'amount, vvv'state, vvv'createdAt, vvv'joinedAt, vvv'winner, vvv'claimed);
+}
+
+((int, slice, slice, slice, int, int, int, int, slice, int)) $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed(int $id, slice $creator, slice $joiner, slice $jettonMaster, int $amount, int $state, int $createdAt, int $joinedAt, slice $winner, int $claimed) inline {
+    return ($id, $creator, $joiner, $jettonMaster, $amount, $state, $createdAt, $joinedAt, $winner, $claimed);
+}
+
+;;
+;; Type: JettonPayload
+;; TLB: _ action:uint8 gameId:uint64 = JettonPayload
+;;
+
+(slice, ((int, int))) $JettonPayload$_load(slice sc_0) inline {
+    var v'action = sc_0~load_uint(8);
+    var v'gameId = sc_0~load_uint(64);
+    return (sc_0, (v'action, v'gameId));
+}
+
+;;
+;; Type: Escrow
+;; TLB: _ nextGameId:uint64 admin:address feeWallet:address minTon:coins games:dict<uint64, ^Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool}> = Escrow
+;;
+
+builder $Escrow$_store(builder build_0, (int, slice, slice, int, cell) v) inline {
+    var (v'nextGameId, v'admin, v'feeWallet, v'minTon, v'games) = v;
+    build_0 = build_0.store_uint(v'nextGameId, 64);
+    build_0 = build_0.store_slice(v'admin);
+    build_0 = build_0.store_slice(v'feeWallet);
+    build_0 = build_0.store_varuint16(v'minTon);
+    build_0 = build_0.store_dict(v'games);
+    return build_0;
+}
+
+(slice, ((int, slice, slice, int, cell))) $Escrow$_load(slice sc_0) inline {
+    var v'nextGameId = sc_0~load_uint(64);
+    var v'admin = sc_0~load_msg_addr();
+    var v'feeWallet = sc_0~load_msg_addr();
+    var v'minTon = sc_0~load_varuint16();
+    var v'games = sc_0~load_dict();
+    return (sc_0, (v'nextGameId, v'admin, v'feeWallet, v'minTon, v'games));
+}
+
+(slice, ((slice, slice))) $Escrow$init$_load(slice sc_0) inline {
+    var v'adminAddr = sc_0~load_msg_addr();
+    var v'feeWalletAddr = sc_0~load_msg_addr();
+    return (sc_0, (v'adminAddr, v'feeWalletAddr));
+}
+
+(int, slice, slice, int, cell) $Escrow$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$Escrow$_load();
+    }
+    else {
+        (slice $adminAddr, slice $feeWalletAddr) = $sc~$Escrow$init$_load();
+        $sc.end_parse();
+        return $Escrow$_contract_init($adminAddr, $feeWalletAddr);
+    }
+}
+
+() $Escrow$_contract_store((int, slice, slice, int, cell) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $Escrow$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Contract Escrow functions
+;;
+
+(int, slice, slice, int, cell) $Escrow$_contract_init(slice $adminAddr, slice $feeWalletAddr) impure inline {
+    var (($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games)) = (null(), null(), null(), null(), null());
+    $self'nextGameId = 1;
+    $self'admin = $adminAddr;
+    $self'feeWallet = $feeWalletAddr;
+    $self'minTon = 1000000000;
+    $self'games = null();
+    return ($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games);
+}
+
+;;
+;; Get methods of a Contract Escrow
+;;
+
+;;
+;; Routing of a Contract Escrow
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games) = $Escrow$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    var op = in_msg~load_opcode_internal();
+    ;; Receive CreateGameTon message
+    if (op == 0x1) {
+        var $msg'amount = in_msg~load_varuint16();
+        var $msg'joinTimeout = in_msg~load_uint(32);
+        int $incoming = $Context$_get_value(__tact_context_get());
+        throw_unless(19635, ($incoming >= $msg'amount));
+        throw_unless(5913, ($msg'amount >= $self'minTon));
+        int $id = $self'nextGameId;
+        $self'nextGameId = $self'nextGameId + 1;
+        var ($game'id, $game'creator, $game'joiner, $game'jettonMaster, $game'amount, $game'state, $game'createdAt, $game'joinedAt, $game'winner, $game'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($id, __tact_context_get_sender(), null(), null(), $msg'amount, 0, $global_now(), null(), null(), false);
+        $self'games~__tact_dict_set_uint_cell(64, $id, $Game$_store_cell(($game'id, $game'creator, $game'joiner, $game'jettonMaster, $game'amount, $game'state, $game'createdAt, $game'joinedAt, $game'winner, $game'claimed), begin_cell()));
+        int $excess = ($incoming - $msg'amount);
+        if (($excess > 0)) {
+            $global_message($MessageParameters$_constructor_to_value_mode(__tact_context_get_sender(), $excess, 2));
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive JoinGameTon message
+    if (op == 0x2) {
+        var $msg'gameId = in_msg~load_uint(64);
+        tuple $gOpt = $Game$_load_opt(__tact_dict_get_uint_cell($self'games, 64, $msg'gameId));
+        throw_unless(50479, (~ null?($gOpt)));
+        var ($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed) = $Game$_not_null($gOpt);
+        throw_unless(26218, ($g'state == 0));
+        throw_unless(53249, ( ~ equal_slices_bits($g'creator, __tact_context_get_sender()) ));
+        int $incoming = $Context$_get_value(__tact_context_get());
+        throw_unless(41490, ($incoming >= $g'amount));
+        var ($newG'id, $newG'creator, $newG'joiner, $newG'jettonMaster, $newG'amount, $newG'state, $newG'createdAt, $newG'joinedAt, $newG'winner, $newG'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($g'id, $g'creator, __tact_context_get_sender(), $g'jettonMaster, $g'amount, 1, $g'createdAt, $global_now(), null(), false);
+        $self'games~__tact_dict_set_uint_cell(64, $msg'gameId, $Game$_store_cell(($newG'id, $newG'creator, $newG'joiner, $newG'jettonMaster, $newG'amount, $newG'state, $newG'createdAt, $newG'joinedAt, $newG'winner, $newG'claimed), begin_cell()));
+        int $excess = ($incoming - $g'amount);
+        if (($excess > 0)) {
+            $global_message($MessageParameters$_constructor_to_value_mode(__tact_context_get_sender(), $excess, 2));
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive CancelGame message
+    if (op == 0x3) {
+        var $msg'gameId = in_msg~load_uint(64);
+        tuple $gOpt = $Game$_load_opt(__tact_dict_get_uint_cell($self'games, 64, $msg'gameId));
+        throw_unless(50479, (~ null?($gOpt)));
+        var ($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed) = $Game$_not_null($gOpt);
+        throw_unless(61763, ( equal_slices_bits(__tact_context_get_sender(), $g'creator) ));
+        throw_unless(18980, ($g'state == 0));
+        int $joinTimeout = 3600;
+        throw_unless(5486, ($global_now() > ($g'createdAt + $joinTimeout)));
+        var ($cancelled'id, $cancelled'creator, $cancelled'joiner, $cancelled'jettonMaster, $cancelled'amount, $cancelled'state, $cancelled'createdAt, $cancelled'joinedAt, $cancelled'winner, $cancelled'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, 3, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed);
+        $self'games~__tact_dict_set_uint_cell(64, $msg'gameId, $Game$_store_cell(($cancelled'id, $cancelled'creator, $cancelled'joiner, $cancelled'jettonMaster, $cancelled'amount, $cancelled'state, $cancelled'createdAt, $cancelled'joinedAt, $cancelled'winner, $cancelled'claimed), begin_cell()));
+        if (null?($g'jettonMaster)) {
+            $global_message($MessageParameters$_constructor_to_value_mode($g'creator, $g'amount, 2));
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive ReportWinner message
+    if (op == 0x4) {
+        var $msg'gameId = in_msg~load_uint(64);
+        var $msg'winner = in_msg~load_msg_addr();
+        throw_unless(26028, ( equal_slices_bits(__tact_context_get_sender(), $self'admin) ));
+        tuple $gOpt = $Game$_load_opt(__tact_dict_get_uint_cell($self'games, 64, $msg'gameId));
+        throw_unless(50479, (~ null?($gOpt)));
+        var ($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed) = $Game$_not_null($gOpt);
+        throw_unless(56165, ($g'state == 1));
+        throw_unless(10541, ( (( equal_slices_bits($msg'winner, $g'creator) )) ? (true) : (( __tact_slice_eq_bits_nullable_right($msg'winner, $g'joiner) )) ));
+        var ($finished'id, $finished'creator, $finished'joiner, $finished'jettonMaster, $finished'amount, $finished'state, $finished'createdAt, $finished'joinedAt, $finished'winner, $finished'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, 2, $g'createdAt, $g'joinedAt, $msg'winner, $g'claimed);
+        $self'games~__tact_dict_set_uint_cell(64, $msg'gameId, $Game$_store_cell(($finished'id, $finished'creator, $finished'joiner, $finished'jettonMaster, $finished'amount, $finished'state, $finished'createdAt, $finished'joinedAt, $finished'winner, $finished'claimed), begin_cell()));
+        if (null?($g'jettonMaster)) {
+            int $total = ($g'amount * 2);
+            int $fee = (($total * 5) / 100);
+            int $winnerAmount = ($total - $fee);
+            $global_message($MessageParameters$_constructor_to_value_mode($msg'winner, $winnerAmount, 2));
+            if (($fee > 0)) {
+                $global_message($MessageParameters$_constructor_to_value_mode($self'feeWallet, $fee, 2));
+            }
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive OnJettonTransfer message
+    if (op == 0x10) {
+        var $msg'sender = in_msg~load_msg_addr();
+        var $msg'amount = in_msg~load_varuint16();
+        var ($msg'payload'action, $msg'payload'gameId) = in_msg~$JettonPayload$_load();
+        var $msg'jettonMaster = in_msg~load_msg_addr();
+        ifnot ($msg'payload'action) {
+            int $id = $self'nextGameId;
+            $self'nextGameId = $self'nextGameId + 1;
+            var ($game'id, $game'creator, $game'joiner, $game'jettonMaster, $game'amount, $game'state, $game'createdAt, $game'joinedAt, $game'winner, $game'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($id, $msg'sender, null(), $msg'jettonMaster, $msg'amount, 0, $global_now(), null(), null(), false);
+            $self'games~__tact_dict_set_uint_cell(64, $id, $Game$_store_cell(($game'id, $game'creator, $game'joiner, $game'jettonMaster, $game'amount, $game'state, $game'createdAt, $game'joinedAt, $game'winner, $game'claimed), begin_cell()));
+        } else {
+            tuple $gOpt = $Game$_load_opt(__tact_dict_get_uint_cell($self'games, 64, $msg'payload'gameId));
+            throw_unless(50479, (~ null?($gOpt)));
+            var ($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed) = $Game$_not_null($gOpt);
+            throw_unless(26218, ($g'state == 0));
+            var ($newG'id, $newG'creator, $newG'joiner, $newG'jettonMaster, $newG'amount, $newG'state, $newG'createdAt, $newG'joinedAt, $newG'winner, $newG'claimed) = $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed($g'id, $g'creator, $msg'sender, $g'jettonMaster, $g'amount, 1, $g'createdAt, $global_now(), null(), false);
+            $self'games~__tact_dict_set_uint_cell(64, $msg'payload'gameId, $Game$_store_cell(($newG'id, $newG'creator, $newG'joiner, $newG'jettonMaster, $newG'amount, $newG'state, $newG'createdAt, $newG'joinedAt, $newG'winner, $newG'claimed), begin_cell()));
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive ClaimJetton message
+    if (op == 0x11) {
+        var $msg'gameId = in_msg~load_uint(64);
+        tuple $gOpt = $Game$_load_opt(__tact_dict_get_uint_cell($self'games, 64, $msg'gameId));
+        throw_unless(50479, (~ null?($gOpt)));
+        var ($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed) = $Game$_not_null($gOpt);
+        throw_unless(50049, ($g'state == 2));
+        throw_unless(52959, (~ null?($g'jettonMaster)));
+        throw_unless(6423, ( __tact_slice_eq_bits_nullable_right(__tact_context_get_sender(), $g'winner) ));
+        throw_unless(44463, (~ $g'claimed));
+        $g'claimed = true;
+        $self'games~__tact_dict_set_uint_cell(64, $msg'gameId, $Game$_store_cell(($g'id, $g'creator, $g'joiner, $g'jettonMaster, $g'amount, $g'state, $g'createdAt, $g'joinedAt, $g'winner, $g'claimed), begin_cell()));
+        slice $jettonMaster = __tact_not_null($g'jettonMaster);
+        int $amount = ($g'amount * 2);
+        $global_message($MessageParameters$_constructor_to_value_bounce_body($jettonMaster, 50000000, true, $Builder$_fun_endCell($Builder$_fun_storeRef($Builder$_fun_endCell($global_beginCell()), $Builder$_fun_storeBit(true, $Builder$_fun_storeAddress($Builder$_fun_storeCoins($Builder$_fun_storeCoins($Builder$_fun_storeAddress(store_uint($global_beginCell(), 260734629, 32), __tact_not_null($g'winner)), $amount), 0), __tact_not_null($g'winner)))))));
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Receive WithdrawUnclaimed message
+    if (op == 0x5) {
+        var $msg = empty_tuple();
+        throw_unless(21885, ( equal_slices_bits(__tact_context_get_sender(), $self'admin) ));
+        int $bal = ($global_myBalance() - $Context$_get_value(__tact_context_get()));
+        int $reserve = 10000000;
+        if (($bal > $reserve)) {
+            $global_message($MessageParameters$_constructor_to_value_mode($self'feeWallet, ($bal - $reserve), 2));
+        }
+        $Escrow$_contract_store(($self'nextGameId, $self'admin, $self'feeWallet, $self'minTon, $self'games));
+        return ();
+    }
+    
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

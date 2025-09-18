@@ -1,0 +1,997 @@
+// automatically generated from `@stdlib/std/stdlib.fc` `/home/user/code/backgammon_contract/build/Escrow/Escrow_Escrow.fc` 
+PROGRAM{
+  DECLPROC __tact_store_address_opt
+  DECLPROC __tact_not_null
+  DECLPROC __tact_context_get
+  DECLPROC __tact_context_get_sender
+  DECLPROC __tact_slice_eq_bits_nullable_right
+  DECLPROC __tact_dict_get_uint_cell
+  DECLPROC __tact_dict_set_uint_cell
+  DECLPROC $Game$_store
+  DECLPROC $Game$_store_cell
+  DECLPROC $Game$_load
+  DECLPROC $Game$_as_optional
+  DECLPROC $Game$_load_opt
+  DECLPROC $JettonPayload$_load
+  DECLPROC $Escrow$_store
+  DECLPROC $Escrow$_load
+  DECLPROC $Context$_get_value
+  DECLPROC $Game$_not_null
+  DECLPROC $Escrow$init$_load
+  DECLPROC $Escrow$_contract_init
+  DECLPROC $Escrow$_contract_load
+  DECLPROC $Escrow$_contract_store
+  DECLPROC $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed
+  DECLPROC $MessageParameters$_constructor_to_value_mode
+  DECLPROC $MessageParameters$_constructor_to_value_bounce_body
+  DECLPROC recv_internal
+  65535 DECLMETHOD __tact_selector_hack
+  DECLGLOBVAR __tact_context
+  DECLGLOBVAR __tact_context_sender
+  DECLGLOBVAR __tact_child_contract_codes
+  DECLGLOBVAR __tact_randomized
+  __tact_store_address_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      b{00} STSLICECONST
+    }>ELSE<{
+      SWAP
+      STSLICE
+    }>
+  }>
+  __tact_not_null PROCINLINE:<{
+    DUP
+    ISNULL
+    128 THROWIF
+  }>
+  __tact_context_get PROCINLINE:<{
+    __tact_context GETGLOB
+    4 UNTUPLE
+  }>
+  __tact_context_get_sender PROCINLINE:<{
+    __tact_context_sender GETGLOB
+  }>
+  __tact_slice_eq_bits_nullable_right PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      2DROP
+      FALSE
+    }>ELSE<{
+      SDEQ
+    }>
+  }>
+  __tact_dict_get_uint_cell PROCINLINE:<{
+    -ROT
+    DICTUGETREF
+    NULLSWAPIFNOT
+    IF:<{
+    }>ELSE<{
+      DROP
+      PUSHNULL
+    }>
+  }>
+  __tact_dict_set_uint_cell PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      -ROT
+      DICTUDEL
+      DROP
+    }>ELSE<{
+      s1 s3 s3 XCHG3
+      DICTUSETREF
+    }>
+  }>
+  $Game$_store PROCINLINE:<{
+    s9 s10 XCHG2
+    64 STU
+    s1 s7 XCHG
+    STSLICE
+    s0 s5 XCHG2
+    __tact_store_address_opt INLINECALLDICT
+    s0 s3 XCHG2
+    __tact_store_address_opt INLINECALLDICT
+    SWAP
+    STVARUINT16
+    SWAP
+    NEWC
+    257 PUSHINT
+    STIX
+    s1 s2 XCHG
+    32 STU
+    s2 PUSH
+    ISNULL
+    NOT
+    IF:<{
+      TRUE
+      SWAP
+      1 STI
+      s1 s2 XCHG
+      257 PUSHINT
+      STIX
+    }>ELSE<{
+      s2 POP
+      FALSE
+      ROT
+      1 STI
+    }>
+    ROT
+    __tact_store_address_opt INLINECALLDICT
+    s1 s2 XCHG
+    1 STI
+    STBREFR
+  }>
+  $Game$_store_cell PROCINLINE:<{
+    10 -ROLL
+    $Game$_store INLINECALLDICT
+    ENDC
+  }>
+  $Game$_load PROCINLINE:<{
+    64 LDU
+    LDMSGADDR
+                b{00} SDBEGINSQ
+                IF:<{
+                  PUSHNULL
+                }>ELSE<{
+                  LDMSGADDR
+                  SWAP
+                }>
+    SWAP
+                b{00} SDBEGINSQ
+                IF:<{
+                  PUSHNULL
+                }>ELSE<{
+                  LDMSGADDR
+                  SWAP
+                }>
+    SWAP
+    LDVARUINT16
+    LDREF
+    SWAP
+    CTOS
+    257 PUSHINT
+    LDIX
+    32 LDU
+    1 LDI
+    SWAP
+    IF:<{
+      257 PUSHINT
+      LDIX
+    }>ELSE<{
+      PUSHNULL
+      SWAP
+    }>
+                b{00} SDBEGINSQ
+                IF:<{
+                  PUSHNULL
+                }>ELSE<{
+                  LDMSGADDR
+                  SWAP
+                }>
+    SWAP
+    1 LDI
+    DROP
+    s5 s10 XCHG
+    s5 s9 XCHG
+    s5 s8 XCHG
+    s5 s7 XCHG
+    s5 s6 XCHG
+  }>
+  $Game$_as_optional PROCINLINE:<{
+        10 TUPLE
+  }>
+  $Game$_load_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      PUSHNULL
+    }>ELSE<{
+      CTOS
+      $Game$_load INLINECALLDICT
+      1 10 BLKDROP2
+      $Game$_as_optional INLINECALLDICT
+    }>
+  }>
+  $JettonPayload$_load PROCINLINE:<{
+    8 LDU
+    64 LDU
+    -ROT
+  }>
+  $Escrow$_store PROCINLINE:<{
+    s4 s5 XCHG2
+    64 STU
+    s1 s2 XCHG
+    STSLICE
+    STSLICE
+    SWAP
+    STVARUINT16
+    STDICT
+  }>
+  $Escrow$_load PROCINLINE:<{
+    64 LDU
+    LDMSGADDR
+    LDMSGADDR
+    LDVARUINT16
+    LDDICT
+    5 -ROLL
+  }>
+  $Context$_get_value PROCINLINE:<{
+    s1 s3 XCHG
+    3 BLKDROP
+  }>
+  $Game$_not_null PROCINLINE:<{
+    DUP
+    ISNULL
+    128 THROWIF
+        10 UNTUPLE
+  }>
+  $Escrow$init$_load PROCINLINE:<{
+    LDMSGADDR
+    LDMSGADDR
+    -ROT
+  }>
+  $Escrow$_contract_init PROCINLINE:<{
+    1 PUSHINT
+    -ROT
+    1000000000 PUSHINT
+    PUSHNULL
+  }>
+  $Escrow$_contract_load PROCINLINE:<{
+    c4 PUSH
+    CTOS
+    1 LDI
+    SWAP
+    IF:<{
+      $Escrow$_load INLINECALLDICT
+      1 5 BLKDROP2
+    }>ELSE<{
+      $Escrow$init$_load INLINECALLDICT
+      s0 s2 XCHG
+      ENDS
+      SWAP
+      $Escrow$_contract_init INLINECALLDICT
+    }>
+  }>
+  $Escrow$_contract_store PROCINLINE:<{
+    NEWC
+    TRUE
+    SWAP
+    1 STI
+    5 -ROLL
+    $Escrow$_store INLINECALLDICT
+    ENDC
+    c4 POP
+  }>
+  $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed PROCINLINE:<{
+  }>
+  $MessageParameters$_constructor_to_value_mode PROCINLINE:<{
+    PUSHNULL
+    s0 s0 s3 XCHG3
+    TRUE
+  }>
+  $MessageParameters$_constructor_to_value_bounce_body PROCINLINE:<{
+    0 PUSHINT
+    s4 s4 XCHG2
+    s3 s1 s3 XCHG3
+  }>
+  recv_internal PROC:<{
+    SWAP
+    CTOS
+    2 PUSHINT
+    SDSKIPFIRST
+    1 LDI
+    1 LDI
+    LDMSGADDR
+    OVER
+    s3 s4 XCHG
+    s6 s6 XCHG2
+    4 TUPLE
+    __tact_context SETGLOB
+    s0 s2 XCHG
+    __tact_context_sender SETGLOB
+    $Escrow$_contract_load INLINECALLDICT
+    s0 s6 XCHG
+    IFJMP:<{
+      6 BLKDROP
+    }>
+    s0 s4 XCHG
+    32 LDUQ 130 THROWIFNOT
+    OVER
+    1 EQINT
+    IFJMP:<{
+      NIP
+      LDVARUINT16
+      DROP
+      __tact_context_get INLINECALLDICT
+      $Context$_get_value INLINECALLDICT
+      19635 PUSHINT
+      s1 s2 PUSH2
+      GEQ
+      THROWANYIFNOT
+      5913 PUSHINT
+      s2 s6 PUSH2
+      GEQ
+      THROWANYIFNOT
+      s4 PUSH
+      INC
+      __tact_context_get_sender INLINECALLDICT
+      PUSHNULL
+      PUSHNULL
+      0 PUSHINT
+          NOW
+      PUSHNULL
+      PUSHNULL
+      s12 PUSH
+      s0 s7 XCHG
+      s0 s6 XCHG
+      s0 s5 XCHG
+      s4 s10 XCPU
+      s4 s3 s4 XCHG3
+      FALSE
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+      s0 s9 XCHG
+      s0 s8 XCHG
+      s0 s7 XCHG
+      s0 s6 XCHG
+      s0 s5 XCHG
+      s0 s4 XCHG
+      s3 s1 s3 XCHG3
+      64 PUSHINT
+      s2 s10 XCHG2
+      NEWC
+      $Game$_store_cell INLINECALLDICT
+      s3 s9 XCHG
+      s1 s7 s0 XCHG3
+      __tact_dict_set_uint_cell INLINECALLDICT
+      s6 s6 XCHG2
+      SUB
+      DUP
+      0 GTINT
+      IF:<{
+        __tact_context_get_sender INLINECALLDICT
+        SWAP
+        2 PUSHINT
+        $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
+      }>ELSE<{
+        DROP
+      }>
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    OVER
+    2 EQINT
+    IFJMP:<{
+      NIP
+      64 LDU
+      DROP
+      s5 PUSH
+      64 PUSHINT
+      s2 PUSH
+      __tact_dict_get_uint_cell INLINECALLDICT
+      $Game$_load_opt INLINECALLDICT
+      50479 PUSHINT
+      OVER
+      ISNULL
+      NOT
+      THROWANYIFNOT
+      $Game$_not_null INLINECALLDICT
+      3 BLKDROP
+      s4 POP
+      26218 PUSHINT
+      SWAP
+      0 EQINT
+      THROWANYIFNOT
+      53249 PUSHINT
+      __tact_context_get_sender INLINECALLDICT
+      s5 s(-1) PUXC
+      SDEQ
+      NOT
+      THROWANYIFNOT
+      __tact_context_get INLINECALLDICT
+      $Context$_get_value INLINECALLDICT
+      41490 PUSHINT
+      s1 s2 PUSH2
+      GEQ
+      THROWANYIFNOT
+      __tact_context_get_sender INLINECALLDICT
+      1 PUSHINT
+          NOW
+      s6 s8 XCHG
+      s4 PUSH
+      s6 s8 XCHG
+      s3 s5 XCHG
+      s4 s8 XCHG
+      s9 s9 XCHG2
+      PUSHNULL
+      FALSE
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+      s0 s9 XCHG
+      s0 s8 XCHG
+      s0 s7 XCHG
+      s0 s6 XCHG
+      s0 s5 XCHG
+      s0 s4 XCHG
+      s3 s1 s3 XCHG3
+      64 PUSHINT
+      s2 s10 XCHG2
+      NEWC
+      $Game$_store_cell INLINECALLDICT
+      s3 s9 XCHG
+      s1 s4 s0 XCHG3
+      __tact_dict_set_uint_cell INLINECALLDICT
+      s0 s6 XCHG
+      SUB
+      DUP
+      0 GTINT
+      IF:<{
+        __tact_context_get_sender INLINECALLDICT
+        SWAP
+        2 PUSHINT
+        $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
+      }>ELSE<{
+        DROP
+      }>
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    OVER
+    3 EQINT
+    IFJMP:<{
+      NIP
+      64 LDU
+      DROP
+      s5 PUSH
+      64 PUSHINT
+      s2 PUSH
+      __tact_dict_get_uint_cell INLINECALLDICT
+      $Game$_load_opt INLINECALLDICT
+      50479 PUSHINT
+      OVER
+      ISNULL
+      NOT
+      THROWANYIFNOT
+      $Game$_not_null INLINECALLDICT
+      61763 PUSHINT
+      __tact_context_get_sender INLINECALLDICT
+      s10 PUSH
+      SDEQ
+      THROWANYIFNOT
+      18980 PUSHINT
+      s0 s5 XCHG
+      0 EQINT
+      s1 s5 XCHG
+      THROWANYIFNOT
+      3600 PUSHINT
+      5486 PUSHINT
+          NOW
+      s5 s2 PUXC
+      ADD
+      s1 s2 XCHG
+      GREATER
+      THROWANYIFNOT
+      s5 s8 XCHG
+      3 PUSHINT
+      s8 PUSH
+      s6 s10 XCPU
+      s6 s9 XCHG
+      s4 s5 s4 XC2PU
+      s3 s10 XCHG2
+      s1 s4 XCHG
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+      s0 s9 XCHG
+      s0 s8 XCHG
+      s0 s7 XCHG
+      s0 s6 XCHG
+      s0 s5 XCHG
+      s0 s4 XCHG
+      s3 s1 s3 XCHG3
+      64 PUSHINT
+      s2 s10 XCHG2
+      NEWC
+      $Game$_store_cell INLINECALLDICT
+      s3 s10 XCHG
+      s1 s5 s0 XCHG3
+      __tact_dict_set_uint_cell INLINECALLDICT
+      SWAP
+      ISNULL
+      IF:<{
+        s6 s6 XCHG2
+        2 PUSHINT
+        $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
+      }>ELSE<{
+        s6 POP
+        DROP
+      }>
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    OVER
+    4 EQINT
+    IFJMP:<{
+      NIP
+      64 LDU
+      LDMSGADDR
+      DROP
+      26028 PUSHINT
+      __tact_context_get_sender INLINECALLDICT
+      s5 PUSH
+      SDEQ
+      THROWANYIFNOT
+      s6 PUSH
+      64 PUSHINT
+      s3 PUSH
+      __tact_dict_get_uint_cell INLINECALLDICT
+      $Game$_load_opt INLINECALLDICT
+      50479 PUSHINT
+      OVER
+      ISNULL
+      NOT
+      THROWANYIFNOT
+      $Game$_not_null INLINECALLDICT
+      NIP
+      56165 PUSHINT
+      s0 s4 XCHG
+      1 EQINT
+      s1 s4 XCHG
+      THROWANYIFNOT
+      10541 PUSHINT
+      s9 s7 PUSH2
+      SDEQ
+      IF:<{
+        TRUE
+      }>ELSE<{
+        s9 s6 PUSH2
+        __tact_slice_eq_bits_nullable_right INLINECALLDICT
+      }>
+      THROWANYIFNOT
+      s5 s7 XCHG
+      5 3 REVERSE
+      2 PUSHINT
+      s7 PUSH
+      s4 s9 XCPU
+      s4 s1 s4 XCHG3
+      s3 s11 s3 XCPUXC
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+      s0 s9 XCHG
+      s0 s8 XCHG
+      s0 s7 XCHG
+      s0 s6 XCHG
+      s0 s5 XCHG
+      s0 s4 XCHG
+      s3 s1 s3 XCHG3
+      64 PUSHINT
+      s2 s10 XCHG2
+      NEWC
+      $Game$_store_cell INLINECALLDICT
+      s3 s10 XCHG
+      s1 s5 s0 XCHG3
+      __tact_dict_set_uint_cell INLINECALLDICT
+      s0 s2 XCHG
+      ISNULL
+      IF:<{
+        s0 s6 XCHG
+        1 LSHIFT#
+        DUP
+        5 MULCONST
+        100 PUSHINT
+        DIV
+        TUCK
+        SUB
+        s1 s7 XCHG
+        2 PUSHINT
+        $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
+        s5 PUSH
+        0 GTINT
+        IF:<{
+          s1 s5 PUXC
+          2 PUSHINT
+          $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+              NEWC
+              b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+              1 STI               // store `bounce`
+              b{000} STSLICECONST // store bounced = false and src = addr_none
+              STSLICE             // store `to`
+              SWAP
+              STGRAMS             // store `value`
+              106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+              STZEROES
+              // → Stack state
+              // s0: Builder
+              // s1: `body`
+              // s2: `mode`
+              STDICT
+              ENDC
+              SWAP
+              SENDRAWMSG
+        }>ELSE<{
+          s5 POP
+        }>
+      }>ELSE<{
+        DROP
+        s5 POP
+      }>
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    OVER
+    16 EQINT
+    IFJMP:<{
+      NIP
+      LDMSGADDR
+      LDVARUINT16
+      $JettonPayload$_load INLINECALLDICT
+      s0 s2 XCHG
+      LDMSGADDR
+      DROP
+      SWAP
+      IF:<{
+        DROP
+        NIP
+        s6 PUSH
+        64 PUSHINT
+        s2 PUSH
+        __tact_dict_get_uint_cell INLINECALLDICT
+        $Game$_load_opt INLINECALLDICT
+        50479 PUSHINT
+        OVER
+        ISNULL
+        NOT
+        THROWANYIFNOT
+        $Game$_not_null INLINECALLDICT
+        3 BLKDROP
+        s4 POP
+        26218 PUSHINT
+        SWAP
+        0 EQINT
+        THROWANYIFNOT
+        1 PUSHINT
+            NOW
+        s6 s7 XCHG
+        s5 s6 XCHG
+        s5 s8 XCHG
+        s3 s4 XCHG
+        s1 s3 s0 XCHG3
+        PUSHNULL
+        FALSE
+        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+        s0 s9 XCHG
+        s0 s8 XCHG
+        s0 s7 XCHG
+        s0 s6 XCHG
+        s0 s5 XCHG
+        s0 s4 XCHG
+        s3 s1 s3 XCHG3
+        64 PUSHINT
+        s2 s10 XCHG2
+        NEWC
+        $Game$_store_cell INLINECALLDICT
+        s3 s7 XCHG
+        s1 s2 XCHG
+        __tact_dict_set_uint_cell INLINECALLDICT
+      }>ELSE<{
+        NIP
+        s5 PUSH
+        INC
+        PUSHNULL
+        0 PUSHINT
+            NOW
+        s9 PUSH
+        s0 s6 XCHG
+        s5 s7 XCHG
+        s3 s4 XCHG
+        s3 s7 XCHG
+        -ROT
+        PUSHNULL
+        PUSHNULL
+        FALSE
+        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
+        s0 s9 XCHG
+        s0 s8 XCHG
+        s0 s7 XCHG
+        s0 s6 XCHG
+        s0 s5 XCHG
+        s0 s4 XCHG
+        s3 s1 s3 XCHG3
+        64 PUSHINT
+        s2 s10 XCHG2
+        NEWC
+        $Game$_store_cell INLINECALLDICT
+        s3 s7 XCHG
+        s1 s5 s0 XCHG3
+        __tact_dict_set_uint_cell INLINECALLDICT
+      }>
+      s4 s3 s0 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    OVER
+    17 EQINT
+    IFJMP:<{
+      NIP
+      64 LDU
+      DROP
+      s5 PUSH
+      64 PUSHINT
+      s2 PUSH
+      __tact_dict_get_uint_cell INLINECALLDICT
+      $Game$_load_opt INLINECALLDICT
+      50479 PUSHINT
+      OVER
+      ISNULL
+      NOT
+      THROWANYIFNOT
+      $Game$_not_null INLINECALLDICT
+      50049 PUSHINT
+      s5 PUSH
+      2 EQINT
+      THROWANYIFNOT
+      52959 PUSHINT
+      s7 PUSH
+      ISNULL
+      NOT
+      THROWANYIFNOT
+      6423 PUSHINT
+      __tact_context_get_sender INLINECALLDICT
+      s3 PUSH
+      __tact_slice_eq_bits_nullable_right INLINECALLDICT
+      THROWANYIFNOT
+      44463 PUSHINT
+      SWAP
+      NOT
+      THROWANYIFNOT
+      s4 s8 XCHG
+      s3 s7 XCHG
+      s2 s6 XCHG
+      TRUE
+      64 PUSHINT
+      s7 PUSH
+      s4 s11 XCPU
+      s4 s0 XCPU
+      s4 s12 XCHG
+      s3 s11 XCHG
+      s0 s12 XCHG
+      NEWC
+      $Game$_store_cell INLINECALLDICT
+      s3 s10 XCHG
+      s1 s5 XCHG
+      __tact_dict_set_uint_cell INLINECALLDICT
+      s0 s2 XCHG
+      __tact_not_null INLINECALLDICT
+      SWAP
+      1 LSHIFT#
+      50000000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+      TRUE
+          NEWC
+      260734629 PUSHINT
+      SWAP
+      32 STU
+      s12 PUSH
+      __tact_not_null INLINECALLDICT
+          STSLICER
+      s0 s5 XCHG2
+          STVARUINT16
+      0 PUSHINT
+          STVARUINT16
+      s0 s11 XCHG
+      __tact_not_null INLINECALLDICT
+      s1 s11 XCHG
+          STSLICER
+      s1 s3 XCHG
+          1 STI
+      s1 s9 XCHG
+          STREF
+          ENDC
+      s2 s3 XCHG
+      s2 s8 XCHG
+      $MessageParameters$_constructor_to_value_bounce_body INLINECALLDICT
+          NEWC
+          b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+          1 STI               // store `bounce`
+          b{000} STSLICECONST // store bounced = false and src = addr_none
+          STSLICE             // store `to`
+          SWAP
+          STGRAMS             // store `value`
+          106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+          STZEROES
+          // → Stack state
+          // s0: Builder
+          // s1: `body`
+          // s2: `mode`
+          STDICT
+          ENDC
+          SWAP
+          SENDRAWMSG
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    DROP
+    5 EQINT
+    IFJMP:<{
+      21885 PUSHINT
+      __tact_context_get_sender INLINECALLDICT
+      s3 PUSH
+      SDEQ
+      THROWANYIFNOT
+          BALANCE FIRST
+      __tact_context_get INLINECALLDICT
+      $Context$_get_value INLINECALLDICT
+      SUB
+      10000000 PUSHINT
+      2DUP
+      GREATER
+      IF:<{
+        SUB
+        s1 s(-1) PUXC
+        2 PUSHINT
+        $MessageParameters$_constructor_to_value_mode INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
+      }>ELSE<{
+        2DROP
+      }>
+      s0 s3 s4 XCHG3
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    5 BLKDROP
+    130 THROW
+  }>
+  __tact_selector_hack PROC:<{
+    @atend @ 1 {
+            execute current@ context@ current!
+            {
+                // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+                // We want to extract recv_internal/recv_external from the dict and select needed function
+                // not by jumping to the needed function by it's index, but by using usual IF statements.
+                }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+                <{ // Start of the new code builder
+                    SETCP0
+                    // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                    swap
+                    // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                    <s ref@
+                    // Extract the recv_internal from the dict
+                    dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                    swap
+                    // Delete the recv_internal from the dict
+                    0 swap @procdictkeylen idict- drop
+                    // Delete the recv_external from the dict (it's okay if it's not there)
+                    -1 swap @procdictkeylen idict- drop
+                    // Delete the __tact_selector_hack from the dict
+                    65535 swap @procdictkeylen idict- drop
+                    // Bring the code builder from the bottom of the stack
+                    // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                    depth 1- roll
+                    // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                    swap
+                    // Check if the dict is empty
+                    dup null?
+                    // Store a copy of this flag in the bottom of the stack
+                    dup depth 1- -roll
+                    {
+                        // If the dict is empty, just drop it (it will be null if it's empty)
+                        drop
+                    }
+                    {
+                        // If the dict is not empty, prepare continuation to be stored in c3
+                        <{
+                            // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                            swap @procdictkeylen DICTPUSHCONST
+                            // Jump to the needed function by it's index
+                            DICTIGETJMPZ
+                            // If such key is not found, throw 11 along with the key as an argument
+                            11 THROWARG
+                        }> PUSHCONT
+                        // Store the continuation in c3
+                        c3 POP
+                    } cond
+                    // Function id is on top of the (runtime) stack
+                    DUP IFNOTJMP:<{
+                        // place recv_internal here
+                        DROP swap @addop
+                    }>
+                    // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                    depth 1- roll
+                    {
+                        // If the dict is empty, throw 11
+                        11 THROWARG
+                    }
+                    {
+                        // If the dict is not empty, jump to continuation from c3
+                        c3 PUSH JMPX
+                    } cond
+                }> b>
+            } : }END>c
+            current@ context! current!
+        } does @atend !
+  }>
+}END>c

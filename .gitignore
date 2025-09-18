@@ -143,4 +143,7 @@ public
 /bot/dist
 /bot/node_modules
 
+# Blockchain
+/blockchain/build/node_modules
+
 GEMINI.md

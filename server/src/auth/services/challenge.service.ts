@@ -20,9 +20,11 @@ export class ChallengeService {
    * @param clientId - Optional client ID; if not provided, a new UUID is generated.
    * @returns {Promise<{ challenge: string, validUntil: number, clientId: string }>} Challenge data including the challenge string, expiration time, and client ID.
    */
-  async generateChallenge(
-    clientId?: string,
-  ): Promise<{ challenge: string; validUntil: number; clientId: string }> {
+  generateChallenge(clientId?: string): {
+    challenge: string;
+    validUntil: number;
+    clientId: string;
+  } {
     const newClientId = clientId || uuidv4();
     const challenge = randomBytes(32).toString('hex');
     const validUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
@@ -100,7 +102,7 @@ export class ChallengeService {
           result.stack.readBigNumber().toString(16).padStart(64, '0'),
           'hex',
         );
-      } catch (error) {
+      } catch (_error) {
         this.logger.log(
           'get_public_key failed, using state_init for verification',
         );
@@ -169,9 +171,10 @@ export class ChallengeService {
       );
       this.challenges.delete(clientId);
       return true;
-    } catch (error) {
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
       this.logger.error(
-        `Failed to verify TON Proof for clientId ${clientId}: ${(error as Error).message}`,
+        `Failed to verify TON Proof for clientId ${clientId}: ${message}`,
       );
       return false;
     }

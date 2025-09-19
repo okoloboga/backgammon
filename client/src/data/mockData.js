@@ -1,6 +1,7 @@
 export const mockProfile = {
   username: "very_long_username_test",
-  balance: 250.50,
+  balanceTon: 1234567,
+  balanceRuble: 12345,
   level: 12,
   winRate: "73%",
   totalGames: 128,

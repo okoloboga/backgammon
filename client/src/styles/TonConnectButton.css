@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 20px;
+  padding: 0;
   background: rgba(3, 20, 42, 0.6);
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -39,7 +39,7 @@
 
 @media (max-width: 768px) {
   .ton-connect-container {
-    padding: 15px;
+    padding: 0;
   }
   
   .wallet-info {

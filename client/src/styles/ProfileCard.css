@@ -54,30 +54,30 @@
   transform: scale(1.1);
 }
 
-.balance-icon {
-  width: 20px;
-  height: 20px;
-  transition: all 0.3s ease;
-}
-
-.balance-icon:hover {
-  transform: scale(1.1) rotate(10deg);
-}
-
 .user-info h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #fff;
 }
 
-.user-info .balance {
+.balances-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.balance-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #e0a93e;
+  gap: 4px;
+}
+
+.balance-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: 'Roboto Mono', monospace;
 }
 
 .stats-grid {

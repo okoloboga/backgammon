@@ -55,3 +55,30 @@ button {
   font-weight: 600;
   margin-bottom: 16px;
 }
+
+/* === CURRENCY BADGE STYLES === */
+.currency-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.currency-badge:hover {
+  transform: scale(1.1);
+}
+
+.currency-ton {
+  background: rgba(0, 184, 255, 0.2);
+  color: #00B8FF;
+  border: 1px solid rgba(0, 184, 255, 0.3);
+}
+
+.currency-ruble {
+  background: rgba(0, 255, 85, 0.2);
+  color: #00FF55;
+  border: 1px solid rgba(0, 255, 85, 0.3);
+}

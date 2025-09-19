@@ -33,6 +33,9 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Copy the pruned workspace from the prod-deps stage
 COPY --from=prod-deps --chown=nodejs:nodejs /app /app
 

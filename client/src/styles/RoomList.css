@@ -1,5 +1,5 @@
 .rooms-section {
-  margin-top: 10px;
+
 }
 
 .rooms-header {
@@ -10,7 +10,7 @@
 }
 
 .rooms-title {
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #FFFFFF;
 }
@@ -50,9 +50,5 @@
 }
 
 @media (max-width: 768px) {
-  .rooms-header {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
+
 }

@@ -5,7 +5,6 @@ import '../../../styles/CreateRoomModal.css'
 
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose }) => {
-  const [roomName, setRoomName] = useState('')
   const [betAmount, setBetAmount] = useState('')
   const [currency, setCurrency] = useState('TON')
 
@@ -24,11 +23,10 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (roomName.trim() && isValidBetAmount()) {
-      console.log('Creating a room:', { roomName, betAmount, currency })
+    if (isValidBetAmount()) {
+      console.log('Creating a room:', { betAmount, currency })
       // Здесь будет логика создания комнаты
       onClose()
-      setRoomName('')
       setBetAmount('')
       setCurrency('TON')
     }
@@ -36,7 +34,6 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     onClose()
-    setRoomName('')
     setBetAmount('')
     setCurrency('TON')
   }
@@ -51,7 +48,7 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
           <div className="form-group">
            
             <div className="radio-group">
-              <label className="radio-option">
+              <label className={`radio-option ${currency === 'TON' ? 'selected' : ''}`}>
                 <input
                   type="radio"
                   name="currency"
@@ -61,7 +58,7 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
                 />
                 <span className="radio-label">TON</span>
               </label>
-              <label className="radio-option">
+              <label className={`radio-option ${currency === 'RUBLE' ? 'selected' : ''}`}>
                 <input
                   type="radio"
                   name="currency"
@@ -76,7 +73,9 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
           
           <div className="form-group">
             <input
-              type="text"
+              type="number"
+              inputMode="decimal"
+              step="any"
               id="betAmount"
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
@@ -90,8 +89,8 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
             </button>
             <button 
               type="submit" 
-              className={`create-button ${!roomName.trim() || !isValidBetAmount() ? 'disabled' : ''}`}
-              disabled={!roomName.trim() || !isValidBetAmount()}
+              className={`create-button ${!isValidBetAmount() ? 'disabled' : ''}`}
+              disabled={!isValidBetAmount()}
             >
               Create
             </button>

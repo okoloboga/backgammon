@@ -2,7 +2,7 @@
   background: rgba(3, 20, 42, 0.6);
   border: 1px solid #333;
   border-radius: 12px;
-  padding: 20px;
+  padding: 12px 14px;
   transition: all 0.3s ease;
 }
 
@@ -16,7 +16,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -26,6 +25,7 @@
   gap: 15px;
   flex: 1;
   min-width: 200px;
+  max-width: 50%;
 }
 
 .opponent-avatar {
@@ -92,7 +92,6 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  flex: 1;
   min-width: 150px;
 }
 
@@ -124,6 +123,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.3s ease;
+  margin-left: auto;
 }
 
 .enter-button:hover {
@@ -134,7 +134,15 @@
 
 @media (max-width: 768px) {
   .room-card {
-    padding: 15px;
+    padding: 12px 14px;
+  }
+
+  .opponent-info {
+    min-width: 0;
+  }
+
+  .game-info {
+    min-width: auto;
   }
 
   .opponent-avatar {

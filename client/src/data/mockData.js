@@ -1,5 +1,5 @@
 export const mockProfile = {
-  username: "backgammon_master",
+  username: "very_long_username_test",
   balance: 250.50,
   level: 12,
   winRate: "73%",

@@ -43,6 +43,7 @@
   margin-bottom: 20px;
   letter-spacing: 2px;
   text-shadow: 0 0 20px rgba(0, 255, 85, 0.3);
+  max-width: 90vw;
 }
 
 .logo-subtitle {
@@ -59,6 +60,7 @@
   height: 80px;
   margin: 0 auto 20px;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .logo-image:hover {

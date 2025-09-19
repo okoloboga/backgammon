@@ -14,6 +14,8 @@ const RoomCard = ({ room, onEnter }) => {
 
   const risk = getRiskLevel(bet)
 
+  const truncatedOpponent = opponent.length > 11 ? `${opponent.substring(0, 11)}...` : opponent
+
   const handleEnterRoom = () => {
     onEnter(id)
   }
@@ -26,7 +28,7 @@ const RoomCard = ({ room, onEnter }) => {
             <span>{opponent.charAt(0).toUpperCase()}</span>
           </div>
           <div className="opponent-details">
-            <h3>{opponent}</h3>
+            <h3>{truncatedOpponent}</h3>
             <span className={`risk-badge ${risk.className}`}>
               {risk.level} RISK
             </span>
@@ -48,7 +50,7 @@ const RoomCard = ({ room, onEnter }) => {
           onClick={handleEnterRoom}
           className="enter-button"
         >
-          ENTER GAME
+          JOIN
         </button>
       </div>
     </div>

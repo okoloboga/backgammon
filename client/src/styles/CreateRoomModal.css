@@ -17,7 +17,6 @@
   border-radius: 12px;
   width: 350px;
   height: auto;
-  min-height: 400px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -26,8 +25,7 @@
 }
 
 .modal-form {
-  flex: 1;
-  padding: 24px 24px 16px 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -48,7 +46,7 @@
 
 .form-group input[type="text"],
 .form-group input[type="number"] {
-  padding: 10px 12px;
+  padding: 10px 24px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
@@ -58,6 +56,14 @@
   transition: all 0.2s;
   width: 100%;
   box-sizing: border-box;
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* WebKit-based browsers */
+.form-group input::-webkit-outer-spin-button,
+.form-group input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .form-group input[type="text"]:focus,
@@ -74,7 +80,6 @@
 .radio-group {
   display: flex;
   gap: 16px;
-  margin-top: 12px;
   justify-content: center;
 }
 
@@ -82,7 +87,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   cursor: pointer;
   font-size: 15px;
   transition: all 0.3s ease;
@@ -99,17 +103,21 @@
 }
 
 .radio-option:hover {
-  background: rgba(0, 255, 85, 0.1);
-  border-color: rgba(0, 255, 85, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 85, 0.4);
+}
+
+.radio-option.selected {
+  background: linear-gradient(135deg, #00FF55, #00B8FF);
+  border-color: transparent;
+}
+
+.radio-option.selected .radio-label {
+  color: #03142A;
 }
 
 .radio-option input[type="radio"] {
-  margin: 0;
-  cursor: pointer;
-  accent-color: #00FF55;
-  width: 18px;
-  height: 18px;
-  transform: scale(1.2);
+  display: none;
 }
 
 .radio-label {
@@ -119,14 +127,10 @@
   transition: all 0.3s ease;
 }
 
-.radio-option:hover .radio-label {
-  color: #00FF55;
-}
-
 .modal-actions {
   display: flex;
   gap: 20px;
-  padding: 15px 24px 20px 24px;
+  padding: 0;
   justify-content: center;
 }
 
@@ -200,7 +204,6 @@
     width: 90%;
     max-width: 320px;
     height: auto;
-    min-height: 280px;
   }
   
   .modal-form {

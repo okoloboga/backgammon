@@ -23,7 +23,7 @@ const MainMenu = () => {
       <div className={`container ${isModalOpen ? 'blur-background' : ''}`}>
         <div className="menu-content">
           {/* TonConnect кнопка над ProfileCard */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center">
             <TonConnectButton />
           </div>
           <ProfileCard />

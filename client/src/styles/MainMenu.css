@@ -1,11 +1,12 @@
 .main-menu {
   min-height: 100vh;
   background-color: #03142A;
-  padding: 40px 20px;
+  padding: 0 0 16px;
   position: relative;
 }
 
 .container {
+  width: 90%;
   max-width: 800px;
   margin: 0 auto;
   transition: filter 0.3s ease;
@@ -19,12 +20,12 @@
 .menu-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
 
 }
 
 @media (max-width: 768px) {
   .main-menu {
-    padding: 20px 15px;
+    padding: 0 0 20px;
   }
 }

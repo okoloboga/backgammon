@@ -18,7 +18,8 @@ COPY . .
 
 # Build the client application
 RUN pnpm --filter backgammon-bet run build
-RUN ls -lR /app/client/dist
+RUN echo "=== Contents of /app/client/dist ===" && ls -la /app/client/dist
+RUN echo "=== Contents of /app/client/dist/assets ===" && ls -la /app/client/dist/assets
 
 # 2. Production Stage
 FROM nginx:1.25-alpine AS production
@@ -28,7 +29,7 @@ COPY --from=builder /app/client/dist/index.html /usr/share/nginx/html/index.html
 COPY --from=builder /app/client/dist/assets/ /usr/share/nginx/html/assets/
 
 # Copy Nginx configuration
-COPY --from=builder /app/client/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/client/nginx.dev.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8001
 EXPOSE 8002

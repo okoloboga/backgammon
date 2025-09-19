@@ -25,8 +25,7 @@ RUN echo "=== Contents of /app/client/dist/assets ===" && ls -la /app/client/dis
 FROM nginx:1.25-alpine AS production
 
 # Copy built assets from the builder stage
-COPY --from=builder /app/client/dist/index.html /usr/share/nginx/html/index.html
-COPY --from=builder /app/client/dist/assets/ /usr/share/nginx/html/assets/
+COPY --from=builder /app/client/dist /usr/share/nginx/html
 
 # Copy Nginx configuration
 COPY --from=builder /app/client/nginx.conf /etc/nginx/conf.d/default.conf

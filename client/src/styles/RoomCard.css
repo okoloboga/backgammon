@@ -23,14 +23,12 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  flex: 1;
-  min-width: 200px;
-  max-width: 50%;
+  flex: 0 1 50%; /* Do not grow, shrink, start at 50% width */
 }
 
 .opponent-avatar {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, #8B00FF, #4B0082);
   display: flex;
@@ -38,6 +36,7 @@
   justify-content: center;
   font-weight: 600;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
 }
 
 .opponent-avatar:hover {
@@ -50,13 +49,16 @@
   margin-bottom: 5px;
   color: #FFFFFF;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .opponent-details h3:hover {
   color: #00FF55;
 }
 
-.risk-badge {
+.currency-badge {
   font-size: 0.7rem;
   font-weight: 600;
   padding: 3px 10px;
@@ -66,23 +68,17 @@
   transition: all 0.3s ease;
 }
 
-.risk-badge:hover {
+.currency-badge:hover {
   transform: scale(1.1);
 }
 
-.risk-high {
-  background: rgba(255, 0, 0, 0.2);
-  color: #FF4444;
-  border: 1px solid rgba(255, 0, 0, 0.3);
+.currency-ton {
+  background: rgba(0, 184, 255, 0.2);
+  color: #00B8FF;
+  border: 1px solid rgba(0, 184, 255, 0.3);
 }
 
-.risk-medium {
-  background: rgba(255, 165, 0, 0.2);
-  color: #FFA500;
-  border: 1px solid rgba(255, 165, 0, 0.3);
-}
-
-.risk-low {
+.currency-ruble {
   background: rgba(0, 255, 85, 0.2);
   color: #00FF55;
   border: 1px solid rgba(0, 255, 85, 0.3);
@@ -92,17 +88,16 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  min-width: 150px;
 }
 
 .bet-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .bet-amount {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #00FF55;
   font-family: 'Roboto Mono', monospace;
@@ -117,46 +112,17 @@
   background: transparent;
   color: #00FF55;
   border: 2px solid #00FF55;
-  padding: 10px 20px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.3s ease;
-  margin-left: auto;
+  font-size: 0.9rem;
 }
 
 .enter-button:hover {
   background: #00FF55;
   color: #03142A;
   transform: scale(1.05);
-}
-
-@media (max-width: 768px) {
-  .room-card {
-    padding: 12px 14px;
-  }
-
-  .opponent-info {
-    min-width: 0;
-  }
-
-  .game-info {
-    min-width: auto;
-  }
-
-  .opponent-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 0.9rem;
-  }
-
-  .bet-amount {
-    font-size: 1.1rem;
-  }
-
-  .enter-button {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
 }

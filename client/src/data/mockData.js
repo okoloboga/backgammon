@@ -9,9 +9,9 @@ export const mockProfile = {
 }
 
 export const mockRooms = [
-  { id: 1, opponent: "grandmaster", bet: 100 },
-  { id: 2, opponent: "casual_player", bet: 25 },
-  { id: 3, opponent: "tournament_pro", bet: 200 },
-  { id: 4, opponent: "beginner123", bet: 10 },
-  { id: 5, opponent: "strategy_guru", bet: 75 }
+  { id: 1, opponent: "grandmaster", bet: 100, currency: "TON" },
+  { id: 2, opponent: "casual_player", bet: 25, currency: "RUBLE" },
+  { id: 3, opponent: "tournament_pro", bet: 200, currency: "TON" },
+  { id: 4, opponent: "beginner123", bet: 10, currency: "RUBLE" },
+  { id: 5, opponent: "strategy_guru", bet: 75, currency: "TON" }
 ]

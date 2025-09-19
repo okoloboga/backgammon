@@ -5,7 +5,7 @@ import '../../../styles/ProfileCard.css'
 const ProfileCard = () => {
   const { username, balance, winRate, wins, losses } = mockProfile
 
-  const truncatedUsername = username.length > 11 ? `${username.substring(0, 11)}...` : username
+  const truncatedUsername = username.length > 15 ? `${username.substring(0, 15)}...` : username
 
   return (
     <div className="profile-card">

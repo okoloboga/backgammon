@@ -3,16 +3,7 @@ import PropTypes from 'prop-types'
 
 // Карточка игровой комнаты с оппонентом и ставкой
 const RoomCard = ({ room, onEnter }) => {
-  const { id, opponent, bet } = room
-
-  // Определяем уровень риска по ставке
-  const getRiskLevel = (betAmount) => {
-    if (betAmount >= 100) return { level: 'HIGH', className: 'risk-high' }
-    if (betAmount >= 50) return { level: 'MEDIUM', className: 'risk-medium' }
-    return { level: 'LOW', className: 'risk-low' }
-  }
-
-  const risk = getRiskLevel(bet)
+  const { id, opponent, bet, currency } = room
 
   const truncatedOpponent = opponent.length > 11 ? `${opponent.substring(0, 11)}...` : opponent
 
@@ -29,8 +20,8 @@ const RoomCard = ({ room, onEnter }) => {
           </div>
           <div className="opponent-details">
             <h3>{truncatedOpponent}</h3>
-            <span className={`risk-badge ${risk.className}`}>
-              {risk.level} RISK
+            <span className={`currency-badge currency-${currency.toLowerCase()}`}>
+              {currency}
             </span>
           </div>
         </div>
@@ -61,7 +52,8 @@ RoomCard.propTypes = {
   room: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     opponent: PropTypes.string.isRequired,
-    bet: PropTypes.number.isRequired
+    bet: PropTypes.number.isRequired,
+    currency: PropTypes.string.isRequired
   }).isRequired,
   onEnter: PropTypes.func.isRequired
 }

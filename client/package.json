@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@telegram-apps/analytics": "^1.4.4",
     "@tonconnect/ui-react": "^2.3.0",
     "buffer": "^6.0.3",
     "colyseus.js": "^0.16.19",

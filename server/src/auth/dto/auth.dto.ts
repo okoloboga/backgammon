@@ -36,13 +36,5 @@ export class VerifyProofDto {
 
   @IsString()
   @IsOptional()
-  telegramId?: string;
-
-  @IsString()
-  @IsOptional()
-  username?: string;
-
-  @IsString()
-  @IsOptional()
-  avatarUrl?: string;
+  initData?: string;
 }

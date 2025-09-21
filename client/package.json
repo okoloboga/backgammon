@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@telegram-apps/analytics": "^1.4.4",
     "@tonconnect/ui-react": "^2.3.0",
+    "buffer": "^6.0.3",
+    "colyseus.js": "^0.16.19",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "ton": "^13.9.0",
+    "ton-core": "^0.53.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

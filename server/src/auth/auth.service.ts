@@ -55,22 +55,39 @@ export class AuthService {
       verifyData.account.address,
     );
 
+    let username: string | undefined;
+    let avatarUrl: string | undefined;
+
+    if (verifyData.initData) {
+      try {
+        const params = new URLSearchParams(verifyData.initData);
+        const userJson = params.get('user');
+        if (userJson) {
+          interface TelegramUserData {
+            first_name?: string;
+            photo_url?: string;
+          }
+          const userData = JSON.parse(userJson) as TelegramUserData;
+          username = userData.first_name;
+          avatarUrl = userData.photo_url;
+        }
+      } catch (e) {
+        this.logger.error('Failed to parse initData', e);
+      }
+    }
+
     if (!user) {
       this.logger.log(
         `Creating new user for verified wallet: ${verifyData.account.address}`,
       );
       user = this.usersService.createUser(
         verifyData.account.address,
-        verifyData.username,
-        verifyData.avatarUrl,
+        username,
+        avatarUrl,
       );
     } else {
       // If user exists, update their profile info
-      user = this.usersService.updateUserProfile(
-        user.id,
-        verifyData.username,
-        verifyData.avatarUrl,
-      );
+      user = this.usersService.updateUserProfile(user.id, username, avatarUrl);
     }
 
     if (!user) {

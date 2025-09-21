@@ -59,7 +59,18 @@ export class AuthService {
       this.logger.log(
         `Creating new user for verified wallet: ${verifyData.account.address}`,
       );
-      user = this.usersService.createUser(verifyData.account.address);
+      user = this.usersService.createUser(
+        verifyData.account.address,
+        verifyData.username,
+        verifyData.avatarUrl,
+      );
+    } else {
+      // If user exists, update their profile info
+      user = this.usersService.updateUserProfile(
+        user.id,
+        verifyData.username,
+        verifyData.avatarUrl,
+      );
     }
 
     if (!user) {

@@ -18,7 +18,7 @@ class AuthService {
     return await response.json();
   }
 
-  async verifyProof(account, tonProof, clientId) {
+  async verifyProof(account, tonProof, clientId, telegramData) {
     const response = await fetch(`${API_BASE_URL}/auth/verify-proof`, {
       method: 'POST',
       headers: {
@@ -28,6 +28,7 @@ class AuthService {
         account,
         tonProof,
         clientId,
+        ...telegramData,
       }),
     });
     

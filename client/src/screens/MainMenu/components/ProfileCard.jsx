@@ -1,34 +1,50 @@
-import { mockProfile } from '../../../data/mockData'
-import '../../../styles/ProfileCard.css'
+import PropTypes from 'prop-types';
+import '../../../styles/ProfileCard.css';
 
 // Функция для форматирования баланса (1234 -> 1.2k, 1234567 -> 1.2M)
 const formatBalance = (num) => {
   if (num >= 1000000) {
-    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
   }
   if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   }
-  return num
-}
+  return num;
+};
 
 // Компонент профиля пользователя
-const ProfileCard = () => {
-  const { username, balanceTon, balanceRuble, winRate, wins, losses } = mockProfile
+const ProfileCard = ({ user }) => {
+  // Показываем заглушку, если данные пользователя еще не загружены
+  if (!user) {
+    return (
+      <div className="profile-card">
+        <div className="profile-header">
+          <div className="user-info">
+            <h2>Loading...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const truncatedUsername = username.length > 15 ? `${username.substring(0, 15)}...` : username
+  const { username, winrate, wins, loses, avatar } = user;
+  const balanceTon = 0; // Заглушка, пока баланс не приходит с бэка
+  const balanceRuble = 0; // Заглушка
+
+  const truncatedUsername =
+    username && username.length > 15 ? `${username.substring(0, 15)}...` : username;
 
   return (
     <div className="profile-card">
       <div className="profile-header">
         <div className="avatar-container">
           <img
-            src="/assets/player1.png"
+            src={avatar || '/assets/player1.png'} // Используем аватар пользователя или заглушку
             alt="User Avatar"
             className="avatar"
           />
           <div className="user-info">
-            <h2>{truncatedUsername}</h2>
+            <h2>{truncatedUsername || 'User'}</h2>
             <div className="balances-container">
               <div className="balance-item">
                 <span className="currency-badge currency-ton">TON</span>
@@ -41,10 +57,10 @@ const ProfileCard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="stats-horizontal">
           <div className="stat-item">
-            <div className="stat-value">{winRate}</div>
+            <div className="stat-value">{winrate.toFixed(2)}</div>
             <div className="stat-label">Win Rate</div>
           </div>
           <div className="stat-item">
@@ -52,13 +68,23 @@ const ProfileCard = () => {
             <div className="stat-label">Wins</div>
           </div>
           <div className="stat-item">
-            <div className="stat-value">{losses}</div>
+            <div className="stat-value">{loses}</div>
             <div className="stat-label">Losses</div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileCard
+ProfileCard.propTypes = {
+  user: PropTypes.shape({
+    username: PropTypes.string,
+    avatar: PropTypes.string,
+    winrate: PropTypes.number,
+    wins: PropTypes.number,
+    loses: PropTypes.number,
+  }),
+};
+
+export default ProfileCard;

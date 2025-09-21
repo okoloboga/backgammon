@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import ProfileCard from './components/ProfileCard';
 import ActionButtons from './components/ActionButtons';
 import RoomList from './components/RoomList';
@@ -6,7 +7,7 @@ import TonConnectButton from './components/TonConnectButton';
 import CreateRoomModal from './components/CreateRoomModal';
 import '../../styles/MainMenu.css';
 
-const MainMenu = () => {
+const MainMenu = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -24,7 +25,7 @@ const MainMenu = () => {
           <div className="flex justify-center">
             <TonConnectButton />
           </div>
-          <ProfileCard />
+          <ProfileCard user={user} />
           <ActionButtons onCreateGame={handleOpenModal} />
           <RoomList />
         </div>
@@ -33,6 +34,10 @@ const MainMenu = () => {
       <CreateRoomModal isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );
+};
+
+MainMenu.propTypes = {
+  user: PropTypes.object,
 };
 
 export default MainMenu;

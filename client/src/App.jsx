@@ -9,12 +9,27 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [clientId, setClientId] = useState(null);
+  const [telegramData, setTelegramData] = useState(null);
+  const [user, setUser] = useState(null);
+
   const [tonConnectUI] = useTonConnectUI();
   const firstProofLoading = useRef(true);
 
+  // Read Telegram data from URL on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tgData = {
+      telegramId: params.get('telegram_id'),
+      username: params.get('username'),
+      avatarUrl: params.get('avatar_url'),
+    };
+    if (tgData.telegramId) {
+      setTelegramData(tgData);
+    }
+
     const checkAuth = () => {
       if (authService.isAuthenticated()) {
+        // In a real app, you'd fetch the user profile here
         setCurrentScreen('main-menu');
       }
     };
@@ -53,6 +68,7 @@ function App() {
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (!wallet) {
         authService.clearAuth();
+        setUser(null);
         setError(null);
         setCurrentScreen('splash');
         return;
@@ -73,9 +89,11 @@ function App() {
           const authResponse = await authService.verifyProof(
             wallet.account,
             wallet.connectItems.tonProof,
-            clientId
+            clientId,
+            telegramData // Pass Telegram data to the backend
           );
           authService.setAuthToken(authResponse.access_token);
+          setUser(authResponse.user);
           setCurrentScreen('main-menu');
         } catch (e) {
           console.error('TonProof verification failed:', e);
@@ -88,7 +106,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [tonConnectUI, clientId]);
+  }, [tonConnectUI, clientId, telegramData]);
 
   const navigateToMain = () => {
     if (authService.isAuthenticated()) {
@@ -105,7 +123,7 @@ function App() {
           error={error}
         />
       )}
-      {currentScreen === 'main-menu' && <MainMenu />}
+      {currentScreen === 'main-menu' && <MainMenu user={user} />}
     </div>
   );
 }

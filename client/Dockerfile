@@ -11,13 +11,13 @@ COPY client/package.json ./client/
 COPY server/package.json ./server/
 
 # Install all dependencies for the client
-RUN pnpm install --filter backgammon-bet --frozen-lockfile
+RUN pnpm install --filter client --frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .
 
 # Build the client application
-RUN pnpm --filter backgammon-bet run build
+RUN pnpm --filter client run build
 RUN echo "=== Contents of /app/client/dist ===" && ls -la /app/client/dist
 RUN echo "=== Contents of /app/client/dist/assets ===" && ls -la /app/client/dist/assets
 

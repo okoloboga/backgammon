@@ -66,41 +66,79 @@ export const useWalletBalances = () => {
     }
   };
 
-  // Получение баланса Jetton
-  const fetchJettonBalance = async (address, jettonMaster) => {
-    try {
-      // Сначала получаем адрес Jetton Wallet
-      const walletUrl = new URL('https://toncenter.com/api/v2/getJettonWalletAddress');
-      walletUrl.searchParams.append('owner_address', address);
-      walletUrl.searchParams.append('jetton_master', jettonMaster);
-      
-      const walletResponse = await fetch(walletUrl);
-      const walletData = await walletResponse.json();
-      
-      if (!walletData.ok || !walletData.result) {
+    // Получение баланса Jetton
+    const fetchJettonBalance = async (address, jettonMaster) => {
+      try {
+        console.log('Fetching Jetton balance for:', address, 'Jetton Master:', jettonMaster);
+        
+        // Шаг 1: Получаем адрес Jetton Wallet через runGetMethod
+        const walletResponse = await fetch('https://toncenter.com/api/v2/jsonRPC', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'runGetMethod',
+            params: {
+              address: jettonMaster,
+              method: 'get_wallet_address',
+              stack: [
+                ['tvm.Slice', address]
+              ]
+            }
+          })
+        });
+
+        const walletData = await walletResponse.json();
+        console.log('Wallet response:', walletData);
+        
+        if (!walletData.result || !walletData.result.stack || walletData.result.stack.length === 0) {
+          console.log('No Jetton wallet found for this user');
+          return 0;
+        }
+        
+        const jettonWalletAddress = walletData.result.stack[0][1];
+        console.log('Jetton wallet address:', jettonWalletAddress);
+        
+        // Шаг 2: Получаем баланс Jetton Wallet через runGetMethod
+        const balanceResponse = await fetch('https://toncenter.com/api/v2/jsonRPC', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'runGetMethod',
+            params: {
+              address: jettonWalletAddress,
+              method: 'get_wallet_data',
+              stack: []
+            }
+          })
+        });
+
+        const balanceData = await balanceResponse.json();
+        console.log('Balance response:', balanceData);
+        
+        if (balanceData.result && balanceData.result.stack && balanceData.result.stack.length >= 4) {
+          // get_wallet_data возвращает: (balance, owner_address, jetton_master_address, jetton_wallet_code)
+          const balance = balanceData.result.stack[0][1];
+          console.log('Raw balance:', balance);
+          // Конвертируем из наименьших единиц (9 знаков после запятой)
+          const convertedBalance = parseFloat(balance) / 1000000000;
+          console.log('Converted balance:', convertedBalance);
+          return convertedBalance;
+        }
+        
+        return 0;
+      } catch (error) {
+        console.error('Failed to fetch Jetton balance:', error);
         return 0;
       }
-      
-      const jettonWalletAddress = walletData.result;
-      
-      // Теперь получаем баланс Jetton Wallet
-      const balanceUrl = new URL('https://toncenter.com/api/v2/getAddressBalance');
-      balanceUrl.searchParams.append('address', jettonWalletAddress);
-      
-      const balanceResponse = await fetch(balanceUrl);
-      const balanceData = await balanceResponse.json();
-      
-      if (balanceData.ok && balanceData.result) {
-        // Конвертируем из jetton units в обычные единицы
-        // RUBLE Jetton имеет 9 знаков после запятой
-        return parseFloat(balanceData.result) / 1000000000;
-      }
-      return 0;
-    } catch (error) {
-      console.error('Failed to fetch Jetton balance:', error);
-      return 0;
-    }
-  };
+    };
 
   // Обновляем балансы при изменении кошелька
   useEffect(() => {

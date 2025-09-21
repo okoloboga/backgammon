@@ -8,17 +8,17 @@ const formatBalance = (num) => {
   const rounded = Math.round(num * 100) / 100;
   
   if (rounded >= 1000000000) {
-    return (rounded / 1000000000).toFixed(2).replace(/\.00$/, '') + 'B';
+    return (rounded / 1000000000).toFixed(2) + 'B';
   }
   if (rounded >= 1000000) {
-    return (rounded / 1000000).toFixed(2).replace(/\.00$/, '') + 'M';
+    return (rounded / 1000000).toFixed(2) + 'M';
   }
   if (rounded >= 1000) {
-    return (rounded / 1000).toFixed(2).replace(/\.00$/, '') + 'k';
+    return (rounded / 1000).toFixed(2) + 'k';
   }
   
   // Для чисел меньше 1000 показываем с точностью до 2 знаков
-  return rounded.toFixed(2).replace(/\.00$/, '');
+  return rounded.toFixed(2);
 };
 
 // Компонент профиля пользователя

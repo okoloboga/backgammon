@@ -1,5 +1,6 @@
 import { Room, Client } from '@colyseus/core';
 import { GameState, Point } from '../schemas/GameState';
+import { LobbyService } from '../services/lobby.service';
 
 interface VirtualBoard {
   points: Map<string, { player: string; checkers: number }>;
@@ -15,10 +16,14 @@ interface Move {
 export class BackgammonRoom extends Room<GameState> {
   private possibleMoves: Move[][] = [];
   private roomInfo: any = null;
+  private lobbyService: LobbyService;
 
   onCreate(options: any) {
     this.setState(new GameState());
     this.setupBoard();
+
+    // Получаем LobbyService из опций
+    this.lobbyService = options.lobbyService;
 
     // Сохраняем информацию о комнате
     this.roomInfo = {
@@ -523,19 +528,10 @@ export class BackgammonRoom extends Room<GameState> {
 
   // Метод для уведомления лобби об изменениях
   private notifyLobby(action: 'add' | 'update' | 'remove', roomInfo: any) {
-    // Получаем все лобби-комнаты и отправляем им уведомления
-    this.matchMaker.query({ name: 'lobby' }).then((lobbyRooms) => {
-      lobbyRooms.forEach((lobbyRoom) => {
-        if (action === 'add') {
-          lobbyRoom.send('+', roomInfo);
-        } else if (action === 'update') {
-          lobbyRoom.send('~', roomInfo);
-        } else if (action === 'remove') {
-          lobbyRoom.send('-', roomInfo.roomId);
-        }
-      });
-    }).catch((error) => {
-      console.error('Failed to notify lobby:', error);
-    });
+    if (this.lobbyService) {
+      this.lobbyService.notifyLobby(action, roomInfo);
+    } else {
+      console.warn('LobbyService not available');
+    }
   }
 }

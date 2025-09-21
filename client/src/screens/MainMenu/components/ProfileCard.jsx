@@ -60,7 +60,7 @@ const ProfileCard = ({ user }) => {
 
         <div className="stats-horizontal">
           <div className="stat-item">
-            <div className="stat-value">{winrate.toFixed(2)}</div>
+            <div className="stat-value">{parseFloat(winrate).toFixed(2)}</div>
             <div className="stat-label">Win Rate</div>
           </div>
           <div className="stat-item">

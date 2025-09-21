@@ -25,7 +25,7 @@ export class User {
   @Column({ default: 0 })
   loses: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({ type: 'float', default: 0 })
   winrate: number;
 
   @Column({ default: 0 })

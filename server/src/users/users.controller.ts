@@ -15,7 +15,8 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
-import { UsersService, User } from './users.service';
+import { UsersService } from './users.service';
+import { User } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 
@@ -24,8 +25,6 @@ export class CreateUserDto {
   username?: string;
   avatar?: string;
 }
-
-// Удаляем UpdateBalanceDto - балансы теперь в смарт-контракте
 
 export class UpdateProfileDto {
   username?: string;
@@ -40,6 +39,43 @@ export class UpdateStatsDto {
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description: 'Returns current authenticated user profile data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user profile',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        walletAddress: { type: 'string' },
+        username: { type: 'string' },
+        avatar: { type: 'string' },
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
+        games: { type: 'number' },
+        wins: { type: 'number' },
+        loses: { type: 'number' },
+        winrate: { type: 'number' },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getCurrentUserProfile(@CurrentUser() currentUser: User): Promise<User | null> {
+    return await this.usersService.getUserById(currentUser.id);
+  }
 
   @Post()
   @ApiOperation({
@@ -73,32 +109,10 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'User successfully created',
-    schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        walletAddress: { type: 'string' },
-        username: { type: 'string' },
-        avatar: { type: 'string' },
-        // balance удален - теперь в смарт-контракте
-        currentStreak: { type: 'number' },
-        bestStreak: { type: 'number' },
-        level: { type: 'number' },
-        experience: { type: 'number' },
-        friends: { type: 'array', items: { type: 'string' } },
-        achievements: { type: 'array', items: { type: 'string' } },
-        games: { type: 'number' },
-        wins: { type: 'number' },
-        loses: { type: 'number' },
-        winrate: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' },
-      },
-    },
   })
   @ApiResponse({ status: 400, description: 'Invalid request data' })
-  createUser(@Body() createUserDto: CreateUserDto): User {
-    return this.usersService.createUser(
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return await this.usersService.createUser(
       createUserDto.walletAddress,
       createUserDto.username,
       createUserDto.avatar,
@@ -115,35 +129,10 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'List of users',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          walletAddress: { type: 'string' },
-          username: { type: 'string' },
-          avatar: { type: 'string' },
-          // balance удален - теперь в смарт-контракте
-          currentStreak: { type: 'number' },
-          bestStreak: { type: 'number' },
-          level: { type: 'number' },
-          experience: { type: 'number' },
-          friends: { type: 'array', items: { type: 'string' } },
-          achievements: { type: 'array', items: { type: 'string' } },
-          games: { type: 'number' },
-          wins: { type: 'number' },
-          loses: { type: 'number' },
-          winrate: { type: 'number' },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' },
-        },
-      },
-    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getAllUsers(): User[] {
-    return this.usersService.getAllUsers();
+  async getAllUsers(): Promise<User[]> {
+    return await this.usersService.getAllUsers();
   }
 
   @Get(':id')
@@ -159,32 +148,10 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User data',
-    schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        walletAddress: { type: 'string' },
-        username: { type: 'string' },
-        avatar: { type: 'string' },
-        // balance удален - теперь в смарт-контракте
-        currentStreak: { type: 'number' },
-        bestStreak: { type: 'number' },
-        level: { type: 'number' },
-        experience: { type: 'number' },
-        friends: { type: 'array', items: { type: 'string' } },
-        achievements: { type: 'array', items: { type: 'string' } },
-        games: { type: 'number' },
-        wins: { type: 'number' },
-        loses: { type: 'number' },
-        winrate: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' },
-      },
-    },
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  getUserById(@Param('id') id: string): User | null {
-    return this.usersService.getUserById(id);
+  async getUserById(@Param('id') id: string): Promise<User | null> {
+    return await this.usersService.getUserById(id);
   }
 
   @Get('wallet/:address')
@@ -200,35 +167,11 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User data',
-    schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        walletAddress: { type: 'string' },
-        username: { type: 'string' },
-        avatar: { type: 'string' },
-        // balance удален - теперь в смарт-контракте
-        currentStreak: { type: 'number' },
-        bestStreak: { type: 'number' },
-        level: { type: 'number' },
-        experience: { type: 'number' },
-        friends: { type: 'array', items: { type: 'string' } },
-        achievements: { type: 'array', items: { type: 'string' } },
-        games: { type: 'number' },
-        wins: { type: 'number' },
-        loses: { type: 'number' },
-        winrate: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' },
-      },
-    },
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  getUserByWalletAddress(@Param('address') address: string): User | null {
-    return this.usersService.getUserByWalletAddress(address);
+  async getUserByWalletAddress(@Param('address') address: string): Promise<User | null> {
+    return await this.usersService.getUserByWalletAddress(address);
   }
-
-  // Удаляем endpoint для обновления баланса - балансы теперь в смарт-контракте
 
   @Put(':id/profile')
   @UseGuards(JwtAuthGuard)
@@ -270,16 +213,16 @@ export class UsersController {
     description: 'No permission to update this user',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  updateUserProfile(
+  async updateUserProfile(
     @Param('id') id: string,
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() currentUser: User,
-  ): User | null {
+  ): Promise<User | null> {
     // Check that user can only update their own profile
     if (currentUser.id !== id) {
       throw new Error('Unauthorized: Can only update your own profile');
     }
-    return this.usersService.updateUserProfile(
+    return await this.usersService.updateUserProfile(
       id,
       updateProfileDto.username,
       updateProfileDto.avatar,
@@ -322,15 +265,15 @@ export class UsersController {
     description: 'No permission to update this user',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  updateUserStats(
+  async updateUserStats(
     @Param('id') id: string,
     @Body() updateStatsDto: UpdateStatsDto,
     @CurrentUser() currentUser: User,
-  ): User | null {
+  ): Promise<User | null> {
     // Check that user can only update their own statistics
     if (currentUser.id !== id) {
       throw new Error('Unauthorized: Can only update your own stats');
     }
-    return this.usersService.updateUserStats(id, updateStatsDto.won);
+    return await this.usersService.updateUserStats(id, updateStatsDto.won);
   }
 }

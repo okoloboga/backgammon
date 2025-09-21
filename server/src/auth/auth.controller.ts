@@ -6,7 +6,6 @@ import {
   Get,
   Request,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
@@ -15,77 +14,30 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthService, AuthResponse } from './auth.service';
-import { User } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 import { ChallengeResponse } from '../types/ton.types';
 import { GenerateChallengeDto, VerifyProofDto } from './dto/auth.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('profile')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Get user profile',
-    description: 'Returns data of the current authenticated user',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile',
-    schema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        walletAddress: { type: 'string' },
-        username: { type: 'string' },
-        avatar: { type: 'string' },
-        balance: { type: 'number' },
-        games: { type: 'number' },
-        wins: { type: 'number' },
-        loses: { type: 'number' },
-        winrate: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@Request() req: { user: User }): User {
-    return req.user;
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('me')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Get current user',
-    description: 'Alias for /auth/profile',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Current user data',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getMe(@Request() req: { user: User }): User {
-    return req.user;
-  }
-
   @Post('generate-challenge')
   @ApiOperation({
-    summary: 'Generate challenge for TonProof',
-    description: 'Generates a challenge for TonConnect authentication',
+    summary: 'Generate authentication challenge',
+    description: 'Generates a challenge for TON Connect authentication',
   })
   @ApiBody({
-    description: 'Optional client ID',
+    description: 'Challenge generation parameters',
     schema: {
       type: 'object',
       properties: {
         clientId: {
           type: 'string',
-          description:
-            'Optional client ID. If not provided, a new UUID will be generated.',
+          description: 'Optional client ID',
+          example: 'client-123',
         },
       },
     },
@@ -98,68 +50,141 @@ export class AuthController {
       properties: {
         challenge: {
           type: 'string',
-          description: 'Challenge string for TonProof',
+          description: 'Challenge string for signing',
+          example: 'challenge-string-here',
         },
         validUntil: {
           type: 'number',
           description: 'Unix timestamp when challenge expires',
+          example: 1640995200,
         },
         clientId: {
           type: 'string',
           description: 'Client ID for this challenge',
+          example: 'client-123',
         },
       },
     },
   })
-  generateChallenge(@Body() body?: GenerateChallengeDto): ChallengeResponse {
-    return this.authService.generateChallenge(body?.clientId);
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  generateChallenge(@Body() generateChallengeDto: GenerateChallengeDto): ChallengeResponse {
+    return this.authService.generateChallenge(generateChallengeDto.clientId);
   }
 
   @Post('verify-proof')
   @ApiOperation({
-    summary: 'Verify TonProof and authenticate',
-    description: 'Verifies TonProof signature and authenticates user',
+    summary: 'Verify TON Connect proof',
+    description: 'Verifies the TON Connect proof and authenticates the user',
   })
   @ApiBody({
-    description: 'TonProof verification data',
+    description: 'TON Connect proof verification data',
     schema: {
       type: 'object',
       properties: {
         account: {
           type: 'object',
+          description: 'TON Connect account data',
           properties: {
-            address: { type: 'string', description: 'TON wallet address' },
-            publicKey: {
+            address: {
               type: 'string',
-              description: 'Public key from wallet',
+              description: 'TON wallet address',
+              example: 'EQD0vdSA_NedR9uvnh85V0S_3Bd3XJgq8Y5k-1CLq8k5tOPi',
             },
             chain: {
               type: 'string',
-              description: 'TON network chain (mainnet/testnet)',
+              description: 'Blockchain chain ID',
+              example: '-239',
+            },
+            network: {
+              type: 'string',
+              description: 'Network type',
+              example: 'mainnet',
+            },
+            publicKey: {
+              type: 'string',
+              description: 'Public key',
+              example: 'public-key-here',
             },
             walletStateInit: {
               type: 'string',
-              description: 'Wallet state init (optional)',
+              description: 'Wallet state init',
+              example: 'wallet-state-init-here',
             },
           },
         },
         tonProof: {
           type: 'object',
+          description: 'TON Connect proof data',
           properties: {
-            proof: {
+            timestamp: {
+              type: 'number',
+              description: 'Proof timestamp',
+              example: 1640995200,
+            },
+            domain: {
               type: 'object',
+              description: 'Domain information',
               properties: {
-                timestamp: { type: 'number', description: 'Unix timestamp' },
-                domain: { type: 'string', description: 'App domain' },
-                payload: { type: 'string', description: 'Challenge payload' },
-                signature: { type: 'string', description: 'Ed25519 signature' },
+                lengthBytes: {
+                  type: 'number',
+                  description: 'Domain length in bytes',
+                  example: 20,
+                },
+                value: {
+                  type: 'string',
+                  description: 'Domain value',
+                  example: 'backgammon.ruble.website',
+                },
+              },
+            },
+            payload: {
+              type: 'string',
+              description: 'Proof payload',
+              example: 'proof-payload-here',
+            },
+            signature: {
+              type: 'object',
+              description: 'Proof signature',
+              properties: {
+                timestamp: {
+                  type: 'number',
+                  description: 'Signature timestamp',
+                  example: 1640995200,
+                },
+                domain: {
+                  type: 'object',
+                  description: 'Domain information',
+                  properties: {
+                    lengthBytes: {
+                      type: 'number',
+                      description: 'Domain length in bytes',
+                      example: 20,
+                    },
+                    value: {
+                      type: 'string',
+                      description: 'Domain value',
+                      example: 'backgammon.ruble.website',
+                    },
+                  },
+                },
+                payload: {
+                  type: 'string',
+                  description: 'Signature payload',
+                  example: 'signature-payload-here',
+                },
               },
             },
           },
         },
         clientId: {
           type: 'string',
-          description: 'Client ID from generate-challenge',
+          description: 'Client ID used for challenge generation',
+          example: 'client-123',
+        },
+        initData: {
+          type: 'string',
+          description: 'Optional Telegram init data',
+          example: 'telegram-init-data-here',
         },
       },
       required: ['account', 'tonProof', 'clientId'],
@@ -173,17 +198,74 @@ export class AuthController {
       properties: {
         access_token: {
           type: 'string',
-          description: 'JWT authentication token',
+          description: 'JWT access token',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         },
         user: {
           type: 'object',
           description: 'User data',
+          properties: {
+            id: { type: 'string' },
+            walletAddress: { type: 'string' },
+            username: { type: 'string' },
+            avatar: { type: 'string' },
+            games: { type: 'number' },
+            wins: { type: 'number' },
+            loses: { type: 'number' },
+            winrate: { type: 'number' },
+            currentStreak: { type: 'number' },
+            bestStreak: { type: 'number' },
+            level: { type: 'number' },
+            experience: { type: 'number' },
+            friends: { type: 'array', items: { type: 'string' } },
+            achievements: { type: 'array', items: { type: 'string' } },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
         },
       },
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid proof or request data' })
-  async verifyProof(@Body() verifyData: VerifyProofDto): Promise<AuthResponse> {
-    return this.authService.verifyTonProof(verifyData);
+  @ApiResponse({ status: 401, description: 'Proof verification failed' })
+  async verifyProof(@Body() verifyProofDto: VerifyProofDto): Promise<AuthResponse> {
+    return await this.authService.verifyTonProof(verifyProofDto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Get current user',
+    description: 'Returns the current authenticated user data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user data',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        walletAddress: { type: 'string' },
+        username: { type: 'string' },
+        avatar: { type: 'string' },
+        games: { type: 'number' },
+        wins: { type: 'number' },
+        loses: { type: 'number' },
+        winrate: { type: 'number' },
+        currentStreak: { type: 'number' },
+        bestStreak: { type: 'number' },
+        level: { type: 'number' },
+        experience: { type: 'number' },
+        friends: { type: 'array', items: { type: 'string' } },
+        achievements: { type: 'array', items: { type: 'string' } },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getCurrentUser(@Request() req): Promise<User> {
+    return req.user;
   }
 }

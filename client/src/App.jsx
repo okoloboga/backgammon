@@ -27,10 +27,19 @@ function App() {
       setTelegramData(tgData);
     }
 
-    const checkAuth = () => {
+    const checkAuth = async () => {
       if (authService.isAuthenticated()) {
-        // In a real app, you'd fetch the user profile here
-        setCurrentScreen('main-menu');
+        try {
+          // Load user profile from database
+          const userProfile = await authService.getCurrentUserProfile();
+          setUser(userProfile);
+          setCurrentScreen('main-menu');
+        } catch (error) {
+          console.error('Failed to load user profile:', error);
+          // If profile loading fails, clear auth and show splash
+          authService.clearAuth();
+          setCurrentScreen('splash');
+        }
       }
     };
     checkAuth();

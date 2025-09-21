@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService, User } from '../users/users.service';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 import { ChallengeService } from './services/challenge.service';
 import { JwtUtils } from './utils/jwt.utils';
 import { VerifyProofDto } from './dto/auth.dto';
@@ -51,7 +52,7 @@ export class AuthService {
     }
 
     // 2. Get or create user
-    let user = this.usersService.getUserByWalletAddress(
+    let user = await this.usersService.getUserByWalletAddress(
       verifyData.account.address,
     );
 
@@ -80,14 +81,16 @@ export class AuthService {
       this.logger.log(
         `Creating new user for verified wallet: ${verifyData.account.address}`,
       );
-      user = this.usersService.createUser(
+      user = await this.usersService.createUser(
         verifyData.account.address,
         username,
         avatarUrl,
       );
     } else {
-      // If user exists, update their profile info
-      user = this.usersService.updateUserProfile(user.id, username, avatarUrl);
+      // If user exists, update their profile info if new data is provided
+      if (username !== undefined || avatarUrl !== undefined) {
+        user = await this.usersService.updateUserProfile(user.id, username, avatarUrl);
+      }
     }
 
     if (!user) {
@@ -108,7 +111,7 @@ export class AuthService {
     };
   }
 
-  validateJwtPayload(payload: AuthPayload): User | null {
-    return this.usersService.getUserById(payload.sub);
+  async validateJwtPayload(payload: AuthPayload): Promise<User | null> {
+    return await this.usersService.getUserById(payload.sub);
   }
 }

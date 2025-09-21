@@ -39,6 +39,31 @@ class AuthService {
     return await response.json();
   }
 
+  async getCurrentUserProfile() {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('No auth token');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.clearAuth();
+        throw new Error('Unauthorized');
+      }
+      throw new Error('Failed to get user profile');
+    }
+    
+    return await response.json();
+  }
+
   setAuthToken(token) {
     localStorage.setItem('auth_token', token);
   }

@@ -20,12 +20,6 @@ importers:
       '@tonconnect/ui-react':
         specifier: ^2.3.0
         version: 2.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
-      colyseus.js:
-        specifier: ^0.16.19
-        version: 0.16.19
       prop-types:
         specifier: ^15.8.1
         version: 15.8.1
@@ -35,12 +29,6 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
-      ton:
-        specifier: ^13.9.0
-        version: 13.9.0(ton-core@0.53.0(ton-crypto@3.2.0))(ton-crypto@3.2.0)
-      ton-core:
-        specifier: ^0.53.0
-        version: 0.53.0(ton-crypto@3.2.0)
     devDependencies:
       '@types/react':
         specifier: ^18.2.43
@@ -2120,9 +2108,6 @@ packages:
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
-
-  buffer@6.0.3:
-    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
 
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
@@ -7271,11 +7256,6 @@ snapshots:
   buffer-from@1.1.2: {}
 
   buffer@5.7.1:
-    dependencies:
-      base64-js: 1.5.1
-      ieee754: 1.2.1
-
-  buffer@6.0.3:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1

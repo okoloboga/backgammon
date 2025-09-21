@@ -130,7 +130,7 @@ function App() {
 
 function AppWrapper() {
   return (
-    <TonConnectUIProvider manifestUrl="/tonconnect-manifest.json">
+    <TonConnectUIProvider manifestUrl="https://backgammon.ruble.website/tonconnect-manifest.json">
       <App />
     </TonConnectUIProvider>
   );

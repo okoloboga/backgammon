@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useWalletBalances } from '../../../hooks/useWalletBalances';
 import '../../../styles/ProfileCard.css';
 
 // Функция для форматирования баланса (1234 -> 1.2k, 1234567 -> 1.2M)
@@ -14,6 +15,8 @@ const formatBalance = (num) => {
 
 // Компонент профиля пользователя
 const ProfileCard = ({ user }) => {
+  const { ton, ruble, loading: balancesLoading, error: balancesError } = useWalletBalances();
+
   // Показываем заглушку, если данные пользователя еще не загружены
   if (!user) {
     return (
@@ -28,8 +31,6 @@ const ProfileCard = ({ user }) => {
   }
 
   const { username, winrate, wins, loses, avatar } = user;
-  const balanceTon = 0; // Заглушка, пока баланс не приходит с бэка
-  const balanceRuble = 0; // Заглушка
 
   const truncatedUsername =
     username && username.length > 15 ? `${username.substring(0, 15)}...` : username;
@@ -48,13 +49,22 @@ const ProfileCard = ({ user }) => {
             <div className="balances-container">
               <div className="balance-item">
                 <span className="currency-badge currency-ton">TON</span>
-                <span className="balance-amount">{formatBalance(balanceTon)}</span>
+                <span className="balance-amount">
+                  {balancesLoading ? '...' : formatBalance(ton)}
+                </span>
               </div>
               <div className="balance-item">
                 <span className="currency-badge currency-ruble">RUBLE</span>
-                <span className="balance-amount">{formatBalance(balanceRuble)}</span>
+                <span className="balance-amount">
+                  {balancesLoading ? '...' : formatBalance(ruble)}
+                </span>
               </div>
             </div>
+            {balancesError && (
+              <div className="balance-error">
+                <small>Failed to load balances</small>
+              </div>
+            )}
           </div>
         </div>
 
@@ -88,3 +98,4 @@ ProfileCard.propTypes = {
 };
 
 export default ProfileCard;
+

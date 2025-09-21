@@ -76,10 +76,18 @@ function App() {
   useEffect(() => {
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (!wallet) {
+        console.log('Wallet disconnected, resetting state');
         authService.clearAuth();
         setUser(null);
         setError(null);
+        setIsLoading(false); // Сбрасываем состояние загрузки
         setCurrentScreen('splash');
+        
+        // Принудительно обновляем TonConnect UI
+        setTimeout(() => {
+          tonConnectUI.setConnectRequestParameters(null);
+        }, 100);
+        
         return;
       }
 
@@ -126,6 +134,13 @@ function App() {
     }
   };
 
+  // Дополнительная логика для корректного отображения SplashScreen
+  useEffect(() => {
+    if (currentScreen === 'splash' && !isLoading && !user) {
+      console.log('SplashScreen should be fully rendered now');
+    }
+  }, [currentScreen, isLoading, user]);
+
   console.log('Current screen:', currentScreen);
   console.log('User:', user);
   console.log('Is loading:', isLoading);
@@ -134,6 +149,7 @@ function App() {
     <div className="min-h-screen bg-dark-bg">
       {currentScreen === 'splash' && (
         <SplashScreen
+          key={`splash-${user ? 'authenticated' : 'not-authenticated'}`}
           onNavigate={navigateToMain}
           isLoading={isLoading}
           error={error}

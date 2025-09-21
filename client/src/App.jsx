@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { TonConnectUIProvider, useTonConnectUI } from '@tonconnect/ui-react';
 import { authService } from './services/authService';
-// import { // analyticsService } from './services/// analyticsService';
 import SplashScreen from './screens/SplashScreen/SplashScreen';
 import MainMenu from './screens/MainMenu/MainMenu';
 
@@ -26,19 +25,11 @@ function App() {
     };
     if (tgData.telegramId) {
       setTelegramData(tgData);
-      // // analyticsService.trackEvent('telegram_data_received', {
-      //   has_username: !!tgData.username,
-      //   has_avatar: !!tgData.avatarUrl
-      // });
     }
 
     const checkAuth = () => {
       if (authService.isAuthenticated()) {
         setCurrentScreen('main-menu');
-        // // analyticsService.trackEvent('user_authenticated_from_storage');
-        // // analyticsService.trackScreenView('main-menu');
-      } else {
-        // // analyticsService.trackScreenView('splash');
       }
     };
     checkAuth();
@@ -79,21 +70,17 @@ function App() {
         setUser(null);
         setError(null);
         setCurrentScreen('splash');
-        // analyticsService.trackWalletDisconnected();
-        // analyticsService.trackScreenView('splash');
         return;
       }
 
       if (wallet.connectItems?.tonProof && 'proof' in wallet.connectItems.tonProof) {
         setIsLoading(true);
         setError(null);
-        // analyticsService.trackEvent('wallet_connection_attempt');
 
         if (!clientId) {
           console.error('Client ID not available for proof verification.');
           setError('Authentication failed. Please try again.');
           setIsLoading(false);
-          // analyticsService.trackError('authentication', 'no_client_id', 'app');
           return;
         }
 
@@ -107,19 +94,10 @@ function App() {
           authService.setAuthToken(authResponse.access_token);
           setUser(authResponse.user);
           setCurrentScreen('main-menu');
-          // analyticsService.trackWalletConnected('ton');
-          // analyticsService.trackEvent('authentication_successful');
-          // analyticsService.trackUserLogin('telegram');
-          // analyticsService.trackScreenView('main-menu');
         } catch (e) {
           console.error('TonProof verification failed:', e);
           setError('Authentication failed. Please try again.');
           tonConnectUI.disconnect();
-          // analyticsService.trackError('authentication', 'proof_verification_failed', 'app');
-          // analyticsService.trackEvent('authentication_failed', { 
-          //   reason: 'proof_verification_failed',
-          //   error: e.message 
-          // });
         } finally {
           setIsLoading(false);
         }
@@ -132,8 +110,6 @@ function App() {
   const navigateToMain = () => {
     if (authService.isAuthenticated()) {
       setCurrentScreen('main-menu');
-      // analyticsService.trackEvent('navigation_to_main_menu');
-      // analyticsService.trackScreenView('main-menu');
     }
   };
 

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import '../../../styles/CreateRoomModal.css';
 import { useWalletBalances } from '../../../hooks/useWalletBalances';
-import { analyticsService } from '../../../services/analyticsService';
+// import { // analyticsService } from '../../../services/// analyticsService';
 
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose }) => {
@@ -32,22 +32,22 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       console.log('Creating a room:', { betAmount, currency });
-      analyticsService.trackRoomCreated('public', 2);
-      analyticsService.trackEvent('room_creation_attempt', {
-        bet_amount: parseFloat(betAmount),
-        currency: currency
-      });
+      // analyticsService.trackRoomCreated('public', 2);
+      // analyticsService.trackEvent('room_creation_attempt', {
+      //   bet_amount: parseFloat(betAmount),
+      //   currency: currency
+      // });
       // Здесь будет логика создания комнаты
       onClose();
       setBetAmount('');
       setCurrency('TON');
     } else {
-      analyticsService.trackError('validation', 'invalid_bet_amount', 'create_room_modal');
+      // analyticsService.trackError('validation', 'invalid_bet_amount', 'create_room_modal');
     }
   };
 
   const handleClose = () => {
-    analyticsService.trackButtonClick('cancel', 'create_room_modal');
+    // analyticsService.trackButtonClick('cancel', 'create_room_modal');
     onClose();
     setBetAmount('');
     setCurrency('TON');
@@ -71,7 +71,7 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
                   checked={currency === 'TON'}
                   onChange={(e) => {
                     setCurrency(e.target.value);
-                    analyticsService.trackEvent('currency_selected', { currency: 'TON' });
+                    // analyticsService.trackEvent('currency_selected', { currency: 'TON' });
                   }}
                 />
                 <span className="radio-label">TON</span>
@@ -84,7 +84,7 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
                   checked={currency === 'RUBLE'}
                   onChange={(e) => {
                     setCurrency(e.target.value);
-                    analyticsService.trackEvent('currency_selected', { currency: 'RUBLE' });
+                    // analyticsService.trackEvent('currency_selected', { currency: 'RUBLE' });
                   }}
                 />
                 <span className="radio-label">RUBLE</span>

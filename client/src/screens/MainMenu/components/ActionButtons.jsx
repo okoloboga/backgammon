@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types'
-import { analyticsService } from '../../../services/analyticsService'
+// import { // analyticsService } from '../../../services/// analyticsService'
 import '../../../styles/ActionButtons.css'
 
 // Кнопки управления игрой
 const ActionButtons = ({ onCreateGame }) => {
   const handleCreateGame = () => {
     console.log('Создание новой игры')
-    analyticsService.trackButtonClick('create_game', 'main-menu')
-    analyticsService.trackEvent('create_game_button_clicked')
+    // analyticsService.trackButtonClick('create_game', 'main-menu')
+    // analyticsService.trackEvent('create_game_button_clicked')
     if (onCreateGame) {
       onCreateGame()
     }

@@ -30,8 +30,8 @@ if (window.Telegram && window.Telegram.WebApp) {
 }
 
 // Инициализация аналитики
-analyticsService.init()
-analyticsService.trackEvent('app_launched')
+// analyticsService.init()
+// analyticsService.trackEvent('app_launched')
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

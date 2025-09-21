@@ -1,30 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import ProfileCard from './components/ProfileCard';
 import ActionButtons from './components/ActionButtons';
 import RoomList from './components/RoomList';
 import TonConnectButton from './components/TonConnectButton';
 import CreateRoomModal from './components/CreateRoomModal';
-// import { // analyticsService } from '../../services/// analyticsService';
 import '../../styles/MainMenu.css';
 
 const MainMenu = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Track screen view when component mounts
-  useEffect(() => {
-    // analyticsService.trackScreenView('main-menu');
-  }, []);
-
   const handleOpenModal = () => {
     setIsModalOpen(true);
-    // analyticsService.trackButtonClick('create_room', 'main-menu');
-    // analyticsService.trackEvent('create_room_modal_opened');
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    // analyticsService.trackEvent('create_room_modal_closed');
   };
 
   return (

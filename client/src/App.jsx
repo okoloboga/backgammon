@@ -29,6 +29,7 @@ function App() {
 
     const checkAuth = () => {
       if (authService.isAuthenticated()) {
+        // In a real app, you'd fetch the user profile here
         setCurrentScreen('main-menu');
       }
     };

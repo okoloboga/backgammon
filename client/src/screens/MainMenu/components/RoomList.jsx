@@ -1,47 +1,16 @@
-import { useState, useEffect } from 'react';
-import { colyseusService } from '../../../services/colyseusService';
-import RoomCard from './RoomCard';
-import '../../../styles/RoomList.css';
+import { useState } from 'react'
+import { mockRooms } from '../../../data/mockData'
+import RoomCard from './RoomCard'
+import '../../../styles/RoomList.css'
 
 // Список активных игровых комнат
 const RoomList = () => {
-  const [rooms, setRooms] = useState([]);
-
-  useEffect(() => {
-    const connectAndListen = async () => {
-      await colyseusService.connect();
-
-      const unsubscribe = colyseusService.onRoomsChange(
-        (allRooms) => {
-          setRooms(allRooms);
-        },
-        (roomId, room) => {
-          setRooms((prevRooms) => [...prevRooms, room]);
-        },
-        (roomId) => {
-          setRooms((prevRooms) => prevRooms.filter((room) => room.roomId !== roomId));
-        }
-      );
-
-      // Возвращаем функцию для очистки при размонтировании компонента
-      return () => {
-        unsubscribe();
-        colyseusService.disconnect();
-      };
-    };
-
-    const cleanupPromise = connectAndListen();
-
-    return () => {
-      cleanupPromise.then(cleanup => cleanup && cleanup());
-    };
-  }, []);
+  const [rooms, setRooms] = useState(mockRooms)
 
   const handleEnterRoom = (roomId) => {
-    console.log(`Вход в комнату ${roomId}`);
-    // Здесь будет логика входа в комнату Colyseus
-    // Например: await colyseusService.joinRoom(roomId);
-  };
+    console.log(`Вход в комнату ${roomId}`)
+    setRooms(rooms.filter(room => room.id !== roomId))
+  }
 
   return (
     <div className="rooms-section">
@@ -52,10 +21,10 @@ const RoomList = () => {
 
       <div className="rooms-container">
         {rooms.length > 0 ? (
-          rooms.map((room) => (
+          rooms.map(room => (
             <RoomCard
-              key={room.roomId} // Используем roomId от Colyseus
-              room={room} // Передаем весь объект комнаты
+              key={room.id}
+              room={room}
               onEnter={handleEnterRoom}
             />
           ))
@@ -67,7 +36,7 @@ const RoomList = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RoomList;
+export default RoomList

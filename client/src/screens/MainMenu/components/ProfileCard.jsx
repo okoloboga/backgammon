@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import '../../../styles/ProfileCard.css';
-import { useWalletBalances } from '../../../hooks/useWalletBalances';
 
 // Функция для форматирования баланса (1234 -> 1.2k, 1234567 -> 1.2M)
 const formatBalance = (num) => {
@@ -10,17 +9,11 @@ const formatBalance = (num) => {
   if (num >= 1000) {
     return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   }
-  // Округляем до 2 знаков после запятой для чисел меньше 1000
-  if (num > 0 && num < 1000) {
-    return parseFloat(num.toFixed(2));
-  }
   return num;
 };
 
 // Компонент профиля пользователя
 const ProfileCard = ({ user }) => {
-  const { balanceTon, balanceRuble, isLoading } = useWalletBalances();
-
   // Показываем заглушку, если данные пользователя еще не загружены
   if (!user) {
     return (
@@ -35,6 +28,8 @@ const ProfileCard = ({ user }) => {
   }
 
   const { username, winrate, wins, loses, avatar } = user;
+  const balanceTon = 0; // Заглушка, пока баланс не приходит с бэка
+  const balanceRuble = 0; // Заглушка
 
   const truncatedUsername =
     username && username.length > 15 ? `${username.substring(0, 15)}...` : username;
@@ -53,15 +48,11 @@ const ProfileCard = ({ user }) => {
             <div className="balances-container">
               <div className="balance-item">
                 <span className="currency-badge currency-ton">TON</span>
-                <span className="balance-amount">
-                  {isLoading ? '...' : formatBalance(balanceTon)}
-                </span>
+                <span className="balance-amount">{formatBalance(balanceTon)}</span>
               </div>
               <div className="balance-item">
                 <span className="currency-badge currency-ruble">RUBLE</span>
-                <span className="balance-amount">
-                  {isLoading ? '...' : formatBalance(balanceRuble)}
-                </span>
+                <span className="balance-amount">{formatBalance(balanceRuble)}</span>
               </div>
             </div>
           </div>

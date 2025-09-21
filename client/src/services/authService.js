@@ -19,6 +19,20 @@ class AuthService {
   }
 
   async verifyProof(account, tonProof, clientId, telegramData) {
+    // Convert telegramData to initData format
+    let initData = null;
+    if (telegramData && telegramData.telegramId) {
+      const params = new URLSearchParams();
+      params.set('telegram_id', telegramData.telegramId);
+      if (telegramData.username) {
+        params.set('username', telegramData.username);
+      }
+      if (telegramData.avatarUrl) {
+        params.set('avatar_url', telegramData.avatarUrl);
+      }
+      initData = params.toString();
+    }
+
     const response = await fetch(`${API_BASE_URL}/auth/verify-proof`, {
       method: 'POST',
       headers: {
@@ -28,7 +42,7 @@ class AuthService {
         account,
         tonProof,
         clientId,
-        ...telegramData,
+        initData,
       }),
     });
     

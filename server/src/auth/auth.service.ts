@@ -62,6 +62,8 @@ export class AuthService {
     if (verifyData.initData) {
       try {
         const params = new URLSearchParams(verifyData.initData);
+        
+        // Try to get data from 'user' field (Telegram WebApp format)
         const userJson = params.get('user');
         if (userJson) {
           interface TelegramUserData {
@@ -71,6 +73,10 @@ export class AuthService {
           const userData = JSON.parse(userJson) as TelegramUserData;
           username = userData.first_name;
           avatarUrl = userData.photo_url;
+        } else {
+          // Fallback: get data from direct parameters (our custom format)
+          username = params.get('username') || undefined;
+          avatarUrl = params.get('avatar_url') || undefined;
         }
       } catch (e) {
         this.logger.error('Failed to parse initData', e);

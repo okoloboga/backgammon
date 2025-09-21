@@ -7,6 +7,8 @@ import * as http from 'http';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
+
   // Initialize Colyseus
   const gameService = app.get(GameService);
   gameService.initialize(app.getHttpServer() as http.Server);

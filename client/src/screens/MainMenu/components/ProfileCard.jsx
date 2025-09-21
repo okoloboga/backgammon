@@ -2,15 +2,23 @@ import PropTypes from 'prop-types';
 import { useWalletBalances } from '../../../hooks/useWalletBalances';
 import '../../../styles/ProfileCard.css';
 
-// Функция для форматирования баланса (1234 -> 1.2k, 1234567 -> 1.2M)
+// Функция для форматирования баланса с точностью до 2 знаков после запятой
 const formatBalance = (num) => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  // Округляем до 2 знаков после запятой
+  const rounded = Math.round(num * 100) / 100;
+  
+  if (rounded >= 1000000000) {
+    return (rounded / 1000000000).toFixed(2).replace(/\.00$/, '') + 'B';
   }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  if (rounded >= 1000000) {
+    return (rounded / 1000000).toFixed(2).replace(/\.00$/, '') + 'M';
   }
-  return num;
+  if (rounded >= 1000) {
+    return (rounded / 1000).toFixed(2).replace(/\.00$/, '') + 'k';
+  }
+  
+  // Для чисел меньше 1000 показываем с точностью до 2 знаков
+  return rounded.toFixed(2).replace(/\.00$/, '');
 };
 
 // Компонент профиля пользователя

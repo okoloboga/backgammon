@@ -1,19 +1,19 @@
 export default () => ({
-  port: 3000,
+  port: parseInt(process.env.PORT) || 3000,
   ton: {
-    endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-    apiKey: undefined,
-    network: 'mainnet',
+    endpoint: process.env.TON_ENDPOINT || 'https://toncenter.com/api/v2/jsonRPC',
+    apiKey: process.env.TON_API_KEY,
+    network: process.env.TON_NETWORK || 'mainnet',
   },
   database: {
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: 'password',
-    database: 'backgammon',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_NAME || 'backgammon',
   },
   jwt: {
-    secret: 'your-secret-key',
-    expiresIn: '24h',
+    secret: process.env.JWT_SECRET || 'your-secret-key',
+    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
   },
 });

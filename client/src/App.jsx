@@ -101,9 +101,12 @@ function App() {
             clientId,
             telegramData // Pass Telegram data to the backend
           );
+          console.log('Auth response received:', authResponse);
           authService.setAuthToken(authResponse.access_token);
           setUser(authResponse.user);
+          console.log('User set:', authResponse.user);
           setCurrentScreen('main-menu');
+          console.log('Screen set to main-menu');
         } catch (e) {
           console.error('TonProof verification failed:', e);
           setError('Authentication failed. Please try again.');
@@ -122,6 +125,10 @@ function App() {
       setCurrentScreen('main-menu');
     }
   };
+
+  console.log('Current screen:', currentScreen);
+  console.log('User:', user);
+  console.log('Is loading:', isLoading);
 
   return (
     <div className="min-h-screen bg-dark-bg">

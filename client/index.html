@@ -9,9 +9,6 @@
       if (typeof global === 'undefined') {
         var global = globalThis;
       }
-      if (typeof Buffer === 'undefined') {
-        var Buffer = { isBuffer: function() { return false; } };
-      }
     </script>
   </head>
   <body>

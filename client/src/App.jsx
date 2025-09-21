@@ -6,7 +6,6 @@ import MainMenu from './screens/MainMenu/MainMenu';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('splash');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [clientId, setClientId] = useState(null);
@@ -15,9 +14,7 @@ function App() {
 
   useEffect(() => {
     const checkAuth = () => {
-      const authenticated = authService.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      if (authenticated) {
+      if (authService.isAuthenticated()) {
         setCurrentScreen('main-menu');
       }
     };
@@ -56,8 +53,8 @@ function App() {
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (!wallet) {
         authService.clearAuth();
-        setIsAuthenticated(false);
         setError(null);
+        setCurrentScreen('splash');
         return;
       }
 
@@ -79,7 +76,6 @@ function App() {
             clientId
           );
           authService.setAuthToken(authResponse.access_token);
-          setIsAuthenticated(true);
           setCurrentScreen('main-menu');
         } catch (e) {
           console.error('TonProof verification failed:', e);
@@ -93,13 +89,6 @@ function App() {
 
     return () => unsubscribe();
   }, [tonConnectUI, clientId]);
-
-  const handleAuthChange = (authenticated) => {
-    setIsAuthenticated(authenticated);
-    if (!authenticated) {
-      setCurrentScreen('splash');
-    }
-  };
 
   const navigateToMain = () => {
     if (authService.isAuthenticated()) {
@@ -116,14 +105,7 @@ function App() {
           error={error}
         />
       )}
-      {currentScreen === 'main-menu' && (
-        <MainMenu
-          isAuthenticated={isAuthenticated}
-          onAuthChange={handleAuthChange}
-          isLoading={isLoading}
-          error={error}
-        />
-      )}
+      {currentScreen === 'main-menu' && <MainMenu />}
     </div>
   );
 }

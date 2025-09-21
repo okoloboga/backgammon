@@ -6,6 +6,7 @@ export default defineConfig({
   publicDir: 'public',
   define: {
     global: 'globalThis',
+    Buffer: 'Buffer',
   },
   resolve: {
     alias: {
@@ -14,10 +15,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['buffer'],
-  },
-  build: {
-    rollupOptions: {
-      external: [],
-    },
   },
 })

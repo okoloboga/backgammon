@@ -3,10 +3,6 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './styles/globals.css'
 import { analyticsService } from './services/analyticsService'
-import { Buffer } from 'buffer'
-
-// Полифил для Buffer в браузере
-window.Buffer = Buffer
 
 // Инициализация Telegram WebApp
 if (window.Telegram && window.Telegram.WebApp) {

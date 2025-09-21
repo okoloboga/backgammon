@@ -89,10 +89,19 @@ export const useWalletBalances = () => {
         }
 
         // Находим нужный jetton wallet
-        const jettonWallet = data.jetton_wallets.find(wallet => 
-          wallet.jetton === jettonMaster || 
-          wallet.jetton === data.address_book[jettonMaster]?.user_friendly
-        );
+        // Ищем по user_friendly адресу в address_book
+        const jettonWallet = data.jetton_wallets.find(wallet => {
+          // Проверяем прямой match
+          if (wallet.jetton === jettonMaster) return true;
+          
+          // Ищем в address_book по user_friendly адресу
+          for (const [rawAddress, addressInfo] of Object.entries(data.address_book)) {
+            if (addressInfo.user_friendly === jettonMaster && wallet.jetton === rawAddress) {
+              return true;
+            }
+          }
+          return false;
+        });
 
         if (!jettonWallet) {
           console.log('No matching jetton wallet found');

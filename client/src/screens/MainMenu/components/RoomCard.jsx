@@ -3,12 +3,12 @@ import PropTypes from 'prop-types'
 
 // Карточка игровой комнаты с оппонентом и ставкой
 const RoomCard = ({ room, onEnter }) => {
-  const { id, opponent, bet, currency } = room
+  const { roomId, roomName, playersCount, maxPlayers, status, createdBy, betAmount, currency } = room
 
-  const truncatedOpponent = opponent.length > 11 ? `${opponent.substring(0, 11)}...` : opponent
+  const truncatedCreator = createdBy.length > 11 ? `${createdBy.substring(0, 11)}...` : createdBy
 
   const handleEnterRoom = () => {
-    onEnter(id)
+    onEnter(roomId)
   }
 
   return (
@@ -16,10 +16,10 @@ const RoomCard = ({ room, onEnter }) => {
       <div className="room-content">
         <div className="opponent-info">
           <div className="opponent-avatar">
-            <span>{opponent.charAt(0).toUpperCase()}</span>
+            <span>{createdBy.charAt(0).toUpperCase()}</span>
           </div>
           <div className="opponent-details">
-            <h3>{truncatedOpponent}</h3>
+            <h3>{truncatedCreator}</h3>
             <span className={`currency-badge currency-${currency.toLowerCase()}`}>
               {currency}
             </span>
@@ -33,7 +33,7 @@ const RoomCard = ({ room, onEnter }) => {
               alt="Diamond"
               className="balance-icon"
             />
-            <span className="bet-amount">{bet}</span>
+            <span className="bet-amount">{betAmount}</span>
           </div>
         </div>
 

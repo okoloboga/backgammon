@@ -20,6 +20,9 @@ importers:
       '@tonconnect/ui-react':
         specifier: ^2.3.0
         version: 2.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      colyseus.js:
+        specifier: ^0.16.19
+        version: 0.16.19
       prop-types:
         specifier: ^15.8.1
         version: 15.8.1

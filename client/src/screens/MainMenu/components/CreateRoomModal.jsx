@@ -1,6 +1,7 @@
 
 import PropTypes from 'prop-types'; 
 import { useState } from 'react'
+import { colyseusService } from '../../../services/colyseusService'
 import '../../../styles/CreateRoomModal.css'
 
 // Модальное окно для создания комнаты
@@ -21,13 +22,31 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (isValidBetAmount()) {
-      console.log('Creating a room:', { betAmount, currency })
-      // Здесь будет логика создания комнаты
-      onClose()
-      setBetAmount('')
+      try {
+        console.log('Creating a room:', { betAmount, currency })
+        
+        // Создаем комнату через Colyseus
+        const room = await colyseusService.client.joinOrCreate('backgammon', {
+          roomName: `Game ${Date.now()}`,
+          createdBy: 'current_user', // TODO: Получить из контекста пользователя
+          betAmount: parseFloat(betAmount),
+          currency: currency
+        })
+        
+        console.log('Room created:', room.roomId)
+        
+        // Закрываем модалку и очищаем форму
+        onClose()
+        setBetAmount('')
+        
+        // TODO: Перейти к игровой комнате
+      } catch (error) {
+        console.error('Failed to create room:', error)
+        // TODO: Показать ошибку пользователю
+      }
       setCurrency('TON')
     }
   }

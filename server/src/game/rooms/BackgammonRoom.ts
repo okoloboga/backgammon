@@ -14,10 +14,27 @@ interface Move {
 
 export class BackgammonRoom extends Room<GameState> {
   private possibleMoves: Move[][] = [];
+  private roomInfo: any = null;
 
-  onCreate(_options: any) {
+  onCreate(options: any) {
     this.setState(new GameState());
     this.setupBoard();
+
+    // Сохраняем информацию о комнате
+    this.roomInfo = {
+      roomId: this.roomId,
+      roomName: options.roomName || `Game ${this.roomId.slice(0, 8)}`,
+      playersCount: 0,
+      maxPlayers: 2,
+      status: 'waiting',
+      createdBy: options.createdBy || 'unknown',
+      betAmount: options.betAmount || 0,
+      currency: options.currency || 'TON',
+      createdAt: Date.now(),
+    };
+
+    // Уведомляем лобби о создании комнаты
+    this.notifyLobby('add', this.roomInfo);
 
     this.onMessage('rollDice', (client) => this.handleRollDice(client));
     this.onMessage('move', (client, message: string) =>
@@ -30,8 +47,18 @@ export class BackgammonRoom extends Room<GameState> {
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
 
+    // Обновляем информацию о количестве игроков
+    if (this.roomInfo) {
+      this.roomInfo.playersCount = this.state.players.size;
+      this.notifyLobby('update', this.roomInfo);
+    }
+
     if (this.state.players.size === 2) {
       this.state.currentPlayer = 'white';
+      if (this.roomInfo) {
+        this.roomInfo.status = 'playing';
+        this.notifyLobby('update', this.roomInfo);
+      }
       void this.lock();
     }
   }
@@ -39,10 +66,26 @@ export class BackgammonRoom extends Room<GameState> {
   onLeave(client: Client, _consented: boolean) {
     console.log(client.sessionId, 'left!');
     this.state.players.delete(client.sessionId);
+
+    // Обновляем информацию о количестве игроков
+    if (this.roomInfo) {
+      this.roomInfo.playersCount = this.state.players.size;
+      if (this.state.players.size === 0) {
+        this.roomInfo.status = 'finished';
+      } else {
+        this.roomInfo.status = 'waiting';
+      }
+      this.notifyLobby('update', this.roomInfo);
+    }
   }
 
   onDispose() {
     console.log('room', this.roomId, 'disposing...');
+    
+    // Уведомляем лобби об удалении комнаты
+    if (this.roomInfo) {
+      this.notifyLobby('remove', this.roomInfo);
+    }
   }
 
   setupBoard() {
@@ -476,5 +519,23 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.currentPlayer =
       this.state.currentPlayer === 'white' ? 'black' : 'white';
     console.log(`Turn ended. Current player: ${this.state.currentPlayer}`);
+  }
+
+  // Метод для уведомления лобби об изменениях
+  private notifyLobby(action: 'add' | 'update' | 'remove', roomInfo: any) {
+    // Получаем все лобби-комнаты и отправляем им уведомления
+    this.matchMaker.query({ name: 'lobby' }).then((lobbyRooms) => {
+      lobbyRooms.forEach((lobbyRoom) => {
+        if (action === 'add') {
+          lobbyRoom.send('+', roomInfo);
+        } else if (action === 'update') {
+          lobbyRoom.send('~', roomInfo);
+        } else if (action === 'remove') {
+          lobbyRoom.send('-', roomInfo.roomId);
+        }
+      });
+    }).catch((error) => {
+      console.error('Failed to notify lobby:', error);
+    });
   }
 }

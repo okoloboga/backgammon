@@ -25,6 +25,22 @@ export class LobbyRoom extends Room<LobbyState> {
     this.onMessage('getRooms', (client) => {
       this.sendRoomsList(client);
     });
+
+    // Обработка сообщений от LobbyService
+    this.onMessage('+', (client, roomInfo) => {
+      this.addRoom(roomInfo);
+      this.broadcastRoomsUpdate();
+    });
+
+    this.onMessage('~', (client, roomInfo) => {
+      this.updateRoom(roomInfo.roomId, roomInfo);
+      this.broadcastRoomsUpdate();
+    });
+
+    this.onMessage('-', (client, roomId) => {
+      this.removeRoom(roomId);
+      this.broadcastRoomsUpdate();
+    });
   }
 
   onJoin(client: Client, _options: any) {
@@ -39,8 +55,19 @@ export class LobbyRoom extends Room<LobbyState> {
   }
 
   // Метод для добавления комнаты в лобби
-  addRoom(roomInfo: RoomInfo) {
-    this.state.rooms.set(roomInfo.roomId, roomInfo);
+  addRoom(roomInfo: any) {
+    const roomInfoSchema = new RoomInfo();
+    roomInfoSchema.roomId = roomInfo.roomId;
+    roomInfoSchema.roomName = roomInfo.roomName;
+    roomInfoSchema.playersCount = roomInfo.playersCount;
+    roomInfoSchema.maxPlayers = roomInfo.maxPlayers;
+    roomInfoSchema.status = roomInfo.status;
+    roomInfoSchema.createdBy = roomInfo.createdBy;
+    roomInfoSchema.betAmount = roomInfo.betAmount;
+    roomInfoSchema.currency = roomInfo.currency;
+    roomInfoSchema.createdAt = roomInfo.createdAt;
+    
+    this.state.rooms.set(roomInfo.roomId, roomInfoSchema);
     console.log(`Room ${roomInfo.roomId} added to lobby`);
   }
 
@@ -51,10 +78,18 @@ export class LobbyRoom extends Room<LobbyState> {
   }
 
   // Метод для обновления информации о комнате
-  updateRoom(roomId: string, updates: Partial<RoomInfo>) {
+  updateRoom(roomId: string, updates: any) {
     const room = this.state.rooms.get(roomId);
     if (room) {
-      Object.assign(room, updates);
+      if (updates.roomName !== undefined) room.roomName = updates.roomName;
+      if (updates.playersCount !== undefined) room.playersCount = updates.playersCount;
+      if (updates.maxPlayers !== undefined) room.maxPlayers = updates.maxPlayers;
+      if (updates.status !== undefined) room.status = updates.status;
+      if (updates.createdBy !== undefined) room.createdBy = updates.createdBy;
+      if (updates.betAmount !== undefined) room.betAmount = updates.betAmount;
+      if (updates.currency !== undefined) room.currency = updates.currency;
+      if (updates.createdAt !== undefined) room.createdAt = updates.createdAt;
+      
       console.log(`Room ${roomId} updated in lobby`);
     }
   }

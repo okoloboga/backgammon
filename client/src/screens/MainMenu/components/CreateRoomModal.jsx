@@ -5,15 +5,24 @@ import { colyseusService } from '../../../services/colyseusService'
 import '../../../styles/CreateRoomModal.css'
 
 // Модальное окно для создания комнаты
-const CreateRoomModal = ({ isOpen, onClose }) => {
+const CreateRoomModal = ({ isOpen, onClose, balances }) => {
   const [betAmount, setBetAmount] = useState('')
   const [currency, setCurrency] = useState('TON')
+
+  // Получаем максимальную ставку на основе баланса
+  const getMaxBet = () => {
+    if (balances?.loading) return 0;
+    return currency === 'TON' ? balances?.ton || 0 : balances?.ruble || 0;
+  }
 
   // Проверка валидности суммы ставки
   const isValidBetAmount = () => {
     if (!betAmount || betAmount === '') return false
     const amount = parseFloat(betAmount)
     if (isNaN(amount) || amount <= 0) return false
+    
+    const maxBet = getMaxBet();
+    if (amount > maxBet) return false;
     
     if (currency === 'TON') {
       return amount >= 1.0
@@ -98,8 +107,19 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
               id="betAmount"
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
-              placeholder={currency === 'TON' ? 'Enter amount (min 1.0)' : 'Enter amount (min 100)'}
+              placeholder={
+                balances?.loading 
+                  ? 'Loading balance...' 
+                  : currency === 'TON' 
+                    ? `Enter amount (min 1.0, max ${getMaxBet().toFixed(2)})` 
+                    : `Enter amount (min 100, max ${getMaxBet().toFixed(2)})`
+              }
             />
+            {betAmount && parseFloat(betAmount) > getMaxBet() && (
+              <div className="error-message">
+                Insufficient balance. Max: {getMaxBet().toFixed(2)} {currency}
+              </div>
+            )}
           </div>
           
           <div className="modal-actions">
@@ -123,8 +143,11 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
 CreateRoomModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onCreate: PropTypes.func.isRequired,
-  // Добавьте другие пропсы, если они есть
+  balances: PropTypes.shape({
+    ton: PropTypes.number,
+    ruble: PropTypes.number,
+    loading: PropTypes.bool
+  })
 };
 
 export default CreateRoomModal

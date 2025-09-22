@@ -58,13 +58,13 @@ const ProfileCard = ({ user }) => {
               <div className="balance-item">
                 <span className="currency-badge currency-ton">TON</span>
                 <span className="balance-amount">
-                  {balancesLoading ? '...' : formatBalance(ton)}
+                  {balancesLoading && ton === 0 && ruble === 0 ? '...' : formatBalance(ton)}
                 </span>
               </div>
               <div className="balance-item">
                 <span className="currency-badge currency-ruble">RUBLE</span>
                 <span className="balance-amount">
-                  {balancesLoading ? '...' : formatBalance(ruble)}
+                  {balancesLoading && ton === 0 && ruble === 0 ? '...' : formatBalance(ruble)}
                 </span>
               </div>
             </div>

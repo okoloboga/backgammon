@@ -10,7 +10,7 @@ import '../../styles/MainMenu.css';
 
 const MainMenu = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { ton, ruble, loading: balancesLoading } = useWalletBalances();
+  const { ton, ruble, loading: balancesLoading, error: balancesError } = useWalletBalances();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -27,7 +27,7 @@ const MainMenu = ({ user }) => {
           <div className="flex justify-center">
             <TonConnectButton />
           </div>
-          <ProfileCard user={user} />
+          <ProfileCard user={user} balances={{ ton, ruble, loading: balancesLoading, error: balancesError }} />
           <ActionButtons onCreateGame={handleOpenModal} />
           <RoomList />
         </div>

@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import { useWalletBalances } from '../../../hooks/useWalletBalances';
 import '../../../styles/ProfileCard.css';
 
 // Функция для форматирования баланса с точностью до 2 знаков после запятой
@@ -22,8 +21,8 @@ const formatBalance = (num) => {
 };
 
 // Компонент профиля пользователя
-const ProfileCard = ({ user }) => {
-  const { ton, ruble, loading: balancesLoading, error: balancesError } = useWalletBalances();
+const ProfileCard = ({ user, balances }) => {
+  const { ton, ruble, loading: balancesLoading, error: balancesError } = balances || { ton: 0, ruble: 0, loading: true, error: null };
 
   // Показываем заглушку, если данные пользователя еще не загружены
   if (!user) {
@@ -103,6 +102,12 @@ ProfileCard.propTypes = {
     wins: PropTypes.number,
     loses: PropTypes.number,
   }),
+  balances: PropTypes.shape({
+    ton: PropTypes.number,
+    ruble: PropTypes.number,
+    loading: PropTypes.bool,
+    error: PropTypes.string
+  })
 };
 
 export default ProfileCard;

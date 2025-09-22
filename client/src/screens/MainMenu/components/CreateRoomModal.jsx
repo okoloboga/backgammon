@@ -4,6 +4,25 @@ import { useState } from 'react'
 import { colyseusService } from '../../../services/colyseusService'
 import '../../../styles/CreateRoomModal.css'
 
+// Функция для форматирования баланса с точностью до 2 знаков после запятой
+const formatBalance = (num) => {
+  // Округляем до 2 знаков после запятой
+  const rounded = Math.round(num * 100) / 100;
+  
+  if (rounded >= 1000000000) {
+    return (rounded / 1000000000).toFixed(2) + 'B';
+  }
+  if (rounded >= 1000000) {
+    return (rounded / 1000000).toFixed(2) + 'M';
+  }
+  if (rounded >= 1000) {
+    return (rounded / 1000).toFixed(2) + 'k';
+  }
+  
+  // Для чисел меньше 1000 показываем с точностью до 2 знаков
+  return rounded.toFixed(2);
+};
+
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose, balances }) => {
   const [betAmount, setBetAmount] = useState('')
@@ -27,7 +46,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances }) => {
     if (currency === 'TON') {
       return amount >= 1.0
     } else {
-      return amount >= 100
+      return amount >= 1000
     }
   }
 
@@ -111,13 +130,13 @@ const CreateRoomModal = ({ isOpen, onClose, balances }) => {
                 balances?.loading 
                   ? 'Loading balance...' 
                   : currency === 'TON' 
-                    ? `Enter amount (min 1.0, max ${getMaxBet().toFixed(2)})` 
-                    : `Enter amount (min 100, max ${getMaxBet().toFixed(2)})`
+                    ? `Enter amount (min 1.0, max ${formatBalance(getMaxBet())})` 
+                    : `Enter amount (min 1k, max ${formatBalance(getMaxBet())})`
               }
             />
             {betAmount && parseFloat(betAmount) > getMaxBet() && (
               <div className="error-message">
-                Insufficient balance. Max: {getMaxBet().toFixed(2)} {currency}
+                Insufficient balance. Max: {formatBalance(getMaxBet())} {currency}
               </div>
             )}
           </div>

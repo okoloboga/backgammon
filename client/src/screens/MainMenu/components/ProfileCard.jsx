@@ -24,6 +24,11 @@ const formatBalance = (num) => {
 // Компонент профиля пользователя
 const ProfileCard = ({ user }) => {
   const { ton, ruble, loading: balancesLoading, error: balancesError } = useWalletBalances();
+  
+  // Временная отладка
+  if (ruble > 0) {
+    console.log('RUBLE balance in ProfileCard:', ruble, 'formatted:', formatBalance(ruble));
+  }
 
   // Показываем заглушку, если данные пользователя еще не загружены
   if (!user) {
@@ -66,6 +71,9 @@ const ProfileCard = ({ user }) => {
                 <span className="balance-amount">
                   {balancesLoading && ton === 0 && ruble === 0 ? '...' : formatBalance(ruble)}
                 </span>
+                <div style={{fontSize: '10px', color: 'yellow'}}>
+                  Raw: {ruble} | Loading: {balancesLoading ? 'Y' : 'N'}
+                </div>
               </div>
             </div>
             {balancesError && (

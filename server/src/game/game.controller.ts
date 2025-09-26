@@ -22,6 +22,7 @@ export class GameController {
     },
   })
   async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
+    console.log('--- SHELDON\'S DEBUG: ENTERED matchmake method ---');
     const reservation = await matchMaker.joinOrCreate('backgammon', options);
     const response = { roomId: reservation.room.roomId };
     console.log('--- SHELDON\'S DEBUG: Returning from matchmake:', JSON.stringify(response));

@@ -42,7 +42,7 @@ function App() {
         }
       }
     };
-    // checkAuth(); // Временно отключено для диагностики
+    checkAuth();
   }, []);
 
   const recreateProofPayload = useCallback(async () => {

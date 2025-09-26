@@ -73,6 +73,14 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
+        <div style={{ backgroundColor: 'black', color: 'lime', padding: '10px', margin: '10px', fontFamily: 'monospace', fontSize: '10px', zIndex: 9999 }}>
+          <p>-- DEBUG --</p>
+          <p>Bet Amount: {betAmount}</p>
+          <p>Currency: {currency}</p>
+          <p>Ruble Balance: {balances?.ruble}</p>
+          <p>TON Balance: {balances?.ton}</p>
+          <p>Is Valid?: {isValidBetAmount().toString()}</p>
+        </div>
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <div className="radio-group">

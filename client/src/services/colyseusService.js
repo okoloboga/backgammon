@@ -21,12 +21,11 @@ class ColyseusService {
   async createRoom(options = {}) {
     const token = authService.getAuthToken();
     const response = await fetch(`${API_BASE_URL}/game-http/matchmake`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(options),
     });
 
     if (!response.ok) {

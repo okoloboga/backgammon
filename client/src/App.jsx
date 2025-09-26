@@ -134,6 +134,13 @@ function App() {
     setCurrentScreen('main-menu');
   };
 
+  // Этот хук будет следить за состоянием пользователя и переключать экран
+  useEffect(() => {
+    if (user) {
+      setCurrentScreen('main-menu');
+    }
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-dark-bg">
       {currentScreen === 'splash' && (

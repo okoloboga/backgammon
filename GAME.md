@@ -197,53 +197,54 @@ function validateMoveChoice(moves: Move[], availableMoves: number[], gameState: 
 }
 ```
 
-## 6. Структуры данных
+## 6. Структуры данных (Colyseus Schema)
 
-### 6.1 Основные интерфейсы
+### 6.1 Основные схемы
+Структуры данных реализованы с помощью `@colyseus/schema` для автоматической синхронизации с клиентом.
+
 ```typescript
-interface GameState {
-  id: string;
-  state: GameState;
-  turnPhase: TurnPhase;
-  currentPlayer: string; // player ID
-  players: {
-    [playerId: string]: Player;
-  };
-  board: BoardState;
-  diceRoll: DiceRoll | null;
-  availableMoves: number[];
-  moveHistory: GameMove[];
-  winner: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+import { Schema, type, MapSchema, ArraySchema } from '@colyseus/schema';
+
+// Описывает шашки на одном пункте (треугольнике)
+export class Point extends Schema {
+  @type('string') player: string; // 'white' или 'black'
+  @type('number') checkers: number; // Количество шашек
 }
 
-interface Player {
-  id: string;
-  telegramId: number;
-  username: string;
-  color: 'white' | 'black';
-  isReady: boolean;
-  checkersHome: number;    // количество шашек в доме
-  checkersBornOff: number; // количество снятых шашек
-}
+// Основная схема состояния игры
+export class GameState extends Schema {
+  // Состояние доски: Map<пункт (1-24), Point>
+  @type({ map: Point })
+  board = new MapSchema<Point>();
 
-interface BoardState {
-  points: {
-    [pointNumber: number]: PointState; // 1-24
-  };
-}
+  // Сбитые шашки: Map<цвет, количество>
+  @type({ map: 'number' })
+  bar = new MapSchema<number>({ white: 0, black: 0 });
 
-interface PointState {
-  checkers: number;        // количество шашек
-  owner: 'white' | 'black' | null; // чьи шашки
-}
+  // Выведенные за доску шашки: Map<цвет, количество>
+  @type({ map: 'number' })
+  off = new MapSchema<number>({ white: 0, black: 0 });
 
-interface GameMove {
-  playerId: string;
-  moves: Move[];
-  diceRoll: DiceRoll;
-  timestamp: Date;
+  // ID текущего игрока (совпадает с sessionId)
+  @type('string')
+  currentPlayer: string;
+
+  // Результат последнего броска костей
+  @type(['number'])
+  dice = new ArraySchema<number>();
+
+  // ID победителя (null, если игра идет)
+  @type('string')
+  winner: string | null = null;
+
+  // Массив возможных ходов для текущего игрока
+  // (Это поле может быть реализовано через отправку сообщений, а не в состоянии)
+  @type(['string'])
+  possibleMoves = new ArrayArraySchema<string>();
+
+  // Игроки в комнате: Map<sessionId, цвет>
+  @type({ map: 'string' })
+  players = new MapSchema<string>(); // e.g., { "sessionId1": "white", "sessionId2": "black" }
 }
 ```
 

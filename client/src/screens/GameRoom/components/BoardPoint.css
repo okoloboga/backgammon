@@ -1,0 +1,14 @@
+.board-point {
+  position: relative; /* Контекст для позиционирования шашек внутри */
+  display: flex;
+  min-height: 0;
+  /* Направление укладки шашек будет задано классом is-top */
+}
+
+.board-point.is-top {
+  flex-direction: column;
+}
+
+.board-point.is-bottom {
+  flex-direction: column-reverse;
+}

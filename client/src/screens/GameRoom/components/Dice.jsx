@@ -1,0 +1,19 @@
+import React from 'react';
+import './Dice.css';
+
+import d1 from '../../../assets/game/d1.png';
+import d2 from '../../../assets/game/d2.png';
+import d3 from '../../../assets/game/d3.png';
+import d4 from '../../../assets/game/d4.png';
+import d5 from '../../../assets/game/d5.png';
+import d6 from '../../../assets/game/d6.png';
+
+const diceImages = { 1: d1, 2: d2, 3: d3, 4: d4, 5: d5, 6: d6 };
+
+const Dice = ({ value }) => {
+  if (value < 1 || value > 6) return null;
+
+  return <img src={diceImages[value]} alt={`Dice value ${value}`} className="dice-image" />;
+};
+
+export default Dice;

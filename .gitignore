@@ -146,3 +146,8 @@ dist/
 /blockchain/build/node_modules
 
 GEMINI.md
+
+# Editor backup files
+*~
+*.swp
+*.kra

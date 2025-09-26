@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Logger } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MatchmakeDto } from './dto/matchmake.dto';
@@ -6,9 +6,12 @@ import { MatchmakeDto } from './dto/matchmake.dto';
 @ApiTags('Game')
 @Controller('game-http')
 export class GameController {
+  private readonly logger = new Logger(GameController.name);
+
   constructor() {
-    console.log('GameController instantiated');
+    this.logger.log('GameController instantiated');
   }
+
   @Post('matchmake')
   @ApiOperation({ summary: 'Find or create a backgammon game room' })
   @ApiResponse({
@@ -22,10 +25,15 @@ export class GameController {
     },
   })
   async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
-    console.log('--- SHELDON\'S DEBUG: ENTERED matchmake method ---');
-    const reservation = await matchMaker.joinOrCreate('backgammon', options);
-    const response = { roomId: reservation.room.roomId };
-    console.log('--- SHELDON\'S DEBUG: Returning from matchmake:', JSON.stringify(response));
-    return response;
+    this.logger.log(`--- ENTERED matchmake method with options: ${JSON.stringify(options)}`);
+    try {
+      const reservation = await matchMaker.joinOrCreate('backgammon', options);
+      const response = { roomId: reservation.room.roomId };
+      this.logger.log(`--- Returning from matchmake: ${JSON.stringify(response)}`);
+      return response;
+    } catch (e) {
+      this.logger.error('Error during matchMaker.joinOrCreate:', e);
+      throw e; // Re-throw the error to let NestJS handle it
+    }
   }
 }

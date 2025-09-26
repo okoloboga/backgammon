@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MatchmakeDto } from './dto/matchmake.dto';

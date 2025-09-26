@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './GameRoom.css';
 import BoardPoint from './components/BoardPoint';
@@ -30,7 +30,7 @@ const GameRoom = ({ roomId, onQuit }) => {
 
       } catch (e) {
         console.error(`Failed to join room ${roomId}:`, e);
-        onQuit(); // Если не удалось подключиться, выходим обратно в меню
+        onQuit();
       }
     };
 
@@ -39,7 +39,7 @@ const GameRoom = ({ roomId, onQuit }) => {
     return () => {
       colyseusService.leaveGameRoom();
     };
-  }, [roomId, onQuit]); // Переподключаемся, если меняется roomId
+  }, [roomId, onQuit, playerColor]);
 
   useEffect(() => {
     if (room) {
@@ -67,7 +67,6 @@ const GameRoom = ({ roomId, onQuit }) => {
     return <div className="game-room"><h1>Joining game...</h1></div>;
   }
   
-  // Отображение ожидания, если игрок один
   if (gameState.players.size < 2) {
     return <div className="game-room"><h1>Waiting for opponent...</h1></div>;
   }
@@ -75,7 +74,7 @@ const GameRoom = ({ roomId, onQuit }) => {
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const canRoll = isMyTurn && gameState.dice.length === 0;
 
-  const whitePlayer = mockPlayer1; // Эту логику нужно будет улучшить
+  const whitePlayer = mockPlayer1;
   const blackPlayer = mockPlayer2;
 
   return (
@@ -87,7 +86,39 @@ const GameRoom = ({ roomId, onQuit }) => {
             <PlayerProfile player={whitePlayer} align="right" />
         </div>
         <div className="game-board">
-          {/* ... остальная часть доски ... */}
+          <div className="board-half">
+            <div className="point-grid-container">
+              {pointRenderOrder.left.map((id) => (
+                <BoardPoint
+                  key={id}
+                  pointId={id}
+                  isTop={id >= 13}
+                  checkers={gameState.board.get(id.toString())}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="board-half">
+            <div className="point-grid-container">
+              {pointRenderOrder.right.map((id) => (
+                <BoardPoint
+                  key={id}
+                  pointId={id}
+                  isTop={id >= 19}
+                  checkers={gameState.board.get(id.toString())}
+                />
+              ))}
+            </div>
+            <div className="dice-area">
+              {gameState.dice.length > 0 ? (
+                gameState.dice.map((value, i) => <Dice key={i} value={value} />)
+              ) : (
+                <button onClick={handleRollDice} disabled={!canRoll}>
+                  {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

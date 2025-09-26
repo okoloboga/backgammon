@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 
 // Jetton Master Contract для RUBLE
@@ -13,22 +13,18 @@ export const useWalletBalances = () => {
     error: null
   });
 
-    const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     if (!tonConnectUI.account) {
       setBalances({ ton: 0, ruble: 0, loading: false, error: null });
-        return;
-      }
+      return;
+    }
 
     try {
-      // Не показываем loading при обновлении, чтобы избежать мигания
       setBalances(prev => ({ ...prev, error: null }));
 
       const walletAddress = tonConnectUI.account.address;
       
-      // Получаем баланс TON
       const tonBalance = await fetchTonBalance(walletAddress);
-      
-      // Получаем баланс RUBLE (Jetton)
       const rubleBalance = await fetchJettonBalance(walletAddress, RUBLE_JETTON_MASTER);
 
       setBalances({
@@ -45,7 +41,7 @@ export const useWalletBalances = () => {
         error: error.message
       }));
     }
-  };
+  }, [tonConnectUI.account]);
 
   // Получение баланса TON
   const fetchTonBalance = async (address) => {
@@ -57,7 +53,6 @@ export const useWalletBalances = () => {
       const tonData = await tonResponse.json();
       
       if (tonData.ok) {
-        // Конвертируем из nanotons в TON (1 TON = 10^9 nanotons)
         return parseFloat(tonData.result) / 1000000000;
       }
       return 0;
@@ -67,69 +62,30 @@ export const useWalletBalances = () => {
     }
   };
 
-    // Получение баланса Jetton через новый API v3
-    const fetchJettonBalance = async (address, jettonMaster) => {
-      try {
-        console.log('Fetching Jetton balance for:', address, 'Jetton Master:', jettonMaster);
-        
-        // Используем новый API v3 для получения jetton wallets
-        const response = await fetch(`https://toncenter.com/api/v3/jetton/wallets?owner_address=${address}&jetton_address=${jettonMaster}`);
-        
-        if (!response.ok) {
-          console.log('API response not ok:', response.status, response.statusText);
-          return 0;
-        }
+  // Получение баланса Jetton через новый API v3
+  const fetchJettonBalance = async (address, jettonMaster) => {
+    try {
+      const response = await fetch(`https://toncenter.com/api/v3/jetton/wallets?owner_address=${address}&jetton_address=${jettonMaster}`);
+      if (!response.ok) return 0;
 
-        const data = await response.json();
-        console.log('Jetton wallets response:', data);
+      const data = await response.json();
+      if (!data.jetton_wallets || data.jetton_wallets.length === 0) return 0;
 
-        if (!data.jetton_wallets || data.jetton_wallets.length === 0) {
-          console.log('No jetton wallets found for this address');
-          return 0;
-        }
+      const jettonWallet = data.jetton_wallets.find(wallet => wallet.jetton === jettonMaster || data.address_book[wallet.jetton]?.user_friendly === jettonMaster);
+      if (!jettonWallet) return 0;
 
-        // Находим нужный jetton wallet
-        // Ищем по user_friendly адресу в address_book
-        const jettonWallet = data.jetton_wallets.find(wallet => {
-          // Проверяем прямой match
-          if (wallet.jetton === jettonMaster) return true;
-          
-          // Ищем в address_book по user_friendly адресу
-          for (const [rawAddress, addressInfo] of Object.entries(data.address_book)) {
-            if (addressInfo.user_friendly === jettonMaster && wallet.jetton === rawAddress) {
-              return true;
-            }
-          }
-          return false;
-        });
-
-        if (!jettonWallet) {
-          console.log('No matching jetton wallet found');
-          return 0;
-        }
-
-        console.log('Found jetton wallet:', jettonWallet);
-        
-        // Конвертируем баланс в число (баланс в наименьших единицах)
-        const balanceNumber = parseInt(jettonWallet.balance, 10);
-        console.log('Raw balance:', balanceNumber);
-        
-        // Конвертируем из наименьших единиц (9 знаков после запятой)
-        // 2867067708489971521 / 1000000000 = 2867067708.489971521
-        const convertedBalance = balanceNumber / 1000000000;
-        console.log('Converted balance:', convertedBalance);
-        
-        return convertedBalance;
-      } catch (error) {
-        console.error('Error fetching jetton balance:', error);
-        return 0;
-      }
-    };
+      const balanceNumber = parseInt(jettonWallet.balance, 10);
+      return balanceNumber / 1000000000;
+    } catch (error) {
+      console.error('Error fetching jetton balance:', error);
+      return 0;
+    }
+  };
 
   // Обновляем балансы при изменении кошелька
   useEffect(() => {
     fetchBalances();
-  }, [tonConnectUI.account?.address]);
+  }, [fetchBalances]);
 
   // Автоматическое обновление балансов каждые 30 секунд
   useEffect(() => {
@@ -137,7 +93,7 @@ export const useWalletBalances = () => {
 
     const interval = setInterval(fetchBalances, 30000);
     return () => clearInterval(interval);
-  }, [tonConnectUI.account?.address]);
+  }, [tonConnectUI.account, fetchBalances]);
 
   return {
     ...balances,

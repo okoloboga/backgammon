@@ -1,127 +1,77 @@
-
-import PropTypes from 'prop-types'; 
-import { useState } from 'react'
-import { colyseusService } from '../../../services/colyseusService'
-import '../../../styles/CreateRoomModal.css'
-
-// Функция для форматирования баланса с точностью до 2 знаков после запятой
-const formatBalance = (num) => {
-  // Округляем до 2 знаков после запятой
-  const rounded = Math.round(num * 100) / 100;
-  
-  if (rounded >= 1000000000) {
-    return (rounded / 1000000000).toFixed(2) + 'B';
-  }
-  if (rounded >= 1000000) {
-    return (rounded / 1000000).toFixed(2) + 'M';
-  }
-  if (rounded >= 1000) {
-    return (rounded / 1000).toFixed(2) + 'k';
-  }
-  
-  // Для чисел меньше 1000 показываем с точностью до 2 знаков
-  return rounded.toFixed(2);
-};
-
-import PropTypes from 'prop-types'; 
-import { useState } from 'react'
-import { colyseusService } from '../../../services/colyseusService'
-import '../../../styles/CreateRoomModal.css'
+import PropTypes from 'prop-types';
+import { useState } from 'react';
+import { colyseusService } from '../../../services/colyseusService';
+import '../../../styles/CreateRoomModal.css';
 
 // Функция для форматирования баланса с точностью до 2 знаков после запятой
 const formatBalance = (num) => {
-  // Округляем до 2 знаков после запятой
   const rounded = Math.round(num * 100) / 100;
-  
-  if (rounded >= 1000000000) {
-    return (rounded / 1000000000).toFixed(2) + 'B';
-  }
-  if (rounded >= 1000000) {
-    return (rounded / 1000000).toFixed(2) + 'M';
-  }
-  if (rounded >= 1000) {
-    return (rounded / 1000).toFixed(2) + 'k';
-  }
-  
-  // Для чисел меньше 1000 показываем с точностью до 2 знаков
+  if (rounded >= 1000000000) return (rounded / 1000000000).toFixed(2) + 'B';
+  if (rounded >= 1000000) return (rounded / 1000000).toFixed(2) + 'M';
+  if (rounded >= 1000) return (rounded / 1000).toFixed(2) + 'k';
   return rounded.toFixed(2);
 };
 
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
-  const [betAmount, setBetAmount] = useState('')
-  const [currency, setCurrency] = useState('TON')
+  const [betAmount, setBetAmount] = useState('');
+  const [currency, setCurrency] = useState('TON');
 
-  // Получаем максимальную ставку на основе баланса
   const getMaxBet = () => {
     if (balances?.loading) return 0;
     return currency === 'TON' ? balances?.ton || 0 : balances?.ruble || 0;
-  }
+  };
 
-  // Проверка валидности суммы ставки
   const isValidBetAmount = () => {
-    if (!betAmount || betAmount === '') return false
-    const amount = parseFloat(betAmount)
-    if (isNaN(amount) || amount <= 0) return false
-    
+    if (!betAmount || betAmount === '') return false;
+    const amount = parseFloat(betAmount);
+    if (isNaN(amount) || amount <= 0) return false;
     const maxBet = getMaxBet();
     if (amount > maxBet) return false;
-    
     if (currency === 'TON') {
-      return amount >= 1.0
+      return amount >= 1.0;
     } else {
-      return amount >= 1000
+      return amount >= 1000;
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        console.log('Creating a room:', { betAmount, currency })
-        
-        // Создаем комнату через Colyseus
+        console.log('Creating a room:', { betAmount, currency });
         const room = await colyseusService.joinGameRoom('backgammon', {
           roomName: `Game ${Date.now()}`,
-          createdBy: 'current_user', // TODO: Получить из контекста пользователя
+          createdBy: 'current_user', // TODO: Get from user context
           betAmount: parseFloat(betAmount),
-          currency: currency
-        })
-        
-        console.log('Room created:', room.roomId)
-        
-        // Закрываем модалку и очищаем форму
-        onClose()
-        setBetAmount('')
-        
-        // Переходим в игровую комнату
+          currency: currency,
+        });
+        console.log('Room created:', room.roomId);
+        onClose();
+        setBetAmount('');
         if (onNavigateToGame) {
           onNavigateToGame(room.roomId);
         }
-
       } catch (error) {
-        console.error('Failed to create room:', error)
-        // TODO: Показать ошибку пользователю
+        console.error('Failed to create room:', error);
       }
-      setCurrency('TON')
+      setCurrency('TON');
     }
-  }
+  };
 
   const handleClose = () => {
-    onClose()
-    setBetAmount('')
-    setCurrency('TON')
-  }
+    onClose();
+    setBetAmount('');
+    setCurrency('TON');
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
-        
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-           
             <div className="radio-group">
               <label className={`radio-option ${currency === 'TON' ? 'selected' : ''}`}>
                 <input
@@ -145,7 +95,6 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
               </label>
             </div>
           </div>
-          
           <div className="form-group">
             <input
               type="number"
@@ -155,11 +104,11 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
               placeholder={
-                balances?.loading 
-                  ? 'Loading balance...' 
-                  : currency === 'TON' 
-                    ? `Enter amount (min 1.0, max ${formatBalance(getMaxBet())})` 
-                    : `Enter amount (min 1k, max ${formatBalance(getMaxBet())})`
+                balances?.loading
+                  ? 'Loading balance...'
+                  : currency === 'TON'
+                  ? `Enter amount (min 1.0, max ${formatBalance(getMaxBet())})`
+                  : `Enter amount (min 1k, max ${formatBalance(getMaxBet())})`
               }
             />
             {betAmount && parseFloat(betAmount) > getMaxBet() && (
@@ -168,13 +117,12 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
               </div>
             )}
           </div>
-          
           <div className="modal-actions">
             <button type="button" onClick={handleClose} className="cancel-button">
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={`create-button ${!isValidBetAmount() ? 'disabled' : ''}`}
               disabled={!isValidBetAmount()}
             >
@@ -184,8 +132,8 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
 CreateRoomModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
@@ -193,8 +141,9 @@ CreateRoomModal.propTypes = {
   balances: PropTypes.shape({
     ton: PropTypes.number,
     ruble: PropTypes.number,
-    loading: PropTypes.bool
-  })
+    loading: PropTypes.bool,
+  }),
+  onNavigateToGame: PropTypes.func.isRequired,
 };
 
-export default CreateRoomModal
+export default CreateRoomModal;

@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import './Dice.css';
 
 import d1 from '../../../assets/game/d1.png';
@@ -11,9 +11,12 @@ import d6 from '../../../assets/game/d6.png';
 const diceImages = { 1: d1, 2: d2, 3: d3, 4: d4, 5: d5, 6: d6 };
 
 const Dice = ({ value }) => {
-  if (value < 1 || value > 6) return null;
+  const image = diceImages[value] || d1; // d1 as fallback
+  return <img src={image} className="dice-image" alt={`Dice value ${value}`} />;
+};
 
-  return <img src={diceImages[value]} alt={`Dice value ${value}`} className="dice-image" />;
+Dice.propTypes = {
+  value: PropTypes.number.isRequired,
 };
 
 export default Dice;

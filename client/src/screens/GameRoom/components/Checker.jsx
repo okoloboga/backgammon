@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import './Checker.css';
 
 import chipPurple from '../../../assets/game/chipPurple.png';
@@ -7,7 +7,6 @@ import chipGreen from '../../../assets/game/chipGreen.png';
 const Checker = ({ color, style }) => {
   const image = color === 'white' ? chipPurple : chipGreen;
   
-  // Принудительно задаем размер через inline-стили для надежности
   const finalStyle = {
     ...style,
     width: '25px',
@@ -15,6 +14,11 @@ const Checker = ({ color, style }) => {
   };
 
   return <img src={image} className="checker" style={finalStyle} alt={`Checker ${color}`} />;
+};
+
+Checker.propTypes = {
+  color: PropTypes.string,
+  style: PropTypes.object,
 };
 
 export default Checker;

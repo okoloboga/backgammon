@@ -1,15 +1,15 @@
-import '../../../styles/RoomCard.css'
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
+import '../../../styles/RoomCard.css';
 
 // Карточка игровой комнаты с оппонентом и ставкой
 const RoomCard = ({ room, onEnter }) => {
-  const { roomId, roomName, playersCount, maxPlayers, status, createdBy, betAmount, currency } = room
+  const { roomId, createdBy, betAmount, currency } = room;
 
-  const truncatedCreator = createdBy.length > 11 ? `${createdBy.substring(0, 11)}...` : createdBy
+  const truncatedCreator = createdBy.length > 11 ? `${createdBy.substring(0, 11)}...` : createdBy;
 
   const handleEnterRoom = () => {
-    onEnter(roomId)
-  }
+    onEnter(roomId);
+  };
 
   return (
     <div className="room-card">
@@ -45,17 +45,17 @@ const RoomCard = ({ room, onEnter }) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 RoomCard.propTypes = {
   room: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    opponent: PropTypes.string.isRequired,
-    bet: PropTypes.number.isRequired,
-    currency: PropTypes.string.isRequired
+    roomId: PropTypes.string.isRequired,
+    createdBy: PropTypes.string.isRequired,
+    betAmount: PropTypes.number.isRequired,
+    currency: PropTypes.string.isRequired,
   }).isRequired,
-  onEnter: PropTypes.func.isRequired
-}
+  onEnter: PropTypes.func.isRequired,
+};
 
-export default RoomCard
+export default RoomCard;

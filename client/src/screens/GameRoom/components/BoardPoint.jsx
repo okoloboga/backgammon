@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import './BoardPoint.css';
 import Checker from './Checker';
 
@@ -11,7 +11,7 @@ const BoardPoint = ({ pointId, checkers, isTop }) => {
 
   const POINT_HEIGHT = 200;
   const CHECKER_HEIGHT = 25;
-  const MAX_CHECKERS_NO_OVERLAP = Math.floor(POINT_HEIGHT / CHECKER_HEIGHT); // 9
+  const MAX_CHECKERS_NO_OVERLAP = Math.floor(POINT_HEIGHT / CHECKER_HEIGHT);
 
   const renderCheckers = () => {
     if (!checkers) return null;
@@ -22,10 +22,8 @@ const BoardPoint = ({ pointId, checkers, isTop }) => {
     let getPosition;
 
     if (count <= MAX_CHECKERS_NO_OVERLAP) {
-      // No overlap
       getPosition = (i) => ({ [isTop ? 'top' : 'bottom']: `${i * CHECKER_HEIGHT}px` });
     } else {
-      // With overlap
       const overlap = (count * CHECKER_HEIGHT - POINT_HEIGHT) / (count - 1);
       const step = CHECKER_HEIGHT - overlap;
       getPosition = (i) => ({ [isTop ? 'top' : 'bottom']: `${i * step}px` });
@@ -46,6 +44,15 @@ const BoardPoint = ({ pointId, checkers, isTop }) => {
       {renderCheckers()}
     </div>
   );
+};
+
+BoardPoint.propTypes = {
+  pointId: PropTypes.number.isRequired,
+  isTop: PropTypes.bool.isRequired,
+  checkers: PropTypes.shape({
+    count: PropTypes.number,
+    color: PropTypes.string,
+  }),
 };
 
 export default BoardPoint;

@@ -22,9 +22,9 @@ export class GameService {
 
     // Define the game room with lobby service
     this.server.define('backgammon', BackgammonRoom, {
-      lobbyService: this.lobbyService
+      lobbyService: this.lobbyService,
     });
-    
+
     // Define the lobby room
     this.server.define('lobby', LobbyRoom);
 

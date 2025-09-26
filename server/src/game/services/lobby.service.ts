@@ -19,7 +19,7 @@ export class LobbyService {
     try {
       // Получаем все лобби-комнаты
       const lobbyRooms = await matchMaker.query({ name: 'lobby' });
-      
+
       lobbyRooms.forEach((lobbyRoom) => {
         if (action === 'add') {
           lobbyRoom.send('+', roomInfo);

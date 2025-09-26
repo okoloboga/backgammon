@@ -1,4 +1,5 @@
 import * as colyseus from 'colyseus.js';
+import { authService } from './authService';
 
 // Адрес вашего игрового сервера Colyseus
 // В идеале, это должно быть в .env файле
@@ -6,11 +7,49 @@ const COLYSEUS_ENDPOINT = import.meta.env.MODE === 'production'
   ? 'wss://backgammon.ruble.website' 
   : 'ws://localhost:2567';
 
+const API_BASE_URL = import.meta.env.MODE === 'production' 
+  ? 'https://backgammon.ruble.website/api' 
+  : 'http://localhost:3001/api';
+
 class ColyseusService {
   constructor() {
     this.client = new colyseus.Client(COLYSEUS_ENDPOINT);
     this.lobby = null;
     this.gameRoom = null; // Добавляем свойство для хранения игровой комнаты
+  }
+
+  async createRoom(options = {}) {
+    const token = authService.getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/game/matchmake`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(options),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create game room');
+    }
+
+    const data = await response.json();
+    return data; // This will return { roomId: '...' }
+  }
+
+  async joinRoomById(roomId) {
+    if (this.gameRoom) {
+      await this.leaveGameRoom();
+    }
+    try {
+      this.gameRoom = await this.client.joinById(roomId, {});
+      console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+      return this.gameRoom;
+    } catch (e) {
+      console.error(`Failed to join game room by ID '${roomId}':`, e);
+      this.gameRoom = null;
+      throw e;
+    }
   }
 
   // ... (существующие методы лобби)

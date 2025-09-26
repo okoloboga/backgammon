@@ -67,7 +67,9 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid request data' })
-  generateChallenge(@Body() generateChallengeDto: GenerateChallengeDto): ChallengeResponse {
+  generateChallenge(
+    @Body() generateChallengeDto: GenerateChallengeDto,
+  ): ChallengeResponse {
     return this.authService.generateChallenge(generateChallengeDto.clientId);
   }
 
@@ -228,7 +230,9 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Invalid proof or request data' })
   @ApiResponse({ status: 401, description: 'Proof verification failed' })
-  async verifyProof(@Body() verifyProofDto: VerifyProofDto): Promise<AuthResponse> {
+  async verifyProof(
+    @Body() verifyProofDto: VerifyProofDto,
+  ): Promise<AuthResponse> {
     return await this.authService.verifyTonProof(verifyProofDto);
   }
 

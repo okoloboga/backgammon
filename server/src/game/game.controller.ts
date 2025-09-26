@@ -1,6 +1,7 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { MatchmakeDto } from './dto/matchmake.dto';
 
 @ApiTags('Game')
 @Controller('game')
@@ -17,8 +18,8 @@ export class GameController {
       },
     },
   })
-  async matchmake(): Promise<{ roomId: string }> {
-    const reservation = await matchMaker.joinOrCreate('backgammon', {});
+  async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
+    const reservation = await matchMaker.joinOrCreate('backgammon', options);
     return { roomId: reservation.room.roomId };
   }
 }

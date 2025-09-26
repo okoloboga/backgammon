@@ -62,7 +62,7 @@ export class AuthService {
     if (verifyData.initData) {
       try {
         const params = new URLSearchParams(verifyData.initData);
-        
+
         // Try to get data from 'user' field (Telegram WebApp format)
         const userJson = params.get('user');
         if (userJson) {
@@ -95,7 +95,11 @@ export class AuthService {
     } else {
       // If user exists, update their profile info if new data is provided
       if (username !== undefined || avatarUrl !== undefined) {
-        user = await this.usersService.updateUserProfile(user.id, username, avatarUrl);
+        user = await this.usersService.updateUserProfile(
+          user.id,
+          username,
+          avatarUrl,
+        );
       }
     }
 

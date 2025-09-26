@@ -1,7 +1,8 @@
 export default () => ({
   port: parseInt(process.env.PORT || '3000'),
   ton: {
-    endpoint: process.env.TON_ENDPOINT || 'https://toncenter.com/api/v2/jsonRPC',
+    endpoint:
+      process.env.TON_ENDPOINT || 'https://toncenter.com/api/v2/jsonRPC',
     apiKey: process.env.TON_API_KEY,
     network: process.env.TON_NETWORK || 'mainnet',
   },

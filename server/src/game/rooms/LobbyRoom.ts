@@ -20,7 +20,7 @@ export class LobbyState extends Schema {
 export class LobbyRoom extends Room<LobbyState> {
   onCreate(_options: any) {
     this.setState(new LobbyState());
-    
+
     // Отправляем текущий список комнат новому клиенту
     this.onMessage('getRooms', (client) => {
       this.sendRoomsList(client);
@@ -45,7 +45,7 @@ export class LobbyRoom extends Room<LobbyState> {
 
   onJoin(client: Client, _options: any) {
     console.log(`Client ${client.sessionId} joined lobby`);
-    
+
     // Отправляем текущий список комнат
     this.sendRoomsList(client);
   }
@@ -66,7 +66,7 @@ export class LobbyRoom extends Room<LobbyState> {
     roomInfoSchema.betAmount = roomInfo.betAmount;
     roomInfoSchema.currency = roomInfo.currency;
     roomInfoSchema.createdAt = roomInfo.createdAt;
-    
+
     this.state.rooms.set(roomInfo.roomId, roomInfoSchema);
     console.log(`Room ${roomInfo.roomId} added to lobby`);
   }
@@ -82,14 +82,16 @@ export class LobbyRoom extends Room<LobbyState> {
     const room = this.state.rooms.get(roomId);
     if (room) {
       if (updates.roomName !== undefined) room.roomName = updates.roomName;
-      if (updates.playersCount !== undefined) room.playersCount = updates.playersCount;
-      if (updates.maxPlayers !== undefined) room.maxPlayers = updates.maxPlayers;
+      if (updates.playersCount !== undefined)
+        room.playersCount = updates.playersCount;
+      if (updates.maxPlayers !== undefined)
+        room.maxPlayers = updates.maxPlayers;
       if (updates.status !== undefined) room.status = updates.status;
       if (updates.createdBy !== undefined) room.createdBy = updates.createdBy;
       if (updates.betAmount !== undefined) room.betAmount = updates.betAmount;
       if (updates.currency !== undefined) room.currency = updates.currency;
       if (updates.createdAt !== undefined) room.createdAt = updates.createdAt;
-      
+
       console.log(`Room ${roomId} updated in lobby`);
     }
   }

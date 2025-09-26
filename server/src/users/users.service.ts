@@ -10,7 +10,11 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async createUser(walletAddress: string, username?: string, avatar?: string): Promise<User> {
+  async createUser(
+    walletAddress: string,
+    username?: string,
+    avatar?: string,
+  ): Promise<User> {
     const user = this.userRepository.create({
       walletAddress,
       username,
@@ -84,7 +88,10 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async addFriend(userId: string, friendWalletAddress: string): Promise<User | null> {
+  async addFriend(
+    userId: string,
+    friendWalletAddress: string,
+  ): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return null;
 
@@ -95,7 +102,10 @@ export class UsersService {
     return user;
   }
 
-  async addAchievement(userId: string, achievement: string): Promise<User | null> {
+  async addAchievement(
+    userId: string,
+    achievement: string,
+  ): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) return null;
 

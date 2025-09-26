@@ -73,7 +73,9 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUserProfile(@CurrentUser() currentUser: User): Promise<User | null> {
+  async getCurrentUserProfile(
+    @CurrentUser() currentUser: User,
+  ): Promise<User | null> {
     return await this.usersService.getUserById(currentUser.id);
   }
 
@@ -169,7 +171,9 @@ export class UsersController {
     description: 'User data',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserByWalletAddress(@Param('address') address: string): Promise<User | null> {
+  async getUserByWalletAddress(
+    @Param('address') address: string,
+  ): Promise<User | null> {
     return await this.usersService.getUserByWalletAddress(address);
   }
 

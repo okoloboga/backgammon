@@ -39,21 +39,24 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        console.log('Creating a room:', { betAmount, currency });
-        const room = await colyseusService.joinGameRoom('backgammon', {
-          roomName: `Game ${Date.now()}`,
-          createdBy: 'current_user', // TODO: Get from user context
+        console.log('Creating a room via HTTP:', { betAmount, currency });
+        const { roomId } = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
-        console.log('Room created:', room.roomId);
+        console.log('Room created with ID:', roomId);
+
+        console.log('Joining room by ID:', roomId);
+        const room = await colyseusService.joinRoomById(roomId);
+        console.log('Successfully joined room:', room.id);
+
         onClose();
         setBetAmount('');
         if (onNavigateToGame) {
-          onNavigateToGame(room.roomId);
+          onNavigateToGame(room.id);
         }
       } catch (error) {
-        console.error('Failed to create room:', error);
+        console.error('Failed to create or join room:', error);
       }
       setCurrency('TON');
     }

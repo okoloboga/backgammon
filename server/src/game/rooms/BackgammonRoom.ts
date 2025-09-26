@@ -86,7 +86,7 @@ export class BackgammonRoom extends Room<GameState> {
 
   onDispose() {
     console.log('room', this.roomId, 'disposing...');
-    
+
     // Уведомляем лобби об удалении комнаты
     if (this.roomInfo) {
       this.notifyLobby('remove', this.roomInfo);

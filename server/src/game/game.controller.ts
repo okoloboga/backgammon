@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MatchmakeDto } from './dto/matchmake.dto';
@@ -9,7 +9,7 @@ export class GameController {
   constructor() {
     console.log('GameController instantiated');
   }
-  @Get('matchmake')
+  @Post('matchmake')
   @ApiOperation({ summary: 'Find or create a backgammon game room' })
   @ApiResponse({
     status: 200,
@@ -21,11 +21,8 @@ export class GameController {
       },
     },
   })
-  async matchmake(): Promise<{ roomId: string }> {
-    const reservation = await matchMaker.joinOrCreate('backgammon', {
-      betAmount: 1,
-      currency: 'TON',
-    });
+  async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
+    const reservation = await matchMaker.joinOrCreate('backgammon', options);
     return { roomId: reservation.room.roomId };
   }
 }

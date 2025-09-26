@@ -20,7 +20,7 @@ class ColyseusService {
 
   async createRoom(options = {}) {
     const token = authService.getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/game/matchmake`, {
+    const response = await fetch(`${API_BASE_URL}/game-http/matchmake`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

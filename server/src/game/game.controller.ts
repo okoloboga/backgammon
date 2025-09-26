@@ -4,7 +4,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MatchmakeDto } from './dto/matchmake.dto';
 
 @ApiTags('Game')
-@Controller('game')
+@Controller('game-http')
 export class GameController {
   @Post('matchmake')
   @ApiOperation({ summary: 'Find or create a backgammon game room' })

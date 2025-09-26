@@ -8,4 +8,8 @@ import { LobbyService } from './services/lobby.service';
   controllers: [GameController],
   exports: [GameService, LobbyService],
 })
-export class GameModule {}
+export class GameModule {
+  constructor() {
+    console.log('GameModule loaded');
+  }
+}

@@ -6,6 +6,9 @@ import { MatchmakeDto } from './dto/matchmake.dto';
 @ApiTags('Game')
 @Controller('game-http')
 export class GameController {
+  constructor() {
+    console.log('GameController instantiated');
+  }
   @Get('matchmake')
   @ApiOperation({ summary: 'Find or create a backgammon game room' })
   @ApiResponse({

@@ -35,10 +35,8 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+    env_file:
+      - server/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

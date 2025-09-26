@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // Initialize Colyseus
   const gameService = app.get(GameService);
-  gameService.initialize(app.getHttpServer() as http.Server);
+  // gameService.initialize(app.getHttpServer() as http.Server);
 
   // Swagger configuration
   const config = new DocumentBuilder()

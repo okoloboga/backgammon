@@ -5,6 +5,7 @@ import { GameService } from './game/game.service';
 import * as http from 'http';
 
 async function bootstrap() {
+  console.log('\n\n--- SHELDON\'S DEBUG MESSAGE: BOOTSTRAP STARTED ---\n\n');
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');

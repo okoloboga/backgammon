@@ -23,8 +23,32 @@ const formatBalance = (num) => {
   return rounded.toFixed(2);
 };
 
+import PropTypes from 'prop-types'; 
+import { useState } from 'react'
+import { colyseusService } from '../../../services/colyseusService'
+import '../../../styles/CreateRoomModal.css'
+
+// Функция для форматирования баланса с точностью до 2 знаков после запятой
+const formatBalance = (num) => {
+  // Округляем до 2 знаков после запятой
+  const rounded = Math.round(num * 100) / 100;
+  
+  if (rounded >= 1000000000) {
+    return (rounded / 1000000000).toFixed(2) + 'B';
+  }
+  if (rounded >= 1000000) {
+    return (rounded / 1000000).toFixed(2) + 'M';
+  }
+  if (rounded >= 1000) {
+    return (rounded / 1000).toFixed(2) + 'k';
+  }
+  
+  // Для чисел меньше 1000 показываем с точностью до 2 знаков
+  return rounded.toFixed(2);
+};
+
 // Модальное окно для создания комнаты
-const CreateRoomModal = ({ isOpen, onClose, balances }) => {
+const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   const [betAmount, setBetAmount] = useState('')
   const [currency, setCurrency] = useState('TON')
 
@@ -57,7 +81,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances }) => {
         console.log('Creating a room:', { betAmount, currency })
         
         // Создаем комнату через Colyseus
-        const room = await colyseusService.client.joinOrCreate('backgammon', {
+        const room = await colyseusService.joinGameRoom('backgammon', {
           roomName: `Game ${Date.now()}`,
           createdBy: 'current_user', // TODO: Получить из контекста пользователя
           betAmount: parseFloat(betAmount),
@@ -70,7 +94,11 @@ const CreateRoomModal = ({ isOpen, onClose, balances }) => {
         onClose()
         setBetAmount('')
         
-        // TODO: Перейти к игровой комнате
+        // Переходим в игровую комнату
+        if (onNavigateToGame) {
+          onNavigateToGame(room.roomId);
+        }
+
       } catch (error) {
         console.error('Failed to create room:', error)
         // TODO: Показать ошибку пользователю

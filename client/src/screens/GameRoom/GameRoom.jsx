@@ -1,68 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './GameRoom.css';
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
+import PlayerProfile from './components/PlayerProfile';
+import { colyseusService } from '../../services/colyseusService';
 
-import purpleLayer from '../../assets/game/purpleLayer.png';
-import greenLayer from '../../assets/game/greenLayer.png';
+const GameRoom = ({ roomId, onQuit }) => {
+  const [room, setRoom] = useState(null);
+  const [gameState, setGameState] = useState(null);
+  const [playerColor, setPlayerColor] = useState(null);
 
-const initialBoardState = {
-  1: { count: 15, color: 'black' },
-  24: { count: 15, color: 'white' },
-};
+  const mockPlayer1 = { username: 'Player 1', avatar: '/assets/player1.png' };
+  const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
 
-const GameRoom = () => {
-  const [dice, setDice] = useState([1, 6]);
+  useEffect(() => {
+    const connectToRoom = async () => {
+      if (!roomId) return;
+      try {
+        const gameRoom = await colyseusService.joinGameRoom(roomId);
+        setRoom(gameRoom);
+
+        gameRoom.onStateChange((state) => {
+          if (!playerColor) {
+            const color = state.players.get(gameRoom.sessionId);
+            if (color) setPlayerColor(color);
+          }
+        });
+
+      } catch (e) {
+        console.error(`Failed to join room ${roomId}:`, e);
+        onQuit(); // Если не удалось подключиться, выходим обратно в меню
+      }
+    };
+
+    connectToRoom();
+
+    return () => {
+      colyseusService.leaveGameRoom();
+    };
+  }, [roomId, onQuit]); // Переподключаемся, если меняется roomId
+
+  useEffect(() => {
+    if (room) {
+      room.onStateChange((newState) => {
+        console.log("New game state received:", newState.toJSON());
+        setGameState(newState);
+      });
+      room.onMessage("error", (message) => console.error("Server error:", message));
+    }
+  }, [room]);
 
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
     right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
   };
 
-  const rollDice = () => {
-    const d1 = Math.floor(Math.random() * 6) + 1;
-    const d2 = Math.floor(Math.random() * 6) + 1;
-    setDice([d1, d2]);
+  const handleRollDice = () => room && canRoll && room.send('rollDice');
+  const handleQuit = () => {
+    colyseusService.leaveGameRoom().then(() => {
+      onQuit();
+    });
   };
+
+  if (!gameState) {
+    return <div className="game-room"><h1>Joining game...</h1></div>;
+  }
+  
+  // Отображение ожидания, если игрок один
+  if (gameState.players.size < 2) {
+    return <div className="game-room"><h1>Waiting for opponent...</h1></div>;
+  }
+
+  const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
+  const canRoll = isMyTurn && gameState.dice.length === 0;
+
+  const whitePlayer = mockPlayer1; // Эту логику нужно будет улучшить
+  const blackPlayer = mockPlayer2;
 
   return (
     <div className="game-room">
-      <div className="game-board">
-        <div className="board-half">
-          <img src={purpleLayer} className="board-bg" alt="Board background" />
-          <div className="point-grid-container">
-            {pointRenderOrder.left.map((id) => (
-              <BoardPoint
-                key={id}
-                pointId={id}
-                isTop={id >= 13}
-                checkers={initialBoardState[id]}
-              />
-            ))}
-          </div>
+      <button onClick={handleQuit} className="quit-button">Quit</button>
+      <div className="game-area-wrapper">
+        <div className="profiles-container">
+            <PlayerProfile player={blackPlayer} align="left" />
+            <PlayerProfile player={whitePlayer} align="right" />
         </div>
-
-        <div className="board-half">
-          <img src={purpleLayer} className="board-bg" alt="Board background" />
-          <img src={greenLayer} className="board-bg overlay" alt="Board overlay" />
-          <div className="point-grid-container">
-            {pointRenderOrder.right.map((id) => (
-              <BoardPoint
-                key={id}
-                pointId={id}
-                isTop={id >= 19}
-                checkers={initialBoardState[id]}
-              />
-            ))}
-          </div>
-          <div className="dice-area" onClick={rollDice}>
-            <Dice value={dice[0]} />
-            <Dice value={dice[1]} />
-          </div>
+        <div className="game-board">
+          {/* ... остальная часть доски ... */}
         </div>
       </div>
     </div>
   );
+};
+
+GameRoom.propTypes = {
+  roomId: PropTypes.string.isRequired,
+  onQuit: PropTypes.func.isRequired,
 };
 
 export default GameRoom;

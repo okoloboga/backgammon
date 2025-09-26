@@ -10,6 +10,55 @@ class ColyseusService {
   constructor() {
     this.client = new colyseus.Client(COLYSEUS_ENDPOINT);
     this.lobby = null;
+    this.gameRoom = null; // Добавляем свойство для хранения игровой комнаты
+  }
+
+  // ... (существующие методы лобби)
+
+  /**
+   * Подключается к игровой комнате или создает новую.
+   * @param {string} roomName - Имя комнаты для подключения (e.g., 'backgammon_room').
+   * @param {object} options - Опции, передаваемые при создании комнаты.
+   * @returns {Promise<colyseus.Room>}
+   */
+  async joinGameRoom(roomName = 'backgammon_room', options = {}) {
+    if (this.gameRoom) {
+      console.warn('Already connected to a game room. Leaving the old one.');
+      await this.leaveGameRoom();
+    }
+    try {
+      this.gameRoom = await this.client.joinOrCreate(roomName, options);
+      console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+      return this.gameRoom;
+    } catch (e) {
+      console.error(`Failed to join game room '${roomName}':`, e);
+      this.gameRoom = null;
+      throw e;
+    }
+  }
+
+  /**
+   * Отключается от текущей игровой комнаты.
+   */
+  async leaveGameRoom() {
+    if (this.gameRoom) {
+      try {
+        await this.gameRoom.leave();
+        console.log(`Left game room: ${this.gameRoom.id}`);
+      } catch (e) {
+        console.error('Error while leaving game room:', e);
+      } finally {
+        this.gameRoom = null;
+      }
+    }
+  }
+
+  /**
+   * Возвращает текущий экземпляр игровой комнаты.
+   * @returns {colyseus.Room | null}
+   */
+  getGameRoom() {
+    return this.gameRoom;
   }
 
   /**

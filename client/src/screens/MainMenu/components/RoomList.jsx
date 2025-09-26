@@ -3,8 +3,10 @@ import { colyseusService } from '../../../services/colyseusService'
 import RoomCard from './RoomCard'
 import '../../../styles/RoomList.css'
 
+import PropTypes from 'prop-types';
+
 // Список активных игровых комнат
-const RoomList = () => {
+const RoomList = ({ onNavigateToGame }) => {
   const [rooms, setRooms] = useState([])
   const [isConnected, setIsConnected] = useState(false)
 
@@ -54,8 +56,10 @@ const RoomList = () => {
   }, [])
 
   const handleEnterRoom = (roomId) => {
-    console.log(`Вход в комнату ${roomId}`)
-    // TODO: Реализовать подключение к игровой комнате
+    console.log(`Entering room ${roomId}`);
+    if (onNavigateToGame) {
+      onNavigateToGame(roomId);
+    }
   }
 
   return (
@@ -90,5 +94,9 @@ const RoomList = () => {
     </div>
   )
 }
+
+RoomList.propTypes = {
+  onNavigateToGame: PropTypes.func.isRequired,
+};
 
 export default RoomList

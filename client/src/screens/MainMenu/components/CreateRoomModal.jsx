@@ -121,8 +121,9 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
               className="create-button"
+              onClick={handleSubmit}
             >
               Create
             </button>

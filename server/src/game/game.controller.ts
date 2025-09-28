@@ -45,4 +45,12 @@ export class GameController {
       throw e; // Re-throw the error to let NestJS handle it
     }
   }
+
+  @Get('ping')
+  @ApiOperation({ summary: 'Ping the game server' })
+  @ApiResponse({ status: 200, description: 'Pong' })
+  ping(): string {
+    this.logger.log('--- PING received on GameController ---');
+    return 'pong';
+  }
 }

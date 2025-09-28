@@ -37,6 +37,7 @@ async matchmake( @Body() options: MatchmakeDto): Promise<{
     this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
 
     // Возвращаем плоскую структуру для consumeSeatReservation
+    // FIX: Force server update - ensure flat structure is returned
     const response = {
       roomId: reservation.room.roomId,
       sessionId: reservation.sessionId,

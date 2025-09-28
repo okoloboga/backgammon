@@ -35,7 +35,10 @@ export class GameController {
 
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
       this.logger.log(`Reservation object: ${JSON.stringify(reservation)}`);
-      const response = { roomId: reservation.room.roomId };
+      const response = {
+        roomId: reservation.room.roomId,
+        sessionId: reservation.sessionId,
+      };
       this.logger.log(
         `--- Returning from matchmake: ${JSON.stringify(response)}`,
       );

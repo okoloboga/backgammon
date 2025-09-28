@@ -37,12 +37,13 @@ class ColyseusService {
     return data; // This will return { roomId: '...' }
   }
 
-  async joinRoomById(roomId) {
+  async joinRoomById(roomId, sessionId) {
     if (this.gameRoom) {
       await this.leaveGameRoom();
     }
     try {
-      this.gameRoom = await this.client.joinById(roomId, {});
+      // ВАЖНО: передаём sessionId из резервации для подтверждения места
+      this.gameRoom = await this.client.joinById(roomId, { sessionId });
       console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
       return this.gameRoom;
     } catch (e) {

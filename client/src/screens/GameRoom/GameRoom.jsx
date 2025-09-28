@@ -15,31 +15,44 @@ const GameRoom = ({ roomId, onQuit }) => {
   const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
 
   useEffect(() => {
-    const connectToRoom = async () => {
-      if (!roomId) return;
-      try {
-        const gameRoom = await colyseusService.joinGameRoom(roomId);
-        setRoom(gameRoom);
+    console.log('GameRoom mounted with roomId:', roomId);
 
-        gameRoom.onStateChange((state) => {
-          if (!playerColor) {
-            const color = state.players.get(gameRoom.sessionId);
-            if (color) setPlayerColor(color);
-          }
-        });
+    const setupRoom = async () => {
+      let roomInstance = colyseusService.getGameRoom();
 
-      } catch (e) {
-        console.error(`Failed to join room ${roomId}:`, e);
-        onQuit();
+      // If we don't have a room instance, or it's the wrong one, join by ID.
+      // This handles page refreshes.
+      if (!roomInstance || roomInstance.id !== roomId) {
+        console.log(`No room instance found or roomId mismatch. Joining by ID: ${roomId}`);
+        try {
+          roomInstance = await colyseusService.joinRoomById(roomId);
+        } catch (e) {
+          console.error(`Failed to join room ${roomId}:`, e);
+          onQuit(); // Go back if join fails
+          return; // Stop execution
+        }
+      } else {
+        console.log(`Attaching to existing room instance: ${roomInstance.id}`);
       }
+
+      setRoom(roomInstance);
+
+      // Set up listeners on the definitive room instance
+      roomInstance.onStateChange((state) => {
+        if (!playerColor) {
+          const color = state.players.get(roomInstance.sessionId);
+          if (color) setPlayerColor(color);
+        }
+      });
     };
 
-    connectToRoom();
+    setupRoom();
 
     return () => {
+      console.log('GameRoom unmounting, leaving room...');
       colyseusService.leaveGameRoom();
     };
-  }, [roomId, onQuit, playerColor]);
+  }, [roomId, onQuit]);
 
   useEffect(() => {
     if (room) {

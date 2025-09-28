@@ -41,14 +41,14 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     if (isValidBetAmount()) {
       try {
         console.log('Creating a room via HTTP:', { betAmount, currency });
-        const { roomId } = await colyseusService.createRoom({
+        const { roomId, sessionId } = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
-        console.log('Room created with ID:', roomId);
+        console.log('Room created with ID:', roomId, 'sessionId:', sessionId);
 
         console.log('Joining room by ID:', roomId);
-        const room = await colyseusService.joinRoomById(roomId);
+        const room = await colyseusService.joinRoomById(roomId, sessionId);
         console.log('Successfully joined room:', room.id);
 
         onClose();

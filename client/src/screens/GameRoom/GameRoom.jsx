@@ -19,14 +19,14 @@ const GameRoom = ({ roomId, onQuit }) => {
     setDebugMessage('1. GameRoom mounted. Getting room instance...');
     const roomInstance = colyseusService.getGameRoom();
     console.log('GameRoom: roomInstance =', roomInstance);
-    console.log('GameRoom: roomInstance.id =', roomInstance?.id);
+    console.log('GameRoom: roomInstance.roomId =', roomInstance?.roomId);
     console.log('GameRoom: expected roomId =', roomId);
 
-    if (roomInstance && roomInstance.id === roomId) {
+    if (roomInstance && roomInstance.roomId === roomId) {
       setDebugMessage('2. Got room instance. Setting room state.');
       setRoom(roomInstance);
     } else {
-      setDebugMessage(`3. ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.id : 'null'}`);
+      setDebugMessage(`3. ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.roomId : 'null'}`);
       onQuit();
     }
 

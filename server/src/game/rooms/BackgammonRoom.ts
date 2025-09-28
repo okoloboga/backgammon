@@ -242,7 +242,10 @@ export class BackgammonRoom extends Room<GameState> {
         const toStr = to.toString();
         const targetPoint = this.state.board.get(toStr);
         if (!targetPoint) {
-          this.state.board.set(toStr, new Point({ player, checkers: 1 }));
+                    const p = new Point();
+          p.player = player;
+          p.checkers = 1;
+          this.state.board.set(toStr, p);
         } else if (targetPoint.player === player) {
           targetPoint.checkers++;
         } else {

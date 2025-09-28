@@ -42,6 +42,8 @@ async joinWithReservation(reservation) {
     // Используем joinById с sessionId из резервации
     this.gameRoom = await this.client.joinById(reservation.roomId, { sessionId: reservation.sessionId });
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+    console.log('Full room object:', this.gameRoom);
+    console.log('Room state:', this.gameRoom.state);
     return this.gameRoom;
   } catch (e) {
     console.error('Failed to join with reservation:', e);

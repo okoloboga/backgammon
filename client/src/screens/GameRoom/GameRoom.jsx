@@ -18,6 +18,9 @@ const GameRoom = ({ roomId, onQuit }) => {
   useEffect(() => {
     setDebugMessage('1. GameRoom mounted. Getting room instance...');
     const roomInstance = colyseusService.getGameRoom();
+    console.log('GameRoom: roomInstance =', roomInstance);
+    console.log('GameRoom: roomInstance.id =', roomInstance?.id);
+    console.log('GameRoom: expected roomId =', roomId);
 
     if (roomInstance && roomInstance.id === roomId) {
       setDebugMessage('2. Got room instance. Setting room state.');

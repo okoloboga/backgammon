@@ -24,18 +24,9 @@ export class GameController {
       },
     },
   })
-  async matchmake(/* @Body() options: MatchmakeDto */): Promise<{ roomId: string }> {
-    // --- TEMPORARY DEBUGGING ---
-    const options: MatchmakeDto = {
-      betAmount: 10,
-      currency: 'TON',
-    };
-    // --- END TEMPORARY DEBUGGING ---
-
+  async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
     this.logger.log(
-      `--- ENTERED matchmake method with HARDCODED options: ${JSON.stringify(
-        options,
-      )}`,
+      `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
     );
     try {
       this.logger.log(`--- Querying available rooms before joinOrCreate...`);

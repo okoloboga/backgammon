@@ -30,7 +30,17 @@ export class BackgammonRoom extends Room<GameState> {
   private lobbyService: LobbyService;
 
   onCreate(options: BackgammonRoomOptions) {
-    this.logger.log(`--- BackgammonRoom CREATED with options: ${JSON.stringify(options)}`);
+    const safeOptions = {
+      roomName: options.roomName,
+      createdBy: options.createdBy,
+      betAmount: options.betAmount,
+      currency: options.currency,
+    };
+    this.logger.log(
+      `--- BackgammonRoom CREATED with safe options: ${JSON.stringify(
+        safeOptions,
+      )}`,
+    );
     this.setState(new GameState());
     this.setupBoard();
 

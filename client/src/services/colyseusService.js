@@ -26,8 +26,8 @@ class ColyseusService {
       body: JSON.stringify(options),
     });
     if (!res.ok) throw new Error('Failed to create game room');
-    const { reservation } = await res.json(); // { roomId, sessionId, processId }
-    return reservation;
+    const data = await res.json();
+    return data;
   }
 
   async joinWithReservation(reservation) {

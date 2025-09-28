@@ -20,10 +20,8 @@ const GameRoom = ({ roomId, onQuit }) => {
     if (roomInstance && roomInstance.id === roomId) {
       setRoom(roomInstance);
     } else {
-      // This block should not be hit in the normal flow
-      // but is a fallback for e.g. page reloads.
-      console.error("ERROR: GameRoom loaded without a valid room instance.");
-      setTimeout(() => onQuit(), 5000);
+      console.error('GameRoom: could not find room instance on mount! This can happen on a page refresh.');
+      onQuit();
     }
 
     return () => {

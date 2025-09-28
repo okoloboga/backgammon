@@ -30,12 +30,19 @@ class ColyseusService {
     return data;
   }
 
-  async joinWithReservation(reservation) {
-    if (this.gameRoom) await this.leaveGameRoom();
-    // ВАЖНО: потребляем резервацию, colyseus.js сам подставит sessionId в WS
-    this.gameRoom = await this.client.consumeSeatReservation(reservation);
-    console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
-    return this.gameRoom;
+  async joinRoomById(roomId, sessionId) {
+    if (this.gameRoom) {
+      await this.leaveGameRoom();
+    }
+    try {
+      this.gameRoom = await this.client.joinById(roomId, { sessionId });
+      console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+      return this.gameRoom;
+    } catch (e) {
+      console.error(`Failed to join game room by ID '${roomId}':`, e);
+      this.gameRoom = null;
+      throw e;
+    }
   }
 
   // ... (существующие методы лобби)

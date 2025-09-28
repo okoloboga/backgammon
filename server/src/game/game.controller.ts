@@ -26,27 +26,17 @@ export class GameController {
   })
   async matchmake(
     @Body() options: MatchmakeDto,
-  ): Promise<{
-    roomId: string;
-    sessionId: string;
-    processId: string;
-  }> {
+  ): Promise<{ roomId: string; sessionId: string }> {
     this.logger.log(
       `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
     );
     try {
-      this.logger.log(`--- Querying available rooms before joinOrCreate...`);
-      const availableRooms = await matchMaker.query({});
-      this.logger.log(`--- Available rooms: ${JSON.stringify(availableRooms)}`);
-
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
       this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
 
-      // Возвращаем плоскую структуру, которую ожидает consumeSeatReservation
       const response = {
         roomId: reservation.room.roomId,
         sessionId: reservation.sessionId,
-        processId: reservation.room.processId,
       };
       this.logger.log(`--- Returning from matchmake: ${JSON.stringify(response)}`);
       return response;

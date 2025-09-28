@@ -38,13 +38,26 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // --- START DEBUG CODE ---
+    const payload = {
+      betAmount: parseFloat(betAmount),
+      currency: currency,
+    };
+    const debugInfo = {
+      "--- DEBUG PAYLOAD ---": "MAKE SURE TO CHECK THE TYPES!",
+      payload_to_be_sent: payload,
+      "payload.betAmount type": typeof payload.betAmount,
+      "state.betAmount (raw)": betAmount,
+      "state.betAmount type": typeof betAmount,
+    };
+    setDebugError(JSON.stringify(debugInfo, null, 2));
+    // --- END DEBUG CODE ---
+
     if (isValidBetAmount()) {
       try {
-        console.log('Creating a room via HTTP:', { betAmount, currency });
-        const { roomId } = await colyseusService.createRoom({
-          betAmount: parseFloat(betAmount),
-          currency: currency,
-        });
+        console.log('Creating a room via HTTP:', payload);
+        const { roomId } = await colyseusService.createRoom(payload);
         console.log('Room created with ID:', roomId);
 
         console.log('Joining room by ID:', roomId);
@@ -58,7 +71,9 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
         }
       } catch (error) {
         console.error('Failed to create or join room:', error);
-        setDebugError(error.message || 'An unknown error occurred.');
+        // The debug info is already set, so we don't overwrite it with the error.
+        // If you want to see the error instead, uncomment the next line.
+        // setDebugError(error.message || 'An unknown error occurred.');
       }
       setCurrency('TON');
     }
@@ -76,9 +91,8 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     <div className="modal-overlay" onClick={handleClose}>
       <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
         {debugError && (
-          <div style={{ backgroundColor: 'red', color: 'white', padding: '10px', margin: '10px', borderRadius: '5px' }}>
-            <p>-- DEBUG ERROR --</p>
-            <p>{debugError}</p>
+          <div style={{ backgroundColor: 'rgba(255,0,0,0.7)', color: 'white', padding: '10px', margin: '10px', borderRadius: '5px', whiteSpace: 'pre-wrap' }}>
+            <pre>{debugError}</pre>
           </div>
         )}
         <form onSubmit={handleSubmit} className="modal-form">

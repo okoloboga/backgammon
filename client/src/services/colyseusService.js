@@ -20,37 +20,22 @@ class ColyseusService {
 
   async createRoom(options = {}) {
     const token = authService.getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/game-http/create_room`, {
+    const res = await fetch(`${API_BASE_URL}/game-http/create_room`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(options),
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to create game room');
-    }
-
-    const data = await response.json();
-    return data; // This will return { roomId: '...' }
+    if (!res.ok) throw new Error('Failed to create game room');
+    const { reservation } = await res.json(); // { roomId, sessionId, processId }
+    return reservation;
   }
 
-  async joinRoomById(roomId, sessionId) {
-    if (this.gameRoom) {
-      await this.leaveGameRoom();
-    }
-    try {
-      // ВАЖНО: передаём sessionId из резервации для подтверждения места
-      this.gameRoom = await this.client.joinById(roomId, { sessionId });
-      console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
-      return this.gameRoom;
-    } catch (e) {
-      console.error(`Failed to join game room by ID '${roomId}':`, e);
-      this.gameRoom = null;
-      throw e;
-    }
+  async joinWithReservation(reservation) {
+    if (this.gameRoom) await this.leaveGameRoom();
+    // ВАЖНО: потребляем резервацию, colyseus.js сам подставит sessionId в WS
+    this.gameRoom = await this.client.consumeSeatReservation(reservation);
+    console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+    return this.gameRoom;
   }
 
   // ... (существующие методы лобби)

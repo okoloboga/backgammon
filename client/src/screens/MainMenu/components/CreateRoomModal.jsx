@@ -39,12 +39,16 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        const { roomId, sessionId } = await colyseusService.createRoom({
+        console.log('Creating a room via HTTP:', { betAmount, currency });
+        const reservation = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
+        console.log('Got reservation:', reservation);
 
-        const room = await colyseusService.joinRoomById(roomId, sessionId);
+        console.log('Joining with reservation...');
+        const room = await colyseusService.joinWithReservation(reservation);
+        console.log('Successfully joined room:', room.id);
 
         onClose();
         setBetAmount('');
@@ -53,7 +57,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
         }
       } catch (error) {
         console.error('Failed to create or join room:', error);
-        // Here you might want to set an error state to show a message to the user
+        // You might want to set an error state here to show a message to the user
       }
     }
   };
@@ -121,9 +125,9 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
               Cancel
             </button>
             <button
-              type="button"
-              className="create-button"
-              onClick={handleSubmit}
+              type="submit"
+              className={`create-button ${!isValidBetAmount() ? 'disabled' : ''}`}
+              disabled={!isValidBetAmount()}
             >
               Create
             </button>

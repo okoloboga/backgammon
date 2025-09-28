@@ -24,7 +24,11 @@ export class GameController {
       },
     },
   })
-  async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
+  async matchmake(
+    @Body() options: MatchmakeDto,
+  ): Promise<{
+    reservation: { roomId: string; sessionId: string; processId: string };
+  }> {
     this.logger.log(
       `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
     );
@@ -35,14 +39,15 @@ export class GameController {
 
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
       this.logger.log(`Reservation object: ${JSON.stringify(reservation)}`);
-      const response = {
-        roomId: reservation.room.roomId,
-        sessionId: reservation.sessionId,
+
+      // Возвращаем только безопасные поля
+      return {
+        reservation: {
+          roomId: reservation.room.roomId,
+          sessionId: reservation.sessionId,
+          processId: reservation.room.processId,
+        },
       };
-      this.logger.log(
-        `--- Returning from matchmake: ${JSON.stringify(response)}`,
-      );
-      return response;
     } catch (e) {
       this.logger.error('Error during matchMaker.joinOrCreate:', e);
       throw e; // Re-throw the error to let NestJS handle it

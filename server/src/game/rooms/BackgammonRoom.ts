@@ -78,14 +78,14 @@ export class BackgammonRoom extends Room<GameState> {
     // Обновляем информацию о количестве игроков
     if (this.roomInfo) {
       this.roomInfo.playersCount = this.state.players.size;
-      this.notifyLobby('update', this.roomInfo);
+      // this.notifyLobby('update', this.roomInfo);
     }
 
     if (this.state.players.size === 2) {
       this.state.currentPlayer = 'white';
       if (this.roomInfo) {
         this.roomInfo.status = 'playing';
-        this.notifyLobby('update', this.roomInfo);
+        // this.notifyLobby('update', this.roomInfo);
       }
       void this.lock();
     }
@@ -103,7 +103,7 @@ export class BackgammonRoom extends Room<GameState> {
       } else {
         this.roomInfo.status = 'waiting';
       }
-      this.notifyLobby('update', this.roomInfo);
+      // this.notifyLobby('update', this.roomInfo);
     }
   }
 
@@ -112,7 +112,7 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Уведомляем лобби об удалении комнаты
     if (this.roomInfo) {
-      // this.notifyLobby;
+      // this.notifyLobby('remove', this.roomInfo);
     }
   }
 

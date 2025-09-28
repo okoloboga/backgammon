@@ -1,8 +1,8 @@
 import { Schema, type, MapSchema, ArraySchema } from '@colyseus/schema';
 
 export class Point extends Schema {
-  @type('string') player: string;
-  @type('number') checkers: number;
+  @type('string') player: string = '';
+  @type('number') checkers: number = 0;
 }
 
 export class GameState extends Schema {

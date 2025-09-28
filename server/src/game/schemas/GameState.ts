@@ -16,13 +16,13 @@ export class GameState extends Schema {
   off: MapSchema<number>;
 
   @type('string')
-  currentPlayer: string | null;
+  currentPlayer: string;
 
   @type(['number'])
   dice: ArraySchema<number>;
 
   @type('string')
-  winner: string | null;
+  winner: string;
 
   @type(['string'])
   possibleMoves: ArraySchema<string>;
@@ -35,9 +35,9 @@ export class GameState extends Schema {
     this.board = new MapSchema<Point>();
     this.bar = new MapSchema<number>({ white: 0, black: 0 });
     this.off = new MapSchema<number>({ white: 0, black: 0 });
-    this.currentPlayer = null;
+    this.currentPlayer = '';
     this.dice = new ArraySchema<number>();
-    this.winner = null;
+    this.winner = '';
     this.possibleMoves = new ArraySchema<string>();
     this.players = new MapSchema<string>();
   }

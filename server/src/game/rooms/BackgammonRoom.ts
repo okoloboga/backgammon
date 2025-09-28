@@ -121,10 +121,16 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Классическая начальная расстановка для длинных нардов
     // Белые: все 15 шашек на пункте 24
-    this.state.board.set('24', new Point({ player: 'white', checkers: 15 }));
+    const whiteHead = new Point();
+    whiteHead.player = 'white';
+    whiteHead.checkers = 15;
+    this.state.board.set('24', whiteHead);
 
     // Черные: все 15 шашек на пункте 1
-    this.state.board.set('1', new Point({ player: 'black', checkers: 15 }));
+    const blackHead = new Point();
+    blackHead.player = 'black';
+    blackHead.checkers = 15;
+    this.state.board.set('1', blackHead);
   }
 
   handleRollDice(client: Client) {

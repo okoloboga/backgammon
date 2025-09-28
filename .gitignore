@@ -151,3 +151,6 @@ GEMINI.md
 *~
 *.swp
 *.kra
+
+# Gemini-generated issue file
+ISSUE.md

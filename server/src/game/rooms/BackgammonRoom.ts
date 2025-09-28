@@ -1,4 +1,5 @@
 import { Room, Client } from '@colyseus/core';
+import { Logger } from '@nestjs/common';
 import { GameState, Point } from '../schemas/GameState';
 import { LobbyService } from '../services/lobby.service';
 import { RoomInfo } from '../types';
@@ -23,11 +24,13 @@ interface BackgammonRoomOptions {
 }
 
 export class BackgammonRoom extends Room<GameState> {
+  private readonly logger = new Logger(BackgammonRoom.name);
   private possibleMoves: Move[][] = [];
   private roomInfo: RoomInfo | null = null;
   private lobbyService: LobbyService;
 
   onCreate(options: BackgammonRoomOptions) {
+    this.logger.log(`--- BackgammonRoom CREATED with options: ${JSON.stringify(options)}`);
     this.setState(new GameState());
     this.setupBoard();
 
@@ -57,6 +60,7 @@ export class BackgammonRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, _options: unknown) {
+    this.logger.log(`--- Client ${client.sessionId} JOINED BackgammonRoom`);
     console.log(client.sessionId, 'joined!');
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);

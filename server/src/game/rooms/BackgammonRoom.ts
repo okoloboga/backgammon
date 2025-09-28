@@ -107,7 +107,17 @@ export class BackgammonRoom extends Room<GameState> {
     
     // Принудительно отправляем состояние клиенту
     this.logger.log('--- Broadcasting state to client');
-    this.broadcast('state_update', this.state);
+    // Попробуем отправить JSON состояние
+    this.broadcast('state_update', {
+      board: Array.from(this.state.board.entries()),
+      bar: Array.from(this.state.bar.entries()),
+      off: Array.from(this.state.off.entries()),
+      currentPlayer: this.state.currentPlayer,
+      dice: Array.from(this.state.dice),
+      winner: this.state.winner,
+      possibleMoves: Array.from(this.state.possibleMoves),
+      players: Array.from(this.state.players.entries())
+    });
   }
 
   onLeave(client: Client, _consented: boolean) {

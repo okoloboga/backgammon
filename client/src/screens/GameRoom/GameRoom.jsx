@@ -47,6 +47,11 @@ const GameRoom = ({ roomId, onQuit }) => {
         setDebugMessage(`6. Server sent an error: ${JSON.stringify(message)}`);
         console.error("Server error:", message)
       });
+      room.onMessage("state_update", (stateData) => {
+        console.log("Manual state update received:", stateData);
+        setGameState(stateData);
+        setDebugMessage('7. Manual state update applied');
+      });
     }
   }, [room]);
 

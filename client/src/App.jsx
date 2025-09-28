@@ -86,6 +86,7 @@ function App() {
         return;
       }
 
+      // Case 1: We received a proof. This happens after user signs.
       if (wallet.connectItems?.tonProof && 'proof' in wallet.connectItems.tonProof) {
         setIsLoading(true);
         setError(null);
@@ -112,11 +113,19 @@ function App() {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        // Case 2: Wallet is connected, but no proof is present.
+        // This can happen on page load with a pre-connected wallet.
+        // If we aren't authenticated with our backend yet, we need a proof.
+        if (!authService.isAuthenticated()) {
+          console.log('Wallet is connected, but no proof. Requesting new proof payload.');
+          recreateProofPayload();
+        }
       }
     });
 
     return () => unsubscribe();
-  }, [tonConnectUI, clientId, telegramData]);
+  }, [tonConnectUI, clientId, telegramData, recreateProofPayload]);
 
   const navigateToMain = () => {
     if (authService.isAuthenticated()) {

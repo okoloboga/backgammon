@@ -52,7 +52,7 @@ class ColyseusService {
     }
     try {
       this.gameRoom = await this.client.joinOrCreate(roomName, options);
-      console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
+      console.log(`Successfully joined game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
       return this.gameRoom;
     } catch (e) {
       console.error(`Failed to join game room '${roomName}':`, e);

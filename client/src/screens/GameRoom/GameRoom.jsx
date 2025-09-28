@@ -10,32 +10,40 @@ const GameRoom = ({ roomId, onQuit }) => {
   const [room, setRoom] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [playerColor, setPlayerColor] = useState(null);
+  const [debugMessage, setDebugMessage] = useState('Initializing...');
 
   const mockPlayer1 = { username: 'Player 1', avatar: '/assets/player1.png' };
   const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
 
   useEffect(() => {
+    setDebugMessage('1. GameRoom mounted. Getting room instance...');
     const roomInstance = colyseusService.getGameRoom();
 
     if (roomInstance && roomInstance.id === roomId) {
+      setDebugMessage('2. Got room instance. Setting room state.');
       setRoom(roomInstance);
     } else {
-      console.error('GameRoom: could not find room instance on mount! This can happen on a page refresh.');
+      setDebugMessage(`3. ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.id : 'null'}`);
       onQuit();
     }
 
     return () => {
+      setDebugMessage('X. GameRoom unmounting. Leaving room.');
       colyseusService.leaveGameRoom();
     };
   }, [roomId, onQuit]);
 
   useEffect(() => {
     if (room) {
+      setDebugMessage('4. Room object is set. Attaching onStateChange listener.');
       room.onStateChange((newState) => {
         console.log("New game state received:", newState.toJSON());
-        setGameState(newState);
+        setGameState({ ...newState });
       });
-      room.onMessage("error", (message) => console.error("Server error:", message));
+      room.onMessage("error", (message) => {
+        setDebugMessage(`6. Server sent an error: ${JSON.stringify(message)}`);
+        console.error("Server error:", message)
+      });
     }
   }, [room]);
 
@@ -67,6 +75,10 @@ const GameRoom = ({ roomId, onQuit }) => {
 
   return (
     <div className="game-room">
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap', textAlign: 'left', fontSize: '10px' }}>
+        <p>DEBUG: {debugMessage}</p>
+        <p>GAME STATE: {JSON.stringify(gameState, null, 2)}</p>
+      </div>
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">

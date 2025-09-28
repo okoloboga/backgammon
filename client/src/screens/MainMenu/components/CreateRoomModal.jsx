@@ -40,34 +40,22 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        setDebugError('1. Creating reservation...');
-        const { roomId, sessionId } = await colyseusService.createRoom({
+        const reservation = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
 
-        if (!roomId || !sessionId) {
-          setDebugError(`ERROR: Server response is missing data.\nResponse: ${JSON.stringify({roomId, sessionId})}`);
-          return;
+        const room = await colyseusService.joinWithReservation(reservation);
+
+        onClose();
+        setBetAmount('');
+        if (onNavigateToGame) {
+          onNavigateToGame(room.id);
         }
-
-        setDebugError(`2. Got reservation.\nRoomID: ${roomId}\nSessionID: ${sessionId}\n\n3. Joining with joinById...`);
-
-        const room = await colyseusService.joinRoomById(roomId, sessionId);
-
-        setDebugError(`4. SUCCESS!\nJoined Room ID: ${room.id}\nJoined Session ID: ${room.sessionId}`);
-        
-        // Navigation is disabled for debugging
-        // onClose();
-        // if (onNavigateToGame) {
-        //   onNavigateToGame(room.id);
-        // }
-
       } catch (error) {
-        setDebugError(`--- CATASTROPHIC ERROR ---\nMessage: ${error.message}\n\nStack: ${error.stack}`);
+        console.error('Failed to create or join room:', error);
+        setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
       }
-    } else {
-      setDebugError('isValidBetAmount() is false.');
     }
   };
 

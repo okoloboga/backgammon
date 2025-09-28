@@ -26,7 +26,7 @@ export class GameController {
   })
   async matchmake(
     @Body() options: MatchmakeDto,
-  ): Promise<{ roomId: string; sessionId: string }> {
+  ): Promise<any> { // Return type is dynamic now
     this.logger.log(
       `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
     );
@@ -34,12 +34,20 @@ export class GameController {
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
       this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
 
-      const response = {
-        roomId: reservation.room.roomId,
+      // Return a serializable object that mimics the SeatReservation structure
+      const reservationData = {
         sessionId: reservation.sessionId,
+        room: {
+          processId: reservation.room.processId,
+          roomId: reservation.room.roomId,
+          name: reservation.room.name,
+        },
       };
-      this.logger.log(`--- Returning from matchmake: ${JSON.stringify(response)}`);
-      return response;
+
+      this.logger.log(
+        `--- Returning from matchmake: ${JSON.stringify(reservationData)}`,
+      );
+      return reservationData;
     } catch (e) {
       this.logger.error('Error during matchMaker.joinOrCreate:', e);
       throw e;

@@ -17,7 +17,6 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
   const [debugError, setDebugError] = useState(null);
-  const [debugError, setDebugError] = useState(null);
 
   const getMaxBet = () => {
     if (balances?.loading) return 0;

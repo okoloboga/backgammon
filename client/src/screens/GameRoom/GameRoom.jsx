@@ -8,7 +8,16 @@ import { colyseusService } from '../../services/colyseusService';
 
 const GameRoom = ({ roomId, onQuit }) => {
   const [room, setRoom] = useState(null);
-  const [gameState, setGameState] = useState(null);
+  const [gameState, setGameState] = useState({
+    board: new Map(),
+    bar: new Map(),
+    off: new Map(),
+    currentPlayer: '',
+    dice: [],
+    winner: '',
+    possibleMoves: [],
+    players: new Map()
+  });
   const [playerColor, setPlayerColor] = useState(null);
   const [debugMessage, setDebugMessage] = useState('Initializing...');
 
@@ -40,8 +49,13 @@ const GameRoom = ({ roomId, onQuit }) => {
     if (room) {
       setDebugMessage('4. Room object is set. Attaching onStateChange listener.');
       room.onStateChange((newState) => {
-        console.log("New game state received:", newState.toJSON());
-        setGameState({ ...newState });
+        console.log("New game state received:", newState);
+        if (newState && typeof newState.toJSON === 'function') {
+          console.log("State JSON:", newState.toJSON());
+          setGameState({ ...newState });
+        } else {
+          console.log("Invalid state received:", newState);
+        }
       });
       room.onMessage("error", (message) => {
         setDebugMessage(`6. Server sent an error: ${JSON.stringify(message)}`);

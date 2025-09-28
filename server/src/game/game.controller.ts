@@ -25,11 +25,16 @@ export class GameController {
     },
   })
   async matchmake(@Body() options: MatchmakeDto): Promise<{ roomId: string }> {
-    this.logger.log(`--- ENTERED matchmake method with options: ${JSON.stringify(options)}`);
+    this.logger.log(
+      `--- ENTERED matchmake method with options: ${JSON.stringify(options)}`,
+    );
     try {
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
+      this.logger.log(`Reservation object: ${JSON.stringify(reservation)}`);
       const response = { roomId: reservation.room.roomId };
-      this.logger.log(`--- Returning from matchmake: ${JSON.stringify(response)}`);
+      this.logger.log(
+        `--- Returning from matchmake: ${JSON.stringify(response)}`,
+      );
       return response;
     } catch (e) {
       this.logger.error('Error during matchMaker.joinOrCreate:', e);

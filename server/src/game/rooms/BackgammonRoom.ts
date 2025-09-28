@@ -1,6 +1,7 @@
 import { Room, Client } from '@colyseus/core';
 import { GameState, Point } from '../schemas/GameState';
 import { LobbyService } from '../services/lobby.service';
+import { RoomInfo } from '../types';
 
 interface VirtualBoard {
   points: Map<string, { player: string; checkers: number }>;
@@ -13,12 +14,20 @@ interface Move {
   die: number;
 }
 
+interface BackgammonRoomOptions {
+  roomName?: string;
+  createdBy?: string;
+  betAmount?: number;
+  currency?: string;
+  lobbyService: LobbyService;
+}
+
 export class BackgammonRoom extends Room<GameState> {
   private possibleMoves: Move[][] = [];
-  private roomInfo: any = null;
+  private roomInfo: RoomInfo | null = null;
   private lobbyService: LobbyService;
 
-  onCreate(options: any) {
+  onCreate(options: BackgammonRoomOptions) {
     this.setState(new GameState());
     this.setupBoard();
 
@@ -47,7 +56,7 @@ export class BackgammonRoom extends Room<GameState> {
     );
   }
 
-  onJoin(client: Client, _options: any) {
+  onJoin(client: Client, _options: unknown) {
     console.log(client.sessionId, 'joined!');
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
@@ -527,7 +536,7 @@ export class BackgammonRoom extends Room<GameState> {
   }
 
   // Метод для уведомления лобби об изменениях
-  private notifyLobby(action: 'add' | 'update' | 'remove', roomInfo: any) {
+  private notifyLobby(action: 'add' | 'update' | 'remove', roomInfo: RoomInfo) {
     if (this.lobbyService) {
       this.lobbyService.notifyLobby(action, roomInfo);
     } else {

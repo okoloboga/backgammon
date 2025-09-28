@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Get,
-  Request,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -18,6 +11,7 @@ import { User } from '../users/entities/user.entity';
 import { ChallengeResponse } from '../types/ton.types';
 import { GenerateChallengeDto, VerifyProofDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { CurrentUser } from './current-user.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -269,7 +263,7 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUser(@Request() req): Promise<User> {
-    return req.user;
+  getCurrentUser(@CurrentUser() user: User): User {
+    return user;
   }
 }

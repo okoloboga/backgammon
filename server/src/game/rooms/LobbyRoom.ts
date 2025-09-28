@@ -1,5 +1,6 @@
 import { Room, Client } from '@colyseus/core';
 import { Schema, MapSchema, type } from '@colyseus/schema';
+import { RoomInfo as RoomInfoInterface } from '../types';
 
 export class RoomInfo extends Schema {
   @type('string') roomId: string;
@@ -27,23 +28,23 @@ export class LobbyRoom extends Room<LobbyState> {
     });
 
     // Обработка сообщений от LobbyService
-    this.onMessage('+', (client, roomInfo) => {
+    this.onMessage('+', (client, roomInfo: RoomInfoInterface) => {
       this.addRoom(roomInfo);
       this.broadcastRoomsUpdate();
     });
 
-    this.onMessage('~', (client, roomInfo) => {
+    this.onMessage('~', (client, roomInfo: RoomInfoInterface) => {
       this.updateRoom(roomInfo.roomId, roomInfo);
       this.broadcastRoomsUpdate();
     });
 
-    this.onMessage('-', (client, roomId) => {
+    this.onMessage('-', (client, roomId: string) => {
       this.removeRoom(roomId);
       this.broadcastRoomsUpdate();
     });
   }
 
-  onJoin(client: Client, _options: any) {
+  onJoin(client: Client, _options: unknown) {
     console.log(`Client ${client.sessionId} joined lobby`);
 
     // Отправляем текущий список комнат
@@ -55,18 +56,9 @@ export class LobbyRoom extends Room<LobbyState> {
   }
 
   // Метод для добавления комнаты в лобби
-  addRoom(roomInfo: any) {
+  addRoom(roomInfo: RoomInfoInterface) {
     const roomInfoSchema = new RoomInfo();
-    roomInfoSchema.roomId = roomInfo.roomId;
-    roomInfoSchema.roomName = roomInfo.roomName;
-    roomInfoSchema.playersCount = roomInfo.playersCount;
-    roomInfoSchema.maxPlayers = roomInfo.maxPlayers;
-    roomInfoSchema.status = roomInfo.status;
-    roomInfoSchema.createdBy = roomInfo.createdBy;
-    roomInfoSchema.betAmount = roomInfo.betAmount;
-    roomInfoSchema.currency = roomInfo.currency;
-    roomInfoSchema.createdAt = roomInfo.createdAt;
-
+    Object.assign(roomInfoSchema, roomInfo);
     this.state.rooms.set(roomInfo.roomId, roomInfoSchema);
     console.log(`Room ${roomInfo.roomId} added to lobby`);
   }
@@ -78,20 +70,10 @@ export class LobbyRoom extends Room<LobbyState> {
   }
 
   // Метод для обновления информации о комнате
-  updateRoom(roomId: string, updates: any) {
+  updateRoom(roomId: string, updates: Partial<RoomInfoInterface>) {
     const room = this.state.rooms.get(roomId);
     if (room) {
-      if (updates.roomName !== undefined) room.roomName = updates.roomName;
-      if (updates.playersCount !== undefined)
-        room.playersCount = updates.playersCount;
-      if (updates.maxPlayers !== undefined)
-        room.maxPlayers = updates.maxPlayers;
-      if (updates.status !== undefined) room.status = updates.status;
-      if (updates.createdBy !== undefined) room.createdBy = updates.createdBy;
-      if (updates.betAmount !== undefined) room.betAmount = updates.betAmount;
-      if (updates.currency !== undefined) room.currency = updates.currency;
-      if (updates.createdAt !== undefined) room.createdAt = updates.createdAt;
-
+      Object.assign(room, updates);
       console.log(`Room ${roomId} updated in lobby`);
     }
   }

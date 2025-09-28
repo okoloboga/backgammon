@@ -82,6 +82,12 @@ export class BackgammonRoom extends Room<GameState> {
     // Логируем состояние после изменений
     this.logger.log(`--- State after join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, playerColor=${playerColor}`);
 
+    // Устанавливаем currentPlayer для первого игрока
+    if (this.state.players.size === 1) {
+      this.state.currentPlayer = playerColor;
+      this.logger.log(`--- Set currentPlayer to ${playerColor} for first player`);
+    }
+
     // Обновляем информацию о количестве игроков
     if (this.roomInfo) {
       this.roomInfo.playersCount = this.state.players.size;
@@ -89,13 +95,15 @@ export class BackgammonRoom extends Room<GameState> {
     }
 
     if (this.state.players.size === 2) {
-      this.state.currentPlayer = 'white';
       if (this.roomInfo) {
         this.roomInfo.status = 'playing';
         // this.notifyLobby('update', this.roomInfo);
       }
       void this.lock();
     }
+    
+    // Финальное логирование состояния
+    this.logger.log(`--- Final state: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, board.size=${this.state.board.size}`);
   }
 
   onLeave(client: Client, _consented: boolean) {

@@ -16,6 +16,7 @@ const formatBalance = (num) => {
 const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
+  const [debugError, setDebugError] = useState(null);
 
   const getMaxBet = () => {
     if (balances?.loading) return 0;
@@ -57,7 +58,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
         }
       } catch (error) {
         console.error('Failed to create or join room:', error);
-        // You might want to set an error state here to show a message to the user
+        setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
       }
     }
   };
@@ -73,6 +74,11 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
+        {debugError && (
+          <div style={{ backgroundColor: 'red', color: 'white', padding: '10px', margin: '10px', borderRadius: '5px', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
+            <pre><code>{debugError}</code></pre>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <div className="radio-group">

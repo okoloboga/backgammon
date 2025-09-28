@@ -8,7 +8,7 @@ import CreateRoomModal from './components/CreateRoomModal';
 import { useWalletBalances } from '../../hooks/useWalletBalances';
 import '../../styles/MainMenu.css';
 
-const MainMenu = ({ user, onNavigateToGame, setDebugInfo }) => {
+const MainMenu = ({ user, onNavigateToGame }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { ton, ruble, loading: balancesLoading, error: balancesError } = useWalletBalances();
 
@@ -38,7 +38,6 @@ const MainMenu = ({ user, onNavigateToGame, setDebugInfo }) => {
         onClose={handleCloseModal} 
         balances={{ ton, ruble, loading: balancesLoading }}
         onNavigateToGame={onNavigateToGame}
-        setDebugInfo={setDebugInfo}
       />
     </div>
   );
@@ -47,7 +46,6 @@ const MainMenu = ({ user, onNavigateToGame, setDebugInfo }) => {
 MainMenu.propTypes = {
   user: PropTypes.object,
   onNavigateToGame: PropTypes.func.isRequired,
-  setDebugInfo: PropTypes.func.isRequired,
 };
 
 export default MainMenu;

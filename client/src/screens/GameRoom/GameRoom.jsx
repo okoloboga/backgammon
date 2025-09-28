@@ -6,7 +6,7 @@ import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
 import { colyseusService } from '../../services/colyseusService';
 
-const GameRoom = ({ roomId, onQuit, debugInfo }) => {
+const GameRoom = ({ roomId, onQuit }) => {
   const [room, setRoom] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [playerColor, setPlayerColor] = useState(null);
@@ -69,7 +69,6 @@ const GameRoom = ({ roomId, onQuit, debugInfo }) => {
 
   return (
     <div className="game-room">
-      {debugInfo && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap' }}>{debugInfo}</div>}
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">
@@ -119,7 +118,6 @@ const GameRoom = ({ roomId, onQuit, debugInfo }) => {
 GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
   onQuit: PropTypes.func.isRequired,
-  debugInfo: PropTypes.string,
 };
 
 export default GameRoom;

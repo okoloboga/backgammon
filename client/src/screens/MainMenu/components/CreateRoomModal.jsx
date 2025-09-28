@@ -122,8 +122,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
             </button>
             <button
               type="submit"
-              className={`create-button ${!isValidBetAmount() ? 'disabled' : ''}`}
-              disabled={!isValidBetAmount()}
+              className="create-button"
             >
               Create
             </button>

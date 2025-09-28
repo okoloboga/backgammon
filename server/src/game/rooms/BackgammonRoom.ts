@@ -61,7 +61,7 @@ export class BackgammonRoom extends Room<GameState> {
     };
 
     // Уведомляем лобби о создании комнаты
-    this.notifyLobby('add', this.roomInfo);
+    // this.notifyLobby('add', this.roomInfo);
 
     this.onMessage('rollDice', (client) => this.handleRollDice(client));
     this.onMessage('move', (client, message: string) =>
@@ -112,7 +112,7 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Уведомляем лобби об удалении комнаты
     if (this.roomInfo) {
-      this.notifyLobby('remove', this.roomInfo);
+      // this.notifyLobby;
     }
   }
 

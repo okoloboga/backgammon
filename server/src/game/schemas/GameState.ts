@@ -16,7 +16,7 @@ export class GameState extends Schema {
   off = new MapSchema<number>({ white: 0, black: 0 });
 
   @type('string')
-  currentPlayer: string;
+  currentPlayer: string | null = null;
 
   @type(['number'])
   dice = new ArraySchema<number>();

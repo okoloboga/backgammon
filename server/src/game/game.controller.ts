@@ -12,7 +12,7 @@ export class GameController {
     this.logger.log('GameController instantiated');
   }
 
-  @Post('matchmake')
+  @Post('create_room')
   @ApiOperation({ summary: 'Find or create a backgammon game room' })
   @ApiResponse({
     status: 200,

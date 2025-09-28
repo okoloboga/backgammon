@@ -40,20 +40,21 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        setDebugError('1. Attempting to create room...');
         const reservation = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
 
-        // Log the received object to the screen and stop.
-        setDebugError(`2. SUCCESS: Received reservation object from server:\n\n${JSON.stringify(reservation, null, 2)}`);
+        const room = await colyseusService.joinWithReservation(reservation);
 
+        onClose();
+        setBetAmount('');
+        if (onNavigateToGame) {
+          onNavigateToGame(room.id);
+        }
       } catch (error) {
-        setDebugError(`--- CATASTROPHIC ERROR ---\nMessage: ${error.message}\n\nStack: ${error.stack}`);
+        setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
       }
-    } else {
-      setDebugError('isValidBetAmount() is false.');
     }
   };
 

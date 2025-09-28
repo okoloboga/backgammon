@@ -72,8 +72,15 @@ export class BackgammonRoom extends Room<GameState> {
   onJoin(client: Client, _options: unknown) {
     this.logger.log(`--- Client ${client.sessionId} JOINED BackgammonRoom`);
     console.log(client.sessionId, 'joined!');
+    
+    // Логируем состояние до изменений
+    this.logger.log(`--- State before join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}`);
+    
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
+    
+    // Логируем состояние после изменений
+    this.logger.log(`--- State after join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, playerColor=${playerColor}`);
 
     // Обновляем информацию о количестве игроков
     if (this.roomInfo) {
@@ -117,6 +124,7 @@ export class BackgammonRoom extends Room<GameState> {
   }
 
   setupBoard() {
+    this.logger.log('--- Setting up board...');
     this.state.board.clear();
 
     // Классическая начальная расстановка для длинных нардов
@@ -131,6 +139,8 @@ export class BackgammonRoom extends Room<GameState> {
     blackHead.player = 'black';
     blackHead.checkers = 15;
     this.state.board.set('1', blackHead);
+    
+    this.logger.log(`--- Board setup complete. Board size: ${this.state.board.size}`);
   }
 
   handleRollDice(client: Client) {

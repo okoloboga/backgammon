@@ -39,11 +39,12 @@ async joinWithReservation(reservation) {
       throw new Error(`Invalid reservation data: ${JSON.stringify(reservation)}`);
     }
     
-    this.gameRoom = await this.client.consumeSeatReservation(reservation);
+    // Используем joinById с sessionId из резервации
+    this.gameRoom = await this.client.joinById(reservation.roomId, { sessionId: reservation.sessionId });
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
     return this.gameRoom;
   } catch (e) {
-    console.error('Failed to consume seat reservation:', e);
+    console.error('Failed to join with reservation:', e);
     console.error('Reservation data was:', reservation);
     this.gameRoom = null;
     throw e;

@@ -30,12 +30,25 @@ class ColyseusService {
     return data;
   }
 
-  async joinWithReservation(reservation) {
-    if (this.gameRoom) await this.leaveGameRoom();
+async joinWithReservation(reservation) {
+  if (this.gameRoom) await this.leaveGameRoom();
+  console.log('Using reservation:', reservation);
+  try {
+    // Проверяем, что у нас есть все нужные поля
+    if (!reservation.roomId || !reservation.sessionId || !reservation.processId) {
+      throw new Error(`Invalid reservation data: ${JSON.stringify(reservation)}`);
+    }
+    
     this.gameRoom = await this.client.consumeSeatReservation(reservation);
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
     return this.gameRoom;
+  } catch (e) {
+    console.error('Failed to consume seat reservation:', e);
+    console.error('Reservation data was:', reservation);
+    this.gameRoom = null;
+    throw e;
   }
+}
 
   // ... (существующие методы лобби)
 

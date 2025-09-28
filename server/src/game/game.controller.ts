@@ -24,35 +24,34 @@ export class GameController {
       },
     },
   })
-  async matchmake(
-    @Body() options: MatchmakeDto,
-  ): Promise<any> { // Return type is dynamic now
+async matchmake( @Body() options: MatchmakeDto): Promise<{
+  roomId: string;
+  sessionId: string;
+  processId: string;
+}> {
+  this.logger.log(
+    `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
+  );
+  try {
+    const reservation = await matchMaker.joinOrCreate('backgammon', options);
+    this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
+
+    // Возвращаем плоскую структуру для consumeSeatReservation
+    const response = {
+      roomId: reservation.room.roomId,
+      sessionId: reservation.sessionId,
+      processId: reservation.room.processId,
+    };
+
     this.logger.log(
-      `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
+      `--- Returning from matchmake: ${JSON.stringify(response)}`,
     );
-    try {
-      const reservation = await matchMaker.joinOrCreate('backgammon', options);
-      this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
-
-      // Return a serializable object that mimics the SeatReservation structure
-      const reservationData = {
-        sessionId: reservation.sessionId,
-        room: {
-          processId: reservation.room.processId,
-          roomId: reservation.room.roomId,
-          name: reservation.room.name,
-        },
-      };
-
-      this.logger.log(
-        `--- Returning from matchmake: ${JSON.stringify(reservationData)}`,
-      );
-      return reservationData;
-    } catch (e) {
-      this.logger.error('Error during matchMaker.joinOrCreate:', e);
-      throw e;
-    }
+    return response;
+  } catch (e) {
+    this.logger.error('Error during matchMaker.joinOrCreate:', e);
+    throw e;
   }
+}
 
   @Get('ping')
   @ApiOperation({ summary: 'Ping the game server' })

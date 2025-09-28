@@ -17,6 +17,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
   const [debugError, setDebugError] = useState(null);
+  const [debugError, setDebugError] = useState(null);
 
   const getMaxBet = () => {
     if (balances?.loading) return 0;
@@ -40,26 +41,20 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
     e.preventDefault();
     if (isValidBetAmount()) {
       try {
-        console.log('Creating a room via HTTP:', { betAmount, currency });
+        setDebugError('1. Attempting to create room...');
         const reservation = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
         });
-        console.log('Got reservation:', reservation);
 
-        console.log('Joining with reservation...');
-        const room = await colyseusService.joinWithReservation(reservation);
-        console.log('Successfully joined room:', room.id);
+        // Log the received object to the screen and stop.
+        setDebugError(`2. SUCCESS: Received reservation object from server:\n\n${JSON.stringify(reservation, null, 2)}`);
 
-        onClose();
-        setBetAmount('');
-        if (onNavigateToGame) {
-          onNavigateToGame(room.id);
-        }
       } catch (error) {
-        console.error('Failed to create or join room:', error);
-        setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
+        setDebugError(`--- CATASTROPHIC ERROR ---\nMessage: ${error.message}\n\nStack: ${error.stack}`);
       }
+    } else {
+      setDebugError('isValidBetAmount() is false.');
     }
   };
 

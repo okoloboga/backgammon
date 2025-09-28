@@ -26,7 +26,11 @@ export class GameController {
   })
   async matchmake(
     @Body() options: MatchmakeDto,
-  ): Promise<any> { // Return type is dynamic now
+  ): Promise<{
+    roomId: string;
+    sessionId: string;
+    processId: string;
+  }> {
     this.logger.log(
       `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
     );
@@ -36,25 +40,19 @@ export class GameController {
       this.logger.log(`--- Available rooms: ${JSON.stringify(availableRooms)}`);
 
       const reservation = await matchMaker.joinOrCreate('backgammon', options);
-      this.logger.log(`Reservation object: ${JSON.stringify(reservation)}`);
+      this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
 
-      // Return a serializable object that mimics the SeatReservation structure
-      const reservationData = {
+      // Возвращаем плоскую структуру, которую ожидает consumeSeatReservation
+      const response = {
+        roomId: reservation.room.roomId,
         sessionId: reservation.sessionId,
-        room: {
-          processId: reservation.room.processId,
-          roomId: reservation.room.roomId,
-          name: reservation.room.name,
-        },
+        processId: reservation.room.processId,
       };
-
-      this.logger.log(
-        `--- Returning from matchmake: ${JSON.stringify(reservationData)}`,
-      );
-      return reservationData;
+      this.logger.log(`--- Returning from matchmake: ${JSON.stringify(response)}`);
+      return response;
     } catch (e) {
       this.logger.error('Error during matchMaker.joinOrCreate:', e);
-      throw e; // Re-throw the error to let NestJS handle it
+      throw e;
     }
   }
 

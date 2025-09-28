@@ -7,26 +7,38 @@ export class Point extends Schema {
 
 export class GameState extends Schema {
   @type({ map: Point })
-  board = new MapSchema<Point>();
+  board: MapSchema<Point>;
 
   @type({ map: 'number' })
-  bar = new MapSchema<number>({ white: 0, black: 0 });
+  bar: MapSchema<number>;
 
   @type({ map: 'number' })
-  off = new MapSchema<number>({ white: 0, black: 0 });
+  off: MapSchema<number>;
 
   @type('string')
-  currentPlayer: string | null = null;
+  currentPlayer: string | null;
 
   @type(['number'])
-  dice = new ArraySchema<number>();
+  dice: ArraySchema<number>;
 
   @type('string')
-  winner: string | null = null;
+  winner: string | null;
 
   @type(['string'])
-  possibleMoves = new ArraySchema<string>();
+  possibleMoves: ArraySchema<string>;
 
   @type({ map: 'string' })
-  players = new MapSchema<string>(); // sessionId -> 'white' | 'black'
+  players: MapSchema<string>;
+
+  constructor() {
+    super();
+    this.board = new MapSchema<Point>();
+    this.bar = new MapSchema<number>({ white: 0, black: 0 });
+    this.off = new MapSchema<number>({ white: 0, black: 0 });
+    this.currentPlayer = null;
+    this.dice = new ArraySchema<number>();
+    this.winner = null;
+    this.possibleMoves = new ArraySchema<string>();
+    this.players = new MapSchema<string>();
+  }
 }

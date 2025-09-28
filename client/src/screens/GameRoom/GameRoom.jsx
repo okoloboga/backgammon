@@ -6,25 +6,23 @@ import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
 import { colyseusService } from '../../services/colyseusService';
 
-const GameRoom = ({ roomId, onQuit }) => {
+const GameRoom = ({ roomId, onQuit, debugInfo }) => {
   const [room, setRoom] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [playerColor, setPlayerColor] = useState(null);
-  const [debugMessage, setDebugMessage] = useState('');
 
   const mockPlayer1 = { username: 'Player 1', avatar: '/assets/player1.png' };
   const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
 
   useEffect(() => {
-    setDebugMessage('GameRoom mounted. Trying to get room instance...');
     const roomInstance = colyseusService.getGameRoom();
 
     if (roomInstance && roomInstance.id === roomId) {
-      setDebugMessage(`SUCCESS: Attached to existing room instance.\nRoom ID: ${roomInstance.id}\nSession ID: ${roomInstance.sessionId}`);
       setRoom(roomInstance);
     } else {
-      setDebugMessage(`ERROR: GameRoom component was loaded, but no valid room instance was found in the service. This should not happen in the normal flow.\nExpected Room ID: ${roomId}\nFound: ${roomInstance ? roomInstance.id : 'nothing'}`);
-      // Optional: automatically quit after a delay if we land here unexpectedly.
+      // This block should not be hit in the normal flow
+      // but is a fallback for e.g. page reloads.
+      console.error("ERROR: GameRoom loaded without a valid room instance.");
       setTimeout(() => onQuit(), 5000);
     }
 
@@ -71,7 +69,7 @@ const GameRoom = ({ roomId, onQuit }) => {
 
   return (
     <div className="game-room">
-      {debugMessage && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap' }}>{debugMessage}</div>}
+      {debugInfo && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap' }}>{debugInfo}</div>}
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">
@@ -121,6 +119,7 @@ const GameRoom = ({ roomId, onQuit }) => {
 GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
   onQuit: PropTypes.func.isRequired,
+  debugInfo: PropTypes.string,
 };
 
 export default GameRoom;

@@ -13,10 +13,9 @@ const formatBalance = (num) => {
 };
 
 // Модальное окно для создания комнаты
-const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
+const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, setDebugInfo }) => {
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
-  const [debugError, setDebugError] = useState(null);
 
   const getMaxBet = () => {
     if (balances?.loading) return 0;
@@ -44,20 +43,20 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
           betAmount: parseFloat(betAmount),
           currency: currency,
         };
-        setDebugError(`1. Attempting to create room with payload...\n${JSON.stringify(payload, null, 2)}`);
+        setDebugInfo(`1. Attempting to create room with payload...\n${JSON.stringify(payload, null, 2)}`);
         
         const { roomId, sessionId } = await colyseusService.createRoom(payload);
         
         if (!roomId || !sessionId) {
-          setDebugError(`ERROR: Server response is missing roomId or sessionId.\nResponse: ${JSON.stringify({roomId, sessionId})}`);
+          setDebugInfo(`ERROR: Server response is missing roomId or sessionId.\nResponse: ${JSON.stringify({roomId, sessionId})}`);
           return;
         }
         
-        setDebugError(`2. SUCCESS: Got reservation from server.\nRoom ID: ${roomId}\nSession ID: ${sessionId}\n\n3. Attempting to join with this reservation...`);
+        setDebugInfo(`2. SUCCESS: Got reservation from server.\nRoom ID: ${roomId}\nSession ID: ${sessionId}\n\n3. Attempting to join with this reservation...`);
 
         const room = await colyseusService.joinRoomById(roomId, sessionId);
         
-        setDebugError(`4. SUCCESS: Joined room! Navigating...\nRoom ID: ${room.id}\nSession ID: ${room.sessionId}`);
+        setDebugInfo(`4. SUCCESS: Joined room! Navigating...\nRoom ID: ${room.id}\nSession ID: ${room.sessionId}`);
 
         onClose();
         setBetAmount('');
@@ -65,10 +64,10 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
           onNavigateToGame(room.id);
         }
       } catch (error) {
-        setDebugError(`--- CATASTROPHIC ERROR in handleSubmit ---\nMessage: ${error.message}\n\nStack: ${error.stack}`);
+        setDebugInfo(`--- CATASTROPHIC ERROR in handleSubmit ---\nMessage: ${error.message}\n\nStack: ${error.stack}`);
       }
     } else {
-      setDebugError('isValidBetAmount() returned false.');
+      setDebugInfo('isValidBetAmount() returned false.');
     }
   };
 
@@ -83,11 +82,6 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
-        {debugError && (
-          <div style={{ backgroundColor: 'rgba(255,0,0,0.7)', color: 'white', padding: '10px', margin: '10px', borderRadius: '5px', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
-            <pre><code>{debugError}</code></pre>
-          </div>
-        )}
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <div className="radio-group">
@@ -162,6 +156,7 @@ CreateRoomModal.propTypes = {
     loading: PropTypes.bool,
   }),
   onNavigateToGame: PropTypes.func.isRequired,
+  setDebugInfo: PropTypes.func.isRequired,
 };
 
 export default CreateRoomModal;

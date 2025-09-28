@@ -13,6 +13,7 @@ function App() {
   const [clientId, setClientId] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
   const [user, setUser] = useState(null);
+  const [debugInfo, setDebugInfo] = useState('');
 
   const [tonConnectUI] = useTonConnectUI();
   const firstProofLoading = useRef(true);
@@ -160,8 +161,8 @@ function App() {
           error={error}
         />
       )}
-      {currentScreen === 'main-menu' && <MainMenu user={user} onNavigateToGame={navigateToGame} />}
-      {currentScreen === 'game-room' && <GameRoom roomId={gameRoomId} onQuit={handleQuitGame} />}
+      {currentScreen === 'main-menu' && <MainMenu user={user} onNavigateToGame={navigateToGame} setDebugInfo={setDebugInfo} />}
+      {currentScreen === 'game-room' && <GameRoom roomId={gameRoomId} onQuit={handleQuitGame} debugInfo={debugInfo} />}
     </div>
   );
 }

@@ -75,6 +75,29 @@ export class BackgammonRoom extends Room<GameState> {
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
 
+    // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ СОСТОЯНИЯ ПЕРЕД СЕРИАЛИЗАЦИЕЙ
+    this.logger.log('=== DEBUGGING STATE BEFORE SERIALIZATION ===');
+    this.logger.log(`currentPlayer: "${this.state.currentPlayer}" (type: ${typeof this.state.currentPlayer})`);
+    this.logger.log(`winner: "${this.state.winner}" (type: ${typeof this.state.winner})`);
+    this.logger.log(`dice.length: ${this.state.dice.length}`);
+    this.logger.log(`possibleMoves.length: ${this.state.possibleMoves.length}`);
+    this.logger.log(`players.size: ${this.state.players.size}`);
+    this.logger.log(`board.size: ${this.state.board.size}`);
+    
+    // Проверяем каждую точку на доске
+    this.state.board.forEach((point, key) => {
+      this.logger.log(`board[${key}]: player="${point.player}" (type: ${typeof point.player}), checkers=${point.checkers} (type: ${typeof point.checkers})`);
+    });
+    
+    // Проверяем bar
+    this.logger.log(`bar.white: ${this.state.bar.get('white')} (type: ${typeof this.state.bar.get('white')})`);
+    this.logger.log(`bar.black: ${this.state.bar.get('black')} (type: ${typeof this.state.bar.get('black')})`);
+    
+    // Проверяем off
+    this.logger.log(`off.white: ${this.state.off.get('white')} (type: ${typeof this.state.off.get('white')})`);
+    this.logger.log(`off.black: ${this.state.off.get('black')} (type: ${typeof this.state.off.get('black')})`);
+    this.logger.log('=== END DEBUGGING ===');
+
     // Обновляем информацию о количестве игроков
     if (this.roomInfo) {
       this.roomInfo.playersCount = this.state.players.size;

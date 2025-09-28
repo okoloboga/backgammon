@@ -33,12 +33,18 @@ export class GameState extends Schema {
   constructor() {
     super();
     this.board = new MapSchema<Point>();
-    this.bar = new MapSchema<number>({ white: 0, black: 0 });
-    this.off = new MapSchema<number>({ white: 0, black: 0 });
+    this.bar = new MapSchema<number>();
+    this.off = new MapSchema<number>();
     this.currentPlayer = '';
     this.dice = new ArraySchema<number>();
     this.winner = '';
     this.possibleMoves = new ArraySchema<string>();
     this.players = new MapSchema<string>();
+    
+    // Явно устанавливаем значения для bar и off
+    this.bar.set('white', 0);
+    this.bar.set('black', 0);
+    this.off.set('white', 0);
+    this.off.set('black', 0);
   }
 }

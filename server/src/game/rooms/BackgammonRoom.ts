@@ -104,6 +104,10 @@ export class BackgammonRoom extends Room<GameState> {
     
     // Финальное логирование состояния
     this.logger.log(`--- Final state: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, board.size=${this.state.board.size}`);
+    
+    // Принудительно отправляем состояние клиенту
+    this.logger.log('--- Broadcasting state to client');
+    this.broadcast('state_update', this.state);
   }
 
   onLeave(client: Client, _consented: boolean) {

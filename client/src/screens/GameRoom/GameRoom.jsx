@@ -277,7 +277,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             </div>
             <div className="dice-area">
               {gameState.dice.length > 0 ? (
-                gameState.dice.map((value, i) => <Dice key={i} value={value} />)
+                // Всегда показываем только первые 2 кости (даже при дубле)
+                gameState.dice.slice(0, 2).map((value, i) => <Dice key={i} value={value} />)
               ) : (
                 <button onClick={handleRollDice} disabled={!canRoll}>
                   {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}

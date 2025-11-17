@@ -149,12 +149,16 @@ const GameRoom = ({ roomId, onQuit }) => {
     }
   };
 
+  const showDebugOverlay = import.meta.env?.DEV;
+
   return (
     <div className="game-room">
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap', textAlign: 'left', fontSize: '10px' }}>
-        <p>DEBUG: {debugMessage}</p>
-        <p>GAME STATE: {debugState()}</p>
-      </div>
+      {showDebugOverlay && (
+        <div className="debug-overlay">
+          <p>DEBUG: {debugMessage}</p>
+          <p>GAME STATE: {debugState()}</p>
+        </div>
+      )}
       {isWaitingForOpponent && (
         <div className="waiting-overlay">
           <div className="waiting-message">

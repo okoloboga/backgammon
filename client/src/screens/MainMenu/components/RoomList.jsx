@@ -11,14 +11,18 @@ const RoomList = ({ onNavigateToGame }) => {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    // Подключаемся к лобби
+    let unsubscribeFn = null
+    let isMounted = true
+
     const connectToLobby = async () => {
       try {
         await colyseusService.connect()
+        if (!isMounted) {
+          return
+        }
         setIsConnected(true)
-        
-        // Подписываемся на изменения комнат
-        const unsubscribe = colyseusService.onRoomsChange(
+
+        unsubscribeFn = colyseusService.onRoomsChange(
           (roomsList) => {
             console.log('Received rooms list:', roomsList)
             setRooms(roomsList)
@@ -36,20 +40,21 @@ const RoomList = ({ onNavigateToGame }) => {
             setRooms(prev => prev.filter(r => r.roomId !== roomId))
           }
         )
-
-        return unsubscribe
       } catch (error) {
         console.error('Failed to connect to lobby:', error)
-        setIsConnected(false)
+        if (isMounted) {
+          setIsConnected(false)
+        }
       }
     }
 
-    const unsubscribe = connectToLobby()
+    void connectToLobby()
 
     // Очистка при размонтировании
     return () => {
-      if (unsubscribe) {
-        unsubscribe()
+      isMounted = false
+      if (typeof unsubscribeFn === 'function') {
+        unsubscribeFn()
       }
       colyseusService.disconnect()
     }

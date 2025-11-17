@@ -60,7 +60,9 @@ export class LobbyRoom extends Room<LobbyState> {
     const roomInfoSchema = new RoomInfo();
     Object.assign(roomInfoSchema, roomInfo);
     this.state.rooms.set(roomInfo.roomId, roomInfoSchema);
-    console.log(`Room ${roomInfo.roomId} added to lobby`);
+    console.log(
+      `[LobbyRoom] Room ${roomInfo.roomId} added. Total rooms: ${this.state.rooms.size}`,
+    );
   }
 
   // Метод для удаления комнаты из лобби
@@ -74,19 +76,27 @@ export class LobbyRoom extends Room<LobbyState> {
     const room = this.state.rooms.get(roomId);
     if (room) {
       Object.assign(room, updates);
-      console.log(`Room ${roomId} updated in lobby`);
+      console.log(
+        `[LobbyRoom] Room ${roomId} updated -> players=${room.playersCount}, status=${room.status}`,
+      );
     }
   }
 
   // Отправляет список комнат клиенту
   private sendRoomsList(client: Client) {
     const roomsArray = Array.from(this.state.rooms.values());
+    console.log(
+      `[LobbyRoom] Sending rooms list to ${client.sessionId}. Count=${roomsArray.length}`,
+    );
     client.send('rooms', roomsArray);
   }
 
   // Отправляет обновление всем клиентам в лобби
   private broadcastRoomsUpdate() {
     const roomsArray = Array.from(this.state.rooms.values());
+    console.log(
+      `[LobbyRoom] Broadcasting rooms update. Count=${roomsArray.length}`,
+    );
     this.broadcast('rooms', roomsArray);
   }
 }

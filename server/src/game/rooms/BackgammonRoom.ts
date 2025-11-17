@@ -611,6 +611,9 @@ export class BackgammonRoom extends Room<GameState> {
   // Метод для уведомления лобби об изменениях
   private notifyLobby(action: 'add' | 'update' | 'remove', roomInfo: RoomInfo) {
     if (this.lobbyService) {
+      this.logger.log(
+        `Notifying lobby: action=${action} room=${roomInfo.roomId} players=${roomInfo.playersCount} status=${roomInfo.status}`,
+      );
       this.lobbyService.notifyLobby(action, roomInfo);
     } else {
       console.warn('LobbyService not available');

@@ -1,6 +1,6 @@
 import { Room, Client } from '@colyseus/core';
 import { Logger } from '@nestjs/common';
-import { GameState, Point } from '../schemas/GameState';
+import { GameState, Point, PlayerProfile } from '../schemas/GameState';
 import { LobbyService } from '../services/lobby.service';
 import { RoomInfo } from '../types';
 
@@ -21,6 +21,11 @@ interface BackgammonRoomOptions {
   betAmount?: number;
   currency?: string;
   lobbyService: LobbyService;
+}
+
+interface JoinOptions {
+  username?: string;
+  avatar?: string;
 }
 
 export class BackgammonRoom extends Room<GameState> {
@@ -69,15 +74,21 @@ export class BackgammonRoom extends Room<GameState> {
     );
   }
 
-  onJoin(client: Client, _options: unknown) {
+  onJoin(client: Client, _options: JoinOptions) {
     this.logger.log(`--- Client ${client.sessionId} JOINED BackgammonRoom`);
     console.log(client.sessionId, 'joined!');
+    const { username = 'Player', avatar = '' } = _options || {};
     
     // Логируем состояние до изменений
     this.logger.log(`--- State before join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}`);
     
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
+
+    const profile = new PlayerProfile();
+    profile.username = username;
+    profile.avatar = avatar;
+    this.state.playerProfiles.set(client.sessionId, profile);
     
     // Логируем состояние после изменений
     this.logger.log(`--- State after join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, playerColor=${playerColor}`);
@@ -116,13 +127,20 @@ export class BackgammonRoom extends Room<GameState> {
       dice: Array.from(this.state.dice),
       winner: this.state.winner,
       possibleMoves: Array.from(this.state.possibleMoves),
-      players: Array.from(this.state.players.entries())
+      players: Array.from(this.state.players.entries()),
+      playerProfiles: Array.from(this.state.playerProfiles.entries()).map(
+        ([sessionId, profile]) => [
+          sessionId,
+          { username: profile.username, avatar: profile.avatar },
+        ],
+      ),
     });
   }
 
   onLeave(client: Client, _consented: boolean) {
     console.log(client.sessionId, 'left!');
     this.state.players.delete(client.sessionId);
+    this.state.playerProfiles.delete(client.sessionId);
 
     // Обновляем информацию о количестве игроков
     if (this.roomInfo) {

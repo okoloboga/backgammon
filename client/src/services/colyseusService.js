@@ -16,6 +16,11 @@ class ColyseusService {
     this.client = new colyseus.Client(COLYSEUS_ENDPOINT);
     this.lobby = null;
     this.gameRoom = null; // Добавляем свойство для хранения игровой комнаты
+    this.playerProfile = null;
+  }
+
+  setPlayerProfile(profile) {
+    this.playerProfile = profile;
   }
 
   async createRoom(options = {}) {
@@ -40,7 +45,12 @@ async joinWithReservation(reservation) {
     }
     
     // Используем joinById с sessionId из резервации
-    this.gameRoom = await this.client.joinById(reservation.roomId, { sessionId: reservation.sessionId });
+    const joinOptions = {
+      sessionId: reservation.sessionId,
+      username: this.playerProfile?.username,
+      avatar: this.playerProfile?.avatar,
+    };
+    this.gameRoom = await this.client.joinById(reservation.roomId, joinOptions);
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
     console.log('Full room object:', this.gameRoom);
     console.log('Room state:', this.gameRoom.state);
@@ -67,7 +77,12 @@ async joinWithReservation(reservation) {
       await this.leaveGameRoom();
     }
     try {
-      this.gameRoom = await this.client.joinOrCreate(roomName, options);
+      const joinOptions = {
+        ...options,
+        username: this.playerProfile?.username,
+        avatar: this.playerProfile?.avatar,
+      };
+      this.gameRoom = await this.client.joinOrCreate(roomName, joinOptions);
       console.log(`Successfully joined game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
       return this.gameRoom;
     } catch (e) {

@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { TonConnectUIProvider, useTonConnectUI } from '@tonconnect/ui-react';
 import { authService } from './services/authService';
+import { colyseusService } from './services/colyseusService';
 import SplashScreen from './screens/SplashScreen/SplashScreen';
 import MainMenu from './screens/MainMenu/MainMenu';
 import GameRoom from './screens/GameRoom/GameRoom';
+
+const forceGameRoom = import.meta.env.VITE_FORCE_GAMEROOM === 'true';
+const mockRoomId = 'dev-room';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('splash');
@@ -150,6 +154,25 @@ function App() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user) {
+      colyseusService.setPlayerProfile({
+        username: user.username,
+        avatar: user.avatar,
+      });
+    } else {
+      colyseusService.setPlayerProfile(null);
+    }
+  }, [user]);
+
+  if (forceGameRoom) {
+    return (
+      <div className="min-h-screen bg-dark-bg">
+        <GameRoom roomId={mockRoomId} onQuit={() => {}} currentUser={user} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-dark-bg">
       {currentScreen === 'splash' && (
@@ -161,7 +184,7 @@ function App() {
         />
       )}
       {currentScreen === 'main-menu' && <MainMenu user={user} onNavigateToGame={navigateToGame} />}
-      {currentScreen === 'game-room' && <GameRoom roomId={gameRoomId} onQuit={handleQuitGame} />}
+      {currentScreen === 'game-room' && <GameRoom roomId={gameRoomId} onQuit={handleQuitGame} currentUser={user} />}
     </div>
   );
 }

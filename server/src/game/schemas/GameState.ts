@@ -5,6 +5,11 @@ export class Point extends Schema {
   @type('number') checkers: number = 0;
 }
 
+export class PlayerProfile extends Schema {
+  @type('string') username: string = '';
+  @type('string') avatar: string = '';
+}
+
 export class GameState extends Schema {
   @type({ map: Point })
   board: MapSchema<Point>;
@@ -30,6 +35,9 @@ export class GameState extends Schema {
   @type({ map: 'string' })
   players: MapSchema<string>;
 
+  @type({ map: PlayerProfile })
+  playerProfiles: MapSchema<PlayerProfile>;
+
   constructor() {
     super();
     this.board = new MapSchema<Point>();
@@ -40,6 +48,7 @@ export class GameState extends Schema {
     this.winner = '';
     this.possibleMoves = new ArraySchema<string>();
     this.players = new MapSchema<string>();
+    this.playerProfiles = new MapSchema<PlayerProfile>();
     
     // Явно устанавливаем значения для bar и off
     this.bar.set('white', 0);

@@ -5,27 +5,70 @@ import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
 import { colyseusService } from '../../services/colyseusService';
+import greenLayer from '../../assets/game/greenLayer.png';
+import purpleLayer from '../../assets/game/purpleLayer.png';
 
-const GameRoom = ({ roomId, onQuit }) => {
-  const [room, setRoom] = useState(null);
-  const [gameState, setGameState] = useState({
-    board: new Map(),
-    bar: new Map(),
-    off: new Map(),
-    currentPlayer: '',
+const isMockMode = import.meta.env.VITE_GAMEROOM_MOCK === 'true';
+
+const createMockGameState = () => {
+  const board = new Map();
+  board.set('24', { player: 'white', checkers: 15 });
+  board.set('1', { player: 'black', checkers: 15 });
+
+  const players = new Map();
+  players.set('mock-white', 'white');
+  players.set('mock-black', 'black');
+
+  const playerProfiles = new Map();
+  playerProfiles.set('mock-white', {
+    username: 'You',
+    avatar: '/assets/player1.png',
+  });
+  playerProfiles.set('mock-black', {
+    username: 'Opponent',
+    avatar: '/assets/icon.png',
+  });
+
+  return {
+    board,
+    bar: new Map([['white', 0], ['black', 0]]),
+    off: new Map([['white', 0], ['black', 0]]),
+    currentPlayer: 'white',
     dice: [],
     winner: '',
     possibleMoves: [],
-    players: new Map()
-  });
-  const [playerColor, setPlayerColor] = useState(null);
-  const [debugMessage, setDebugMessage] = useState('Initializing...');
+    players,
+    playerProfiles,
+  };
+};
+
+const GameRoom = ({ roomId, onQuit, currentUser }) => {
+  const [room, setRoom] = useState(null);
+  const [gameState, setGameState] = useState(
+    isMockMode
+      ? createMockGameState()
+      : {
+          board: new Map(),
+          bar: new Map(),
+          off: new Map(),
+          currentPlayer: '',
+          dice: [],
+          winner: '',
+          possibleMoves: [],
+          players: new Map(),
+          playerProfiles: new Map(),
+        },
+  );
+  const [playerColor, setPlayerColor] = useState(isMockMode ? 'white' : null);
+  const [, setDebugMessage] = useState('Initializing...');
   const isInitialMount = useRef(true);
 
-  const mockPlayer1 = { username: 'Player 1', avatar: '/assets/player1.png' };
-  const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
-
   useEffect(() => {
+    if (isMockMode) {
+      setDebugMessage('Mock mode active: using local state');
+      return undefined;
+    }
+
     setDebugMessage('1. GameRoom mounted. Getting room instance...');
     const roomInstance = colyseusService.getGameRoom();
     console.log('GameRoom: roomInstance =', roomInstance);
@@ -49,7 +92,12 @@ const GameRoom = ({ roomId, onQuit }) => {
             dice: newState.dice ? Array.from(newState.dice) : [],
             winner: newState.winner || '',
             possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
-            players: newState.players || new Map()
+            players: newState.players
+              ? new Map(Array.from(newState.players.entries()))
+              : new Map(),
+            playerProfiles: newState.playerProfiles
+              ? new Map(Array.from(newState.playerProfiles.entries()))
+              : new Map(),
           };
           console.log("Transformed state:", transformedState);
           setGameState(transformedState);
@@ -83,7 +131,8 @@ const GameRoom = ({ roomId, onQuit }) => {
           dice: stateData.dice || [],
           winner: stateData.winner || '',
           possibleMoves: stateData.possibleMoves || [],
-          players: new Map(stateData.players || [])
+          players: new Map(stateData.players || []),
+          playerProfiles: new Map(stateData.playerProfiles || []),
         };
         setGameState(transformedState);
         setDebugMessage('Manual state update applied');
@@ -105,68 +154,93 @@ const GameRoom = ({ roomId, onQuit }) => {
         colyseusService.leaveGameRoom();
       }
     };
-  }, [roomId, onQuit]);
+  }, [roomId, onQuit, isMockMode]);
 
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
     right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
   };
 
-  const handleRollDice = () => room && canRoll && room.send('rollDice');
+  const handleRollDice = () => {
+    if (isMockMode) {
+      const die1 = Math.floor(Math.random() * 6) + 1;
+      const die2 = Math.floor(Math.random() * 6) + 1;
+      const newDice = die1 === die2 ? [die1, die1, die1, die1] : [die1, die2];
+      setGameState((prev) => ({
+        ...prev,
+        dice: newDice,
+        currentPlayer: prev.currentPlayer === 'white' ? 'black' : 'white',
+      }));
+      return;
+    }
+    return room && canRoll && room.send('rollDice');
+  };
   const handleQuit = () => {
+    if (isMockMode) {
+      onQuit();
+      return;
+    }
     colyseusService.leaveGameRoom().then(() => {
       onQuit();
     });
   };
 
-  if (!gameState) {
-    return <div className="game-room"><h1>Joining game...</h1></div>;
-  }
-  
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const canRoll = isMyTurn && gameState.dice.length === 0;
-  const isWaitingForOpponent = (gameState.players?.size ?? 0) < 2;
 
-  const whitePlayer = mockPlayer1;
-  const blackPlayer = mockPlayer2;
+  const playersMap =
+    gameState.players instanceof Map
+      ? gameState.players
+      : new Map(gameState.players ? Array.from(gameState.players.entries()) : []);
 
-  // Функция для преобразования Map в объект для отладки
-  const debugState = () => {
-    try {
-      return JSON.stringify({
-        board: Array.from(gameState.board.entries()),
-        bar: Array.from(gameState.bar.entries()),
-        off: Array.from(gameState.off.entries()),
-        currentPlayer: gameState.currentPlayer,
-        dice: gameState.dice,
-        winner: gameState.winner,
-        possibleMoves: gameState.possibleMoves,
-        players: Array.from(gameState.players.entries()),
-        myColor: playerColor,
-      }, null, 2);
-    } catch (e) {
-      return 'Error serializing state: ' + e.message;
+  const profilesMap =
+    gameState.playerProfiles instanceof Map
+      ? gameState.playerProfiles
+      : new Map(
+          gameState.playerProfiles ? Array.from(gameState.playerProfiles.entries()) : [],
+        );
+
+  let whiteSessionId;
+  let blackSessionId;
+  playersMap.forEach((color, sessionId) => {
+    if (color === 'white') whiteSessionId = sessionId;
+    if (color === 'black') blackSessionId = sessionId;
+  });
+
+  const defaultWhiteProfile = { username: 'Player 1', avatar: '/assets/player1.png' };
+  const defaultBlackProfile = { username: 'Player 2', avatar: '/assets/icon.png' };
+
+  const getProfileForSession = (sessionId, defaultProfile) => {
+    // Если игрок еще не подключился, показываем "...waiting..."
+    if (!sessionId) {
+      return {
+        username: '...waiting...',
+        avatar: '/assets/icon.png',
+      };
     }
+    const profileFromState = profilesMap.get(sessionId);
+    const finalProfile = {
+      username: profileFromState?.username || defaultProfile.username,
+      avatar: profileFromState?.avatar || defaultProfile.avatar,
+    };
+    if (room?.sessionId === sessionId && currentUser) {
+      return {
+        username: currentUser.username || finalProfile.username,
+        avatar: currentUser.avatar || finalProfile.avatar,
+      };
+    }
+    return finalProfile;
   };
 
-  const showDebugOverlay = import.meta.env?.DEV;
+  const whitePlayer = isMockMode
+    ? profilesMap.get('mock-white') || defaultWhiteProfile
+    : getProfileForSession(whiteSessionId, defaultWhiteProfile);
+  const blackPlayer = isMockMode
+    ? profilesMap.get('mock-black') || defaultBlackProfile
+    : getProfileForSession(blackSessionId, defaultBlackProfile);
 
   return (
     <div className="game-room">
-      {showDebugOverlay && (
-        <div className="debug-overlay">
-          <p>DEBUG: {debugMessage}</p>
-          <p>GAME STATE: {debugState()}</p>
-        </div>
-      )}
-      {isWaitingForOpponent && (
-        <div className="waiting-overlay">
-          <div className="waiting-message">
-            <h2>Ожидание соперника...</h2>
-            <p>Как только второй игрок подключится, вы сможете начать игру.</p>
-          </div>
-        </div>
-      )}
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">
@@ -175,6 +249,8 @@ const GameRoom = ({ roomId, onQuit }) => {
         </div>
         <div className="game-board">
           <div className="board-half">
+            <img src={greenLayer} alt="Board layer" className="board-bg" />
+            <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
               {pointRenderOrder.left.map((id) => (
                 <BoardPoint
@@ -187,6 +263,8 @@ const GameRoom = ({ roomId, onQuit }) => {
             </div>
           </div>
           <div className="board-half">
+            <img src={greenLayer} alt="Board layer" className="board-bg" />
+            <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
               {pointRenderOrder.right.map((id) => (
                 <BoardPoint
@@ -216,6 +294,14 @@ const GameRoom = ({ roomId, onQuit }) => {
 GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
   onQuit: PropTypes.func.isRequired,
+  currentUser: PropTypes.shape({
+    username: PropTypes.string,
+    avatar: PropTypes.string,
+  }),
+};
+
+GameRoom.defaultProps = {
+  currentUser: null,
 };
 
 export default GameRoom;

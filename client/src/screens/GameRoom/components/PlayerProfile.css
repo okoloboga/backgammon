@@ -9,7 +9,7 @@
 }
 
 .player-profile-gameroom.right {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .profile-avatar {

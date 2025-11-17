@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import './PlayerProfile.css';
 
 const PlayerProfile = ({ player, align = 'left' }) => {
-  // Временная заглушка для данных игрока
   const displayName = player?.username || 'Player';
   const displayAvatar = player?.avatar || '/assets/player1.png';
 

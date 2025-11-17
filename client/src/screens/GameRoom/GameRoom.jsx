@@ -123,12 +123,9 @@ const GameRoom = ({ roomId, onQuit }) => {
     return <div className="game-room"><h1>Joining game...</h1></div>;
   }
   
-  if (gameState.players.size < 2) {
-    return <div className="game-room"><h1>Waiting for opponent...</h1></div>;
-  }
-
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const canRoll = isMyTurn && gameState.dice.length === 0;
+  const isWaitingForOpponent = (gameState.players?.size ?? 0) < 2;
 
   const whitePlayer = mockPlayer1;
   const blackPlayer = mockPlayer2;
@@ -158,6 +155,14 @@ const GameRoom = ({ roomId, onQuit }) => {
         <p>DEBUG: {debugMessage}</p>
         <p>GAME STATE: {debugState()}</p>
       </div>
+      {isWaitingForOpponent && (
+        <div className="waiting-overlay">
+          <div className="waiting-message">
+            <h2>Ожидание соперника...</h2>
+            <p>Как только второй игрок подключится, вы сможете начать игру.</p>
+          </div>
+        </div>
+      )}
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">

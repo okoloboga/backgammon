@@ -92,3 +92,37 @@
   gap: 10px;
   cursor: pointer;
 }
+
+.waiting-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(3, 20, 42, 0.9);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.waiting-message {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 24px 32px;
+  color: white;
+  max-width: 320px;
+}
+
+.waiting-message h2 {
+  margin-bottom: 8px;
+  font-size: 20px;
+}
+
+.waiting-message p {
+  font-size: 14px;
+  opacity: 0.8;
+}

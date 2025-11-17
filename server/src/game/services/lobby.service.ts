@@ -18,30 +18,11 @@ export class LobbyService {
     }
 
     try {
+      const payload = JSON.stringify({ action, roomInfo });
       console.log(
-        `[LobbyService] notifyLobby action=${action} room=${roomInfo.roomId} players=${roomInfo.playersCount} status=${roomInfo.status}`,
+        `[LobbyService] Publishing lobby update: action=${action} room=${roomInfo.roomId} players=${roomInfo.playersCount} status=${roomInfo.status}`,
       );
-      // Получаем все лобби-комнаты
-      const lobbyRooms = await matchMaker.query({ name: 'lobby' });
-
-      console.log(
-        `[LobbyService] Active lobby rooms: ${lobbyRooms
-          .map((room) => room.roomId)
-          .join(', ')}`,
-      );
-
-      for (const lobbyRoomData of lobbyRooms) {
-        const lobbyRoom = await matchMaker.getRoomById(lobbyRoomData.roomId);
-        if (lobbyRoom) {
-          if (action === 'add') {
-            lobbyRoom.broadcast('+', roomInfo);
-          } else if (action === 'update') {
-            lobbyRoom.broadcast('~', roomInfo);
-          } else if (action === 'remove') {
-            lobbyRoom.broadcast('-', roomInfo.roomId);
-          }
-        }
-      }
+      await matchMaker.presence.publish('lobby_updates', payload);
     } catch (error) {
       console.error('Failed to notify lobby:', error);
     }

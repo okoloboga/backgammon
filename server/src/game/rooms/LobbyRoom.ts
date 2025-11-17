@@ -19,30 +19,36 @@ export class LobbyState extends Schema {
 }
 
 export class LobbyRoom extends Room<LobbyState> {
+  private lobbySubscription?: () => void;
+
   onCreate(_options: any) {
     this.setState(new LobbyState());
 
-    // Отправляем текущий список комнат новому клиенту
-    this.onMessage('getRooms', (client) => {
-      this.sendRoomsList(client);
-    });
-
-    // Обработка сообщений от LobbyService
-    this.onMessage('+', (client, roomInfo: RoomInfoInterface) => {
-      this.addRoom(roomInfo);
-      this.broadcastRoomsUpdate();
-    });
-
-    this.onMessage('~', (client, roomInfo: RoomInfoInterface) => {
-      this.updateRoom(roomInfo.roomId, roomInfo);
-      this.broadcastRoomsUpdate();
-    });
-
-    this.onMessage('-', (client, roomId: string) => {
-      this.removeRoom(roomId);
-      this.broadcastRoomsUpdate();
-    });
+    this.lobbySubscription = (payload: string) => {
+        try {
+          const { action, roomInfo } = JSON.parse(payload);
+          if (!action || !roomInfo) return;
+          if (action === 'add') {
+            this.addRoom(roomInfo);
+          } else if (action === 'update') {
+            this.updateRoom(roomInfo.roomId, roomInfo);
+          } else if (action === 'remove') {
+            this.removeRoom(roomInfo.roomId);
+          }
+          this.broadcastRoomsUpdate();
+        } catch (error) {
+          console.error('[LobbyRoom] Failed to process lobby update:', error);
+        }
+      };
+    void this.presence.subscribe('lobby_updates', this.lobbySubscription);
   }
+  onDispose() {
+    if (this.lobbySubscription) {
+      this.presence.unsubscribe('lobby_updates', this.lobbySubscription);
+      this.lobbySubscription = undefined;
+    }
+  }
+
 
   onJoin(client: Client, _options: unknown) {
     console.log(`Client ${client.sessionId} joined lobby`);

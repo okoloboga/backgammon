@@ -139,12 +139,10 @@ async joinWithReservation(reservation) {
     this.lobby.onMessage('~', handleUpdate);
     this.lobby.onMessage('-', handleRemove);
 
-    // Возвращаем функцию для очистки подписок
+    // Возвращаем пустую функцию - отписка не нужна, т.к. disconnect() сам покинет комнату
+    // В Colyseus Room нет метода removeListener
     return () => {
-      this.lobby.removeListener('rooms', handleRooms);
-      this.lobby.removeListener('+', handleAdd);
-      this.lobby.removeListener('~', handleUpdate);
-      this.lobby.removeListener('-', handleRemove);
+      // Cleanup handled by disconnect()
     };
   }
 

@@ -16,7 +16,12 @@ const BoardPoint = ({ pointId, checkers, isTop }) => {
   const renderCheckers = () => {
     if (!checkers) return null;
 
-    const { count, color } = checkers;
+    // Поддерживаем оба формата: {count, color} и {checkers, player}
+    const count = checkers.count ?? checkers.checkers;
+    const color = checkers.color ?? checkers.player;
+    
+    if (!count || !color) return null;
+    
     const checkersArray = Array.from({ length: count });
 
     let getPosition;
@@ -49,10 +54,16 @@ const BoardPoint = ({ pointId, checkers, isTop }) => {
 BoardPoint.propTypes = {
   pointId: PropTypes.number.isRequired,
   isTop: PropTypes.bool.isRequired,
-  checkers: PropTypes.shape({
-    count: PropTypes.number,
-    color: PropTypes.string,
-  }),
+  checkers: PropTypes.oneOfType([
+    PropTypes.shape({
+      count: PropTypes.number,
+      color: PropTypes.string,
+    }),
+    PropTypes.shape({
+      checkers: PropTypes.number,
+      player: PropTypes.string,
+    }),
+  ]),
 };
 
 export default BoardPoint;

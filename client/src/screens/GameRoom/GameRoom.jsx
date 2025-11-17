@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './GameRoom.css';
 import BoardPoint from './components/BoardPoint';
@@ -20,6 +20,7 @@ const GameRoom = ({ roomId, onQuit }) => {
   });
   const [playerColor, setPlayerColor] = useState(null);
   const [debugMessage, setDebugMessage] = useState('Initializing...');
+  const isInitialMount = useRef(true);
 
   const mockPlayer1 = { username: 'Player 1', avatar: '/assets/player1.png' };
   const mockPlayer2 = { username: 'Player 2', avatar: '/assets/icon.png' };
@@ -33,41 +34,78 @@ const GameRoom = ({ roomId, onQuit }) => {
 
     if (roomInstance && roomInstance.roomId === roomId) {
       setDebugMessage('2. Got room instance. Setting room state.');
-      setRoom(roomInstance);
-    } else {
-      setDebugMessage(`3. ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.roomId : 'null'}`);
-      onQuit();
-    }
-
-    return () => {
-      setDebugMessage('X. GameRoom unmounting. Leaving room.');
-      colyseusService.leaveGameRoom();
-    };
-  }, [roomId, onQuit]);
-
-  useEffect(() => {
-    if (room) {
-      setDebugMessage('4. Room object is set. Attaching onStateChange listener.');
-      room.onStateChange((newState) => {
+      
+      // Регистрируем обработчики ДО установки room в state
+      setDebugMessage('3. Attaching event listeners...');
+      roomInstance.onStateChange((newState) => {
         console.log("New game state received:", newState);
-        if (newState && typeof newState.toJSON === 'function') {
-          console.log("State JSON:", newState.toJSON());
-          setGameState({ ...newState });
+        if (newState) {
+          // Colyseus Schema объекты имеют свойства, к которым можно обращаться напрямую
+          const transformedState = {
+            board: newState.board || new Map(),
+            bar: newState.bar || new Map(),
+            off: newState.off || new Map(),
+            currentPlayer: newState.currentPlayer || '',
+            dice: newState.dice ? Array.from(newState.dice) : [],
+            winner: newState.winner || '',
+            possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
+            players: newState.players || new Map()
+          };
+          console.log("Transformed state:", transformedState);
+          setGameState(transformedState);
+          
+          // Определяем цвет текущего игрока
+          if (newState.players && roomInstance.sessionId) {
+            const myColor = newState.players.get(roomInstance.sessionId);
+            if (myColor) {
+              console.log("Setting player color:", myColor);
+              setPlayerColor(myColor);
+            }
+          }
         } else {
           console.log("Invalid state received:", newState);
         }
       });
-      room.onMessage("error", (message) => {
-        setDebugMessage(`6. Server sent an error: ${JSON.stringify(message)}`);
+      
+      roomInstance.onMessage("error", (message) => {
+        setDebugMessage(`ERROR: Server sent an error: ${JSON.stringify(message)}`);
         console.error("Server error:", message)
       });
-      room.onMessage("state_update", (stateData) => {
+      
+      roomInstance.onMessage("state_update", (stateData) => {
         console.log("Manual state update received:", stateData);
-        setGameState(stateData);
-        setDebugMessage('7. Manual state update applied');
+        // Преобразуем массивы entries обратно в Map
+        const transformedState = {
+          board: new Map(stateData.board || []),
+          bar: new Map(stateData.bar || []),
+          off: new Map(stateData.off || []),
+          currentPlayer: stateData.currentPlayer || '',
+          dice: stateData.dice || [],
+          winner: stateData.winner || '',
+          possibleMoves: stateData.possibleMoves || [],
+          players: new Map(stateData.players || [])
+        };
+        setGameState(transformedState);
+        setDebugMessage('Manual state update applied');
       });
+      
+      setRoom(roomInstance);
+    } else {
+      setDebugMessage(`ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.roomId : 'null'}`);
+      onQuit();
     }
-  }, [room]);
+
+    // Cleanup: закрываем соединение только если это не первый StrictMode remount
+    return () => {
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        console.log('GameRoom: StrictMode cleanup, not leaving room');
+      } else {
+        console.log('GameRoom: Real unmount, leaving room');
+        colyseusService.leaveGameRoom();
+      }
+    };
+  }, [roomId, onQuit]);
 
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
@@ -95,11 +133,30 @@ const GameRoom = ({ roomId, onQuit }) => {
   const whitePlayer = mockPlayer1;
   const blackPlayer = mockPlayer2;
 
+  // Функция для преобразования Map в объект для отладки
+  const debugState = () => {
+    try {
+      return JSON.stringify({
+        board: Array.from(gameState.board.entries()),
+        bar: Array.from(gameState.bar.entries()),
+        off: Array.from(gameState.off.entries()),
+        currentPlayer: gameState.currentPlayer,
+        dice: gameState.dice,
+        winner: gameState.winner,
+        possibleMoves: gameState.possibleMoves,
+        players: Array.from(gameState.players.entries()),
+        myColor: playerColor,
+      }, null, 2);
+    } catch (e) {
+      return 'Error serializing state: ' + e.message;
+    }
+  };
+
   return (
     <div className="game-room">
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', color: 'white', padding: '10px', zIndex: 9999, whiteSpace: 'pre-wrap', textAlign: 'left', fontSize: '10px' }}>
         <p>DEBUG: {debugMessage}</p>
-        <p>GAME STATE: {JSON.stringify(gameState, null, 2)}</p>
+        <p>GAME STATE: {debugState()}</p>
       </div>
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">

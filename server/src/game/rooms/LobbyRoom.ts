@@ -57,15 +57,13 @@ export class LobbyRoom extends Room<LobbyState> {
     // Query matchMaker for all available rooms and update the lobby state
     const rooms = await matchMaker.query({ name: 'backgammon', locked: false });
 
-    // It's better to update the state directly instead of clearing and re-populating
-    // to avoid flickering on the client side.
     const roomIdsInState = new Set(this.state.rooms.keys());
 
     rooms.forEach((room) => {
       if (room.metadata) {
-        if (this.state.rooms.has(room.roomId)) {
+        const roomState = this.state.rooms.get(room.roomId);
+        if (roomState) {
           // Update existing room
-          const roomState = this.state.rooms.get(room.roomId);
           Object.assign(roomState, room.metadata);
           roomState.playersCount = room.clients;
         } else {

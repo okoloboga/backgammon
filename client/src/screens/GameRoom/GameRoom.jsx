@@ -48,9 +48,9 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
 
       roomInstance.onStateChange((newState) => {
         const transformedState = {
-          board: newState.board || new Map(),
-          bar: newState.bar || new Map(),
-          off: newState.off || new Map(),
+          board: newState.board ? new Map(Array.from(newState.board.entries())) : new Map(),
+          bar: newState.bar ? new Map(Array.from(newState.bar.entries())) : new Map(),
+          off: newState.off ? new Map(Array.from(newState.off.entries())) : new Map(),
           currentPlayer: newState.currentPlayer || '',
           dice: newState.dice ? Array.from(newState.dice) : [],
           winner: newState.winner || '',

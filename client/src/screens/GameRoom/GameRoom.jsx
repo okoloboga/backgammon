@@ -27,6 +27,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [remainingDice, setRemainingDice] = useState([]);
 
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
+  const isInitialMount = useRef(true);
 
   // Sync preview state whenever the authoritative state changes
   useEffect(() => {
@@ -58,21 +59,29 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           playerProfiles: newState.playerProfiles ? new Map(Array.from(newState.playerProfiles.entries())) : new Map(),
         };
         setGameState(transformedState);
+
+        // Safely set player color here, where state is guaranteed to exist
+        if (newState.players && roomInstance.sessionId) {
+          const myColor = newState.players.get(roomInstance.sessionId);
+          if (myColor) {
+            setPlayerColor(myColor);
+          }
+        }
       });
 
       roomInstance.onMessage("error", (message) => console.error("Server error:", message));
       
-      if (roomInstance.sessionId) {
-        const myColor = roomInstance.state.players.get(roomInstance.sessionId);
-        setPlayerColor(myColor);
-      }
-
     } else {
       onQuit();
     }
 
     return () => {
-      colyseusService.leaveGameRoom();
+      // Guard against React 18 Strict Mode double-invocation
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+      } else {
+        colyseusService.leaveGameRoom();
+      }
     };
   }, [roomId, onQuit]);
 

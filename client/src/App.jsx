@@ -137,10 +137,36 @@ function App() {
     }
   };
 
-  const navigateToGame = (roomId) => {
-    setGameRoomId(roomId);
-    setCurrentScreen('game-room');
-  };
+  const navigateToGame = useCallback(async (roomId) => {
+    if (!roomId) {
+      console.error("navigateToGame called with no roomId");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const currentRoom = colyseusService.getGameRoom();
+      // Check if we are already in the correct room
+      if (currentRoom && currentRoom.roomId === roomId) {
+        console.log('Already in the correct room. Navigating...');
+      } else {
+        console.log(`Joining room ${roomId}...`);
+        await colyseusService.joinExistingRoom(roomId);
+      }
+      
+      setGameRoomId(roomId);
+      setCurrentScreen('game-room');
+    } catch (e) {
+      console.error(`Failed to navigate to game room ${roomId}:`, e);
+      setError('Failed to join the game. Please try again.');
+      // Go back to the main menu on failure
+      setCurrentScreen('main-menu');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleQuitGame = () => {
     setGameRoomId(null);

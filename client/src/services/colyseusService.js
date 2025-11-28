@@ -92,6 +92,27 @@ async joinWithReservation(reservation) {
     }
   }
 
+  async joinExistingRoom(roomId, options = {}) {
+    if (this.gameRoom) {
+      console.warn('Already connected to a game room. Leaving the old one.');
+      await this.leaveGameRoom();
+    }
+    try {
+      const joinOptions = {
+        ...options,
+        username: this.playerProfile?.username,
+        avatar: this.playerProfile?.avatar,
+      };
+      this.gameRoom = await this.client.joinById(roomId, joinOptions);
+      console.log(`Successfully joined existing game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
+      return this.gameRoom;
+    } catch (e) {
+      console.error(`Failed to join existing game room '${roomId}':`, e);
+      this.gameRoom = null;
+      throw e;
+    }
+  }
+
   /**
    * Отключается от текущей игровой комнаты.
    */

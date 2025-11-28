@@ -1,303 +1,201 @@
-import { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import './GameRoom.css';
-import BoardPoint from './components/BoardPoint';
-import Dice from './components/Dice';
-import PlayerProfile from './components/PlayerProfile';
-import { colyseusService } from '../../services/colyseusService';
-import greenLayer from '../../assets/game/greenLayer.png';
-import purpleLayer from '../../assets/game/purpleLayer.png';
-
-const isMockMode = import.meta.env.VITE_GAMEROOM_MOCK === 'true';
-
-const createMockGameState = () => {
-  const board = new Map();
-  board.set('24', { player: 'white', checkers: 15 });
-  board.set('1', { player: 'black', checkers: 15 });
-
-  const players = new Map();
-  players.set('mock-white', 'white');
-  players.set('mock-black', 'black');
-
-  const playerProfiles = new Map();
-  playerProfiles.set('mock-white', {
-    username: 'You',
-    avatar: '/assets/player1.png',
-  });
-  playerProfiles.set('mock-black', {
-    username: 'Opponent',
-    avatar: '/assets/icon.png',
-  });
-
-  return {
-    board,
-    bar: new Map([['white', 0], ['black', 0]]),
-    off: new Map([['white', 0], ['black', 0]]),
-    currentPlayer: 'white',
-    dice: [],
-    winner: '',
-    possibleMoves: [],
-    players,
-    playerProfiles,
-  };
-};
-
 const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [room, setRoom] = useState(null);
-  const [gameState, setGameState] = useState(
-    isMockMode
-      ? createMockGameState()
-      : {
-          board: new Map(),
-          bar: new Map(),
-          off: new Map(),
-          currentPlayer: '',
-          dice: [],
-          winner: '',
-          possibleMoves: [],
-          players: new Map(),
-          playerProfiles: new Map(),
-        },
-  );
-  const [playerColor, setPlayerColor] = useState(isMockMode ? 'white' : null);
-  const [, setDebugMessage] = useState('Initializing...');
-  const isInitialMount = useRef(true);
-
-  // State for move handling
-  const [selectedPoint, setSelectedPoint] = useState(null);
+  // Authoritative state from the server
+  const [gameState, setGameState] = useState({
+    board: new Map(), bar: new Map(), off: new Map(), currentPlayer: '',
+    dice: [], winner: '', possibleMoves: [], players: new Map(), playerProfiles: new Map(),
+  });
+  // Local state for optimistic updates during a turn
+  const [previewState, setPreviewState] = useState(null);
+  
+  const [playerColor, setPlayerColor] = useState(null);
+  const [selectedPoint, setSelectedPoint] = useState(null); // 'bar' or point number
   const [highlightedPoints, setHighlightedPoints] = useState([]);
-  const [currentMove, setCurrentMove] = useState([]);
+  
+  // State for the move sequence being built
+  const [currentMoves, setCurrentMoves] = useState([]);
+  const [remainingDice, setRemainingDice] = useState([]);
+
+  const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
+
+  // Sync preview state whenever the authoritative state changes
+  useEffect(() => {
+    setPreviewState(gameState);
+    // When it becomes our turn, reset move state
+    if (playerColor && gameState.currentPlayer === playerColor) {
+      setCurrentMoves([]);
+      setRemainingDice(gameState.dice);
+      setSelectedPoint(null);
+      setHighlightedPoints([]);
+    }
+  }, [gameState, playerColor]);
 
   useEffect(() => {
-    if (isMockMode) {
-      setDebugMessage('Mock mode active: using local state');
-      return undefined;
-    }
-
-    setDebugMessage('1. GameRoom mounted. Getting room instance...');
     const roomInstance = colyseusService.getGameRoom();
-    console.log('GameRoom: roomInstance =', roomInstance);
-    console.log('GameRoom: roomInstance.roomId =', roomInstance?.roomId);
-    console.log('GameRoom: expected roomId =', roomId);
-
     if (roomInstance && roomInstance.roomId === roomId) {
-      setDebugMessage('2. Got room instance. Setting room state.');
-      
-      // Регистрируем обработчики ДО установки room в state
-      setDebugMessage('3. Attaching event listeners...');
+      setRoom(roomInstance);
+
       roomInstance.onStateChange((newState) => {
-        console.log("New game state received:", newState);
-        if (newState) {
-          // Colyseus Schema объекты имеют свойства, к которым можно обращаться напрямую
-          const transformedState = {
-            board: newState.board || new Map(),
-            bar: newState.bar || new Map(),
-            off: newState.off || new Map(),
-            currentPlayer: newState.currentPlayer || '',
-            dice: newState.dice ? Array.from(newState.dice) : [],
-            winner: newState.winner || '',
-            possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
-            players: newState.players
-              ? new Map(Array.from(newState.players.entries()))
-              : new Map(),
-            playerProfiles: newState.playerProfiles
-              ? new Map(Array.from(newState.playerProfiles.entries()))
-              : new Map(),
-          };
-          console.log("Transformed state:", transformedState);
-          setGameState(transformedState);
-          
-          // Определяем цвет текущего игрока
-          if (newState.players && roomInstance.sessionId) {
-            const myColor = newState.players.get(roomInstance.sessionId);
-            if (myColor) {
-              console.log("Setting player color:", myColor);
-              setPlayerColor(myColor);
-            }
-          }
-        } else {
-          console.log("Invalid state received:", newState);
-        }
-      });
-      
-      roomInstance.onMessage("error", (message) => {
-        setDebugMessage(`ERROR: Server sent an error: ${JSON.stringify(message)}`);
-        console.error("Server error:", message)
-      });
-      
-      roomInstance.onMessage("state_update", (stateData) => {
-        console.log("Manual state update received:", stateData);
-        // Преобразуем массивы entries обратно в Map
         const transformedState = {
-          board: new Map(stateData.board || []),
-          bar: new Map(stateData.bar || []),
-          off: new Map(stateData.off || []),
-          currentPlayer: stateData.currentPlayer || '',
-          dice: stateData.dice || [],
-          winner: stateData.winner || '',
-          possibleMoves: stateData.possibleMoves || [],
-          players: new Map(stateData.players || []),
-          playerProfiles: new Map(stateData.playerProfiles || []),
+          board: newState.board || new Map(),
+          bar: newState.bar || new Map(),
+          off: newState.off || new Map(),
+          currentPlayer: newState.currentPlayer || '',
+          dice: newState.dice ? Array.from(newState.dice) : [],
+          winner: newState.winner || '',
+          possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
+          players: newState.players ? new Map(Array.from(newState.players.entries())) : new Map(),
+          playerProfiles: newState.playerProfiles ? new Map(Array.from(newState.playerProfiles.entries())) : new Map(),
         };
         setGameState(transformedState);
-        setDebugMessage('Manual state update applied');
       });
+
+      roomInstance.onMessage("error", (message) => console.error("Server error:", message));
       
-      setRoom(roomInstance);
+      if (roomInstance.sessionId) {
+        const myColor = roomInstance.state.players.get(roomInstance.sessionId);
+        setPlayerColor(myColor);
+      }
+
     } else {
-      setDebugMessage(`ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.roomId : 'null'}`);
       onQuit();
     }
 
-    // Cleanup: закрываем соединение только если это не первый StrictMode remount
     return () => {
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-        console.log('GameRoom: StrictMode cleanup, not leaving room');
-      } else {
-        console.log('GameRoom: Real unmount, leaving room');
-        colyseusService.leaveGameRoom();
-      }
+      colyseusService.leaveGameRoom();
     };
-  }, [roomId, onQuit, isMockMode]);
+  }, [roomId, onQuit]);
+
+  const getPossibleDestinations = (fromPoint) => {
+    const destinations = new Set();
+    const direction = playerColor === 'white' ? -1 : 1;
+    remainingDice.forEach(die => {
+      const toPoint = fromPoint === 'bar'
+        ? (playerColor === 'white' ? 25 - die : die)
+        : fromPoint + (die * direction);
+      
+      // Basic validation (more complex rules like blocking are on server)
+      // This is just for highlighting
+      const targetPoint = previewState.board.get(toPoint.toString());
+      if (!targetPoint || targetPoint.player === playerColor || targetPoint.checkers <= 1) {
+        destinations.add(toPoint);
+      }
+    });
+    return Array.from(destinations);
+  };
 
   const handlePointClick = (pointId) => {
-    if (!isMyTurn || gameState.dice.length === 0) return;
+    if (!isMyTurn || !previewState) return;
 
-    // If a destination is clicked
-    if (selectedPoint && highlightedPoints.includes(pointId)) {
-      const newMove = { from: selectedPoint, to: pointId };
-      const updatedMove = [...currentMove, newMove];
+    // 1. Handle clicking a highlighted destination
+    if (selectedPoint !== null && highlightedPoints.includes(pointId)) {
+      const from = selectedPoint;
+      const to = pointId;
+      const direction = playerColor === 'white' ? -1 : 1;
+      const distance = from === 'bar'
+        ? (playerColor === 'white' ? 25 - to : to)
+        : Math.abs(to - from);
       
-      // Find a matching full move sequence
-      const moveString = updatedMove.map(m => `${m.from}-${m.to}`).join(',');
+      // Find which die was used
+      const dieIndex = remainingDice.indexOf(distance);
+      if (dieIndex === -1) return; // Should not happen if highlighted
+      const dieUsed = remainingDice[dieIndex];
+
+      // Optimistically update preview state
+      const newPreviewState = JSON.parse(JSON.stringify(previewState, (k, v) => v instanceof Map ? Array.from(v.entries()) : v));
+      newPreviewState.board = new Map(newPreviewState.board);
       
-      if (gameState.possibleMoves.includes(moveString)) {
-        // Found a complete move, send it
-        room.send('move', moveString);
-        setSelectedPoint(null);
-        setHighlightedPoints([]);
-        setCurrentMove([]);
-      } else {
-        // It's an intermediate move, update state and wait for the next
-        setCurrentMove(updatedMove);
-        setSelectedPoint(pointId); // The new starting point is the last destination
-        
-        // Find next possible destinations
-        const nextDestinations = gameState.possibleMoves
-          .filter(m => m.startsWith(moveString + ','))
-          .map(m => {
-            const nextPart = m.substring(moveString.length + 1);
-            return parseInt(nextPart.split('-')[1], 10);
-          });
-        setHighlightedPoints(nextDestinations);
+      // Decrement 'from' point
+      const fromPoint = newPreviewState.board.get(from.toString());
+      if (fromPoint) {
+        fromPoint.checkers -= 1;
+        if (fromPoint.checkers === 0) newPreviewState.board.delete(from.toString());
       }
+      
+      // Increment 'to' point
+      const toPoint = newPreviewState.board.get(to.toString()) || { player: playerColor, checkers: 0 };
+      toPoint.checkers += 1;
+      toPoint.player = playerColor;
+      newPreviewState.board.set(to.toString(), toPoint);
+      
+      setPreviewState(newPreviewState);
+
+      // Update move sequence
+      setCurrentMoves(prev => [...prev, { from, to, die: dieUsed }]);
+      const newRemainingDice = [...remainingDice];
+      newRemainingDice.splice(dieIndex, 1);
+      setRemainingDice(newRemainingDice);
+
+      // Reset selection
+      setSelectedPoint(null);
+      setHighlightedPoints([]);
       return;
     }
 
-    // If a starting checker is clicked
-    const pointData = gameState.board.get(pointId.toString());
+    // 2. Handle selecting a checker
+    const pointData = previewState.board.get(pointId.toString());
     if (pointData && pointData.player === playerColor) {
-      // Find all possible destinations from this point
-      const destinations = gameState.possibleMoves
-        .filter(m => m.startsWith(`${pointId}-`))
-        .map(m => parseInt(m.split(',')[0].split('-')[1], 10));
-
-      if (destinations.length > 0) {
-        setSelectedPoint(pointId);
-        setHighlightedPoints(destinations);
-        setCurrentMove([]); // Start a new move
-      } else {
-        setSelectedPoint(null);
-        setHighlightedPoints([]);
-        setCurrentMove([]);
-      }
+      const destinations = getPossibleDestinations(pointId);
+      setSelectedPoint(pointId);
+      setHighlightedPoints(destinations);
+    } else {
+      // Deselect if clicking elsewhere
+      setSelectedPoint(null);
+      setHighlightedPoints([]);
+    }
+  };
+  
+  const handleConfirmMoves = () => {
+    // Find the full move sequence string that matches our completed moves
+    const moveString = currentMoves.map(m => `${m.from}-${m.to}`).join(',');
+    if (gameState.possibleMoves.includes(moveString)) {
+      room.send('move', moveString);
+    } else {
+      // This indicates a mismatch between client/server logic, for now, just undo
+      console.error("Client move sequence not found in server's possible moves.", moveString);
+      handleUndoMoves();
     }
   };
 
+  const handleUndoMoves = () => {
+    setPreviewState(gameState);
+    setCurrentMoves([]);
+    setRemainingDice(gameState.dice);
+    setSelectedPoint(null);
+    setHighlightedPoints([]);
+  };
 
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
     right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
   };
 
-  const handleRollDice = () => {
-    if (isMockMode) {
-      const die1 = Math.floor(Math.random() * 6) + 1;
-      const die2 = Math.floor(Math.random() * 6) + 1;
-      const newDice = die1 === die2 ? [die1, die1, die1, die1] : [die1, die2];
-      setGameState((prev) => ({
-        ...prev,
-        dice: newDice,
-        currentPlayer: prev.currentPlayer === 'white' ? 'black' : 'white',
-      }));
-      return;
-    }
-    return room && canRoll && room.send('rollDice');
-  };
-  const handleQuit = () => {
-    if (isMockMode) {
-      onQuit();
-      return;
-    }
-    colyseusService.leaveGameRoom().then(() => {
-      onQuit();
-    });
-  };
+  const handleRollDice = () => room && canRoll && room.send('rollDice');
+  const handleQuit = () => colyseusService.leaveGameRoom().then(onQuit);
 
-  const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const canRoll = isMyTurn && gameState.dice.length === 0;
+  const canConfirm = currentMoves.length > 0 && remainingDice.length === 0; // Or no more possible moves
 
-  const playersMap =
-    gameState.players instanceof Map
-      ? gameState.players
-      : new Map(gameState.players ? Array.from(gameState.players.entries()) : []);
+  const renderableState = previewState || gameState;
 
-  const profilesMap =
-    gameState.playerProfiles instanceof Map
-      ? gameState.playerProfiles
-      : new Map(
-          gameState.playerProfiles ? Array.from(gameState.playerProfiles.entries()) : [],
-        );
+  const playersMap = new Map(renderableState.players);
+  const profilesMap = new Map(renderableState.playerProfiles);
 
-  let whiteSessionId;
-  let blackSessionId;
+  let whiteSessionId, blackSessionId;
   playersMap.forEach((color, sessionId) => {
     if (color === 'white') whiteSessionId = sessionId;
     if (color === 'black') blackSessionId = sessionId;
   });
 
-  const defaultWhiteProfile = { username: 'Player 1', avatar: '/assets/player1.png' };
-  const defaultBlackProfile = { username: 'Player 2', avatar: '/assets/icon.png' };
-
-  const getProfileForSession = (sessionId, defaultProfile) => {
-    // Если игрок еще не подключился, показываем "...waiting..."
-    if (!sessionId) {
-      return {
-        username: '...waiting...',
-        avatar: '/assets/icon.png',
-      };
-    }
-    const profileFromState = profilesMap.get(sessionId);
-    const finalProfile = {
-      username: profileFromState?.username || defaultProfile.username,
-      avatar: profileFromState?.avatar || defaultProfile.avatar,
-    };
-    if (room?.sessionId === sessionId && currentUser) {
-      return {
-        username: currentUser.username || finalProfile.username,
-        avatar: currentUser.avatar || finalProfile.avatar,
-      };
-    }
-    return finalProfile;
+  const getProfileForSession = (sessionId) => {
+    if (!sessionId) return { username: '...waiting...', avatar: '/assets/icon.png' };
+    const profile = profilesMap.get(sessionId) || {};
+    const defaultProfile = { username: 'Player', avatar: '/assets/icon.png' };
+    return { ...defaultProfile, ...profile };
   };
 
-  const whitePlayer = isMockMode
-    ? profilesMap.get('mock-white') || defaultWhiteProfile
-    : getProfileForSession(whiteSessionId, defaultWhiteProfile);
-  const blackPlayer = isMockMode
-    ? profilesMap.get('mock-black') || defaultBlackProfile
-    : getProfileForSession(blackSessionId, defaultBlackProfile);
+  const whitePlayer = getProfileForSession(whiteSessionId);
+  const blackPlayer = getProfileForSession(blackSessionId);
 
   return (
     <div className="game-room">
@@ -317,7 +215,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                   key={id}
                   pointId={id}
                   isTop={id >= 13}
-                  checkers={gameState.board.get(id.toString())}
+                  checkers={renderableState.board.get(id.toString())}
                   onClick={handlePointClick}
                   isSelected={selectedPoint === id}
                   isHighlighted={highlightedPoints.includes(id)}
@@ -334,7 +232,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                   key={id}
                   pointId={id}
                   isTop={id >= 19}
-                  checkers={gameState.board.get(id.toString())}
+                  checkers={renderableState.board.get(id.toString())}
                   onClick={handlePointClick}
                   isSelected={selectedPoint === id}
                   isHighlighted={highlightedPoints.includes(id)}
@@ -342,9 +240,14 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               ))}
             </div>
             <div className="dice-area">
+              {isMyTurn && currentMoves.length > 0 && (
+                <div className="move-controls">
+                  <button onClick={handleConfirmMoves} disabled={!canConfirm}>Confirm</button>
+                  <button onClick={handleUndoMoves}>Undo</button>
+                </div>
+              )}
               {gameState.dice.length > 0 ? (
-                // Всегда показываем только первые 2 кости (даже при дубле)
-                gameState.dice.slice(0, 2).map((value, i) => <Dice key={i} value={value} />)
+                gameState.dice.map((value, i) => <Dice key={i} value={value} />)
               ) : (
                 <button onClick={handleRollDice} disabled={!canRoll}>
                   {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}

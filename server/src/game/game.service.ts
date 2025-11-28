@@ -26,7 +26,7 @@ export class GameService {
     });
 
     // Define the lobby room
-    this.server.define('lobby', LobbyRoom);
+    this.server.define('lobby', LobbyRoom, { autoDispose: false });
 
     // Set server in lobby service
     this.lobbyService.setServer(this.server);

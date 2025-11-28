@@ -33,7 +33,9 @@ export class LobbyRoom extends Room<LobbyState> {
           } else if (action === 'update') {
             this.updateRoom(roomInfo.roomId, roomInfo);
           } else if (action === 'remove') {
-            this.removeRoom(roomInfo.roomId);
+            const roomIdToRemove =
+              typeof roomInfo === 'string' ? roomInfo : roomInfo.roomId;
+            this.removeRoom(roomIdToRemove);
           }
           this.broadcastRoomsUpdate();
         } catch (error) {

@@ -168,10 +168,10 @@ function App() {
     }
   }, []);
 
-  const handleQuitGame = () => {
+  const handleQuitGame = useCallback(() => {
     setGameRoomId(null);
     setCurrentScreen('main-menu');
-  };
+  }, []);
 
   // Этот хук будет следить за состоянием пользователя и переключать экран
   useEffect(() => {

@@ -1,3 +1,13 @@
+import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
+import './GameRoom.css';
+import BoardPoint from './components/BoardPoint';
+import Dice from './components/Dice';
+import PlayerProfile from './components/PlayerProfile';
+import { colyseusService } from '../../services/colyseusService';
+import greenLayer from '../../assets/game/greenLayer.png';
+import purpleLayer from '../../assets/game/purpleLayer.png';
+
 const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [room, setRoom] = useState(null);
   // Authoritative state from the server

@@ -2,12 +2,14 @@ import PropTypes from 'prop-types';
 import './BoardPoint.css';
 import Checker from './Checker';
 
-const BoardPoint = ({ pointId, checkers, isTop }) => {
+const BoardPoint = ({ pointId, checkers, isTop, onClick, isSelected, isHighlighted }) => {
   const handleClick = () => {
-    console.log(`Clicked on point: ${pointId}`);
+    if (onClick) {
+      onClick(pointId);
+    }
   };
 
-  const className = `board-point ${isTop ? 'is-top' : 'is-bottom'}`;
+  const className = `board-point ${isTop ? 'is-top' : 'is-bottom'} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}`;
 
   const POINT_HEIGHT = 200;
   const CHECKER_HEIGHT = 25;
@@ -64,6 +66,16 @@ BoardPoint.propTypes = {
       player: PropTypes.string,
     }),
   ]),
+  onClick: PropTypes.func,
+  isSelected: PropTypes.bool,
+  isHighlighted: PropTypes.bool,
+};
+
+BoardPoint.defaultProps = {
+  checkers: null,
+  onClick: () => {},
+  isSelected: false,
+  isHighlighted: false,
 };
 
 export default BoardPoint;

@@ -137,20 +137,41 @@ export class BackgammonRoom extends Room<GameState> {
     });
   }
 
-  onLeave(client: Client, _consented: boolean) {
+  async onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, 'left!');
+
+    const wasPlaying = this.state.players.size === 2;
+    const leavingPlayerColor = this.state.players.get(client.sessionId);
+
     this.state.players.delete(client.sessionId);
     this.state.playerProfiles.delete(client.sessionId);
 
-    // Обновляем информацию о количестве игроков
-    if (this.roomInfo) {
-      this.roomInfo.playersCount = this.state.players.size;
-      if (this.state.players.size === 0) {
-        this.roomInfo.status = 'finished';
-      } else {
-        this.roomInfo.status = 'waiting';
-      }
-      this.notifyLobby('update', this.roomInfo);
+    if (wasPlaying && leavingPlayerColor) {
+        // Game was active, the other player wins
+        const winnerColor = leavingPlayerColor === 'white' ? 'black' : 'white';
+        this.state.winner = winnerColor;
+
+        // Find the winning client to notify them
+        const winnerClient = this.clients.find(c => c.sessionId !== client.sessionId);
+
+        if (winnerClient) {
+            winnerClient.send('opponent_left', { message: 'Opponent has left the game. You win!' });
+            // Disconnect the winner after a short delay to allow them to see the message
+            this.clock.setTimeout(() => {
+                winnerClient.leave();
+            }, 3000); // 3 seconds delay
+        }
+        
+        if (this.roomInfo) {
+            this.roomInfo.status = 'finished';
+            this.notifyLobby('update', this.roomInfo);
+        }
+        
+    } else if (this.roomInfo) {
+        // Player left before game started
+        this.roomInfo.playersCount = this.state.players.size;
+        this.roomInfo.status = this.state.players.size === 0 ? 'finished' : 'waiting';
+        this.notifyLobby('update', this.roomInfo);
     }
   }
 

@@ -71,6 +71,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
 
       roomInstance.onMessage("error", (message) => console.error("Server error:", message));
       
+      roomInstance.onMessage("opponent_left", (message) => {
+        setModalMessage(message.message || 'Opponent left.');
+        setShowOpponentLeftModal(true);
+      });
+
     } else {
       onQuit();
     }
@@ -93,8 +98,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         ? (playerColor === 'white' ? 25 - die : die)
         : fromPoint + (die * direction);
       
-      // Basic validation (more complex rules like blocking are on server)
-      // This is just for highlighting
+      // This is a simplified validation for highlighting, the server does the real validation.
+      // It doesn't account for complex blocking scenarios, but it's good for UI feedback.
       const targetPoint = previewState.board.get(toPoint.toString());
       if (!targetPoint || targetPoint.player === playerColor || targetPoint.checkers <= 1) {
         destinations.add(toPoint);
@@ -115,31 +120,36 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         ? (playerColor === 'white' ? 25 - to : to)
         : Math.abs(to - from);
       
-      // Find which die was used
       const dieIndex = remainingDice.indexOf(distance);
       if (dieIndex === -1) return; // Should not happen if highlighted
       const dieUsed = remainingDice[dieIndex];
 
-      // Optimistically update preview state
-      const newPreviewState = JSON.parse(JSON.stringify(previewState, (k, v) => v instanceof Map ? Array.from(v.entries()) : v));
-      newPreviewState.board = new Map(newPreviewState.board);
+      // Create a deep copy for mutation
+      const newPreviewState = {
+        ...previewState,
+        board: new Map(previewState.board),
+      };
       
       // Decrement 'from' point
-      const fromPoint = newPreviewState.board.get(from.toString());
-      if (fromPoint) {
+      if (from !== 'bar') {
+        const fromPoint = { ...newPreviewState.board.get(from.toString()) };
         fromPoint.checkers -= 1;
-        if (fromPoint.checkers === 0) newPreviewState.board.delete(from.toString());
+        if (fromPoint.checkers === 0) {
+          newPreviewState.board.delete(from.toString());
+        } else {
+          newPreviewState.board.set(from.toString(), fromPoint);
+        }
       }
       
       // Increment 'to' point
-      const toPoint = newPreviewState.board.get(to.toString()) || { player: playerColor, checkers: 0 };
+      const toPoint = { ...(newPreviewState.board.get(to.toString()) || { player: playerColor, checkers: 0 }) };
       toPoint.checkers += 1;
       toPoint.player = playerColor;
       newPreviewState.board.set(to.toString(), toPoint);
       
       setPreviewState(newPreviewState);
 
-      // Update move sequence
+      // Update move sequence state
       setCurrentMoves(prev => [...prev, { from, to, die: dieUsed }]);
       const newRemainingDice = [...remainingDice];
       newRemainingDice.splice(dieIndex, 1);
@@ -165,12 +175,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   };
   
   const handleConfirmMoves = () => {
-    // Find the full move sequence string that matches our completed moves
     const moveString = currentMoves.map(m => `${m.from}-${m.to}`).join(',');
+    // Check if the constructed move is one of the valid sequences
     if (gameState.possibleMoves.includes(moveString)) {
       room.send('move', moveString);
     } else {
-      // This indicates a mismatch between client/server logic, for now, just undo
       console.error("Client move sequence not found in server's possible moves.", moveString);
       handleUndoMoves();
     }
@@ -193,7 +202,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const handleQuit = () => colyseusService.leaveGameRoom().then(onQuit);
 
   const canRoll = isMyTurn && gameState.dice.length === 0;
-  const canConfirm = currentMoves.length > 0 && remainingDice.length === 0; // Or no more possible moves
+  // Enable confirm button when no dice are left to be played
+  const canConfirm = currentMoves.length > 0 && remainingDice.length === 0;
 
   const renderableState = previewState || gameState;
 
@@ -215,6 +225,10 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
 
   const whitePlayer = getProfileForSession(whiteSessionId);
   const blackPlayer = getProfileForSession(blackSessionId);
+
+  // Modal state that was missing from the previous refactor
+  const [showOpponentLeftModal, setShowOpponentLeftModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   return (
     <div className="game-room">
@@ -266,7 +280,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                 </div>
               )}
               {gameState.dice.length > 0 ? (
-                gameState.dice.map((value, i) => <Dice key={i} value={value} />)
+                remainingDice.map((value, i) => <Dice key={i} value={value} />)
               ) : (
                 <button onClick={handleRollDice} disabled={!canRoll}>
                   {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}
@@ -276,6 +290,15 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           </div>
         </div>
       </div>
+      {showOpponentLeftModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Game Over</h2>
+            <p>{modalMessage}</p>
+            <p>Returning to lobby...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

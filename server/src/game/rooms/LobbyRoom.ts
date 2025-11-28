@@ -1,4 +1,4 @@
-import { Room, Client } from '@colyseus/core';
+import { Room, Client, matchMaker } from '@colyseus/core';
 import { Schema, MapSchema, type } from '@colyseus/schema';
 import { RoomInfo as RoomInfoInterface } from '../types';
 
@@ -25,23 +25,23 @@ export class LobbyRoom extends Room<LobbyState> {
     this.setState(new LobbyState());
 
     this.lobbySubscription = (payload: string) => {
-        try {
-          const { action, roomInfo } = JSON.parse(payload);
-          if (!action || !roomInfo) return;
-          if (action === 'add') {
-            this.addRoom(roomInfo);
-          } else if (action === 'update') {
-            this.updateRoom(roomInfo.roomId, roomInfo);
-          } else if (action === 'remove') {
-            const roomIdToRemove =
-              typeof roomInfo === 'string' ? roomInfo : roomInfo.roomId;
-            this.removeRoom(roomIdToRemove);
-          }
-          this.broadcastRoomsUpdate();
-        } catch (error) {
-          console.error('[LobbyRoom] Failed to process lobby update:', error);
+      try {
+        const { action, roomInfo } = JSON.parse(payload);
+        if (!action || !roomInfo) return;
+        if (action === 'add') {
+          this.addRoom(roomInfo);
+        } else if (action === 'update') {
+          this.updateRoom(roomInfo.roomId, roomInfo);
+        } else if (action === 'remove') {
+          const roomIdToRemove =
+            typeof roomInfo === 'string' ? roomInfo : roomInfo.roomId;
+          this.removeRoom(roomIdToRemove);
         }
-      };
+        this.broadcastRoomsUpdate();
+      } catch (error) {
+        console.error('[LobbyRoom] Failed to process lobby update:', error);
+      }
+    };
     void this.presence.subscribe('lobby_updates', this.lobbySubscription);
   }
   onDispose() {
@@ -51,9 +51,42 @@ export class LobbyRoom extends Room<LobbyState> {
     }
   }
 
-
-  onJoin(client: Client, _options: unknown) {
+  async onJoin(client: Client, _options: unknown) {
     console.log(`Client ${client.sessionId} joined lobby`);
+
+    // Query matchMaker for all available rooms and update the lobby state
+    const rooms = await matchMaker.query({ name: 'backgammon', locked: false });
+
+    // It's better to update the state directly instead of clearing and re-populating
+    // to avoid flickering on the client side.
+    const roomIdsInState = new Set(this.state.rooms.keys());
+
+    rooms.forEach((room) => {
+      if (room.metadata) {
+        if (this.state.rooms.has(room.roomId)) {
+          // Update existing room
+          const roomState = this.state.rooms.get(room.roomId);
+          Object.assign(roomState, room.metadata);
+          roomState.playersCount = room.clients;
+        } else {
+          // Add new room
+          const roomInfoSchema = new RoomInfo();
+          Object.assign(roomInfoSchema, room.metadata);
+          roomInfoSchema.playersCount = room.clients;
+          this.state.rooms.set(room.roomId, roomInfoSchema);
+        }
+        roomIdsInState.delete(room.roomId);
+      }
+    });
+
+    // Remove rooms that are no longer available
+    roomIdsInState.forEach((roomId) => {
+      this.state.rooms.delete(roomId);
+    });
+
+    console.log(
+      `[LobbyRoom] onJoin: Refreshed room list. Count=${this.state.rooms.size}`,
+    );
 
     // Отправляем текущий список комнат
     this.sendRoomsList(client);

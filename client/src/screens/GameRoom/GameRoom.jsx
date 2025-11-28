@@ -73,7 +73,92 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       setDebugMessage('Mock mode active: using local state');
       return undefined;
     }
-    // ... (rest of useEffect)
+
+    setDebugMessage('1. GameRoom mounted. Getting room instance...');
+    const roomInstance = colyseusService.getGameRoom();
+    console.log('GameRoom: roomInstance =', roomInstance);
+    console.log('GameRoom: roomInstance.roomId =', roomInstance?.roomId);
+    console.log('GameRoom: expected roomId =', roomId);
+
+    if (roomInstance && roomInstance.roomId === roomId) {
+      setDebugMessage('2. Got room instance. Setting room state.');
+      
+      // Регистрируем обработчики ДО установки room в state
+      setDebugMessage('3. Attaching event listeners...');
+      roomInstance.onStateChange((newState) => {
+        console.log("New game state received:", newState);
+        if (newState) {
+          // Colyseus Schema объекты имеют свойства, к которым можно обращаться напрямую
+          const transformedState = {
+            board: newState.board || new Map(),
+            bar: newState.bar || new Map(),
+            off: newState.off || new Map(),
+            currentPlayer: newState.currentPlayer || '',
+            dice: newState.dice ? Array.from(newState.dice) : [],
+            winner: newState.winner || '',
+            possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
+            players: newState.players
+              ? new Map(Array.from(newState.players.entries()))
+              : new Map(),
+            playerProfiles: newState.playerProfiles
+              ? new Map(Array.from(newState.playerProfiles.entries()))
+              : new Map(),
+          };
+          console.log("Transformed state:", transformedState);
+          setGameState(transformedState);
+          
+          // Определяем цвет текущего игрока
+          if (newState.players && roomInstance.sessionId) {
+            const myColor = newState.players.get(roomInstance.sessionId);
+            if (myColor) {
+              console.log("Setting player color:", myColor);
+              setPlayerColor(myColor);
+            }
+          }
+        } else {
+          console.log("Invalid state received:", newState);
+        }
+      });
+      
+      roomInstance.onMessage("error", (message) => {
+        setDebugMessage(`ERROR: Server sent an error: ${JSON.stringify(message)}`);
+        console.error("Server error:", message)
+      });
+      
+      roomInstance.onMessage("state_update", (stateData) => {
+        console.log("Manual state update received:", stateData);
+        // Преобразуем массивы entries обратно в Map
+        const transformedState = {
+          board: new Map(stateData.board || []),
+          bar: new Map(stateData.bar || []),
+          off: new Map(stateData.off || []),
+          currentPlayer: stateData.currentPlayer || '',
+          dice: stateData.dice || [],
+          winner: stateData.winner || '',
+          possibleMoves: stateData.possibleMoves || [],
+          players: new Map(stateData.players || []),
+          playerProfiles: new Map(stateData.playerProfiles || []),
+        };
+        setGameState(transformedState);
+        setDebugMessage('Manual state update applied');
+      });
+      
+      setRoom(roomInstance);
+    } else {
+      setDebugMessage(`ERROR: Could not find room instance! Expected ${roomId}, found ${roomInstance ? roomInstance.roomId : 'null'}`);
+      onQuit();
+    }
+
+    // Cleanup: закрываем соединение только если это не первый StrictMode remount
+    return () => {
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        console.log('GameRoom: StrictMode cleanup, not leaving room');
+      } else {
+        console.log('GameRoom: Real unmount, leaving room');
+        colyseusService.leaveGameRoom();
+      }
+    };
   }, [roomId, onQuit, isMockMode]);
 
   const handlePointClick = (pointId) => {
@@ -129,6 +214,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       }
     }
   };
+
 
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],

@@ -14,7 +14,7 @@ COPY server/package.json ./server/
 RUN pnpm install --filter client --frozen-lockfile
 
 # Copy the rest of the source code
-COPY . .
+COPY client/. ./client/
 
 # Build the client application
 RUN pnpm --filter client run build

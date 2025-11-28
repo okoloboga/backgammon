@@ -19,7 +19,7 @@ export class LobbyState extends Schema {
 }
 
 export class LobbyRoom extends Room<LobbyState> {
-  private lobbySubscription?: () => void;
+  private lobbySubscription?: (payload: string) => void;
 
   onCreate(_options: any) {
     this.setState(new LobbyState());

@@ -1,0 +1,43 @@
+.bear-off-area {
+  width: 50px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 2px dashed #555;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.bear-off-area:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.bear-off-area--highlighted {
+  background-color: rgba(0, 255, 255, 0.1);
+  border-color: #00ffff;
+  box-shadow: inset 0 0 15px 5px rgba(0, 255, 255, 0.4);
+}
+
+.bear-off-count {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.bear-off-area--white .bear-off-count {
+  color: #f0f0f0;
+}
+
+.bear-off-area--black .bear-off-count {
+  color: #333;
+  text-shadow: 0 0 2px white;
+}
+
+.bear-off-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #999;
+}

@@ -4,6 +4,7 @@ import './GameRoom.css';
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
+import BearOffArea from './components/BearOffArea'; // Import the new component
 import { colyseusService } from '../../services/colyseusService';
 import greenLayer from '../../assets/game/greenLayer.png';
 import purpleLayer from '../../assets/game/purpleLayer.png';
@@ -78,75 +79,42 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
     };
   }, [roomId, onQuit]);
 
-  const getPossibleDestinations = (fromPoint) => {
-    const destinations = new Set();
-    const direction = playerColor === 'white' ? -1 : 1;
-
-    // Правило головы
-    const headPoint = playerColor === 'white' ? 24 : 1;
-    const isHead = fromPoint === headPoint;
-
-    // Используем счетчик из gameState
-    const movesFromHeadCount = gameState.turnMovesFromHead || 0;
-
-    // Исключение для первого хода (turnCount <= 2) и дублей 3,4,6
-    const isFirstTurn = (gameState.turnCount || 1) <= 2;
-    let maxHeadMoves = 1;
-
-    if (isFirstTurn) {
-      // Проверяем, есть ли подходящие кости (упрощенная проверка, сервер проверит точно)
-      const hasSpecialDie = gameState.dice.some(d => [3, 4, 6].includes(d));
-      if (hasSpecialDie) {
-        maxHeadMoves = 2;
-      }
-    }
-
-    if (isHead && movesFromHeadCount >= maxHeadMoves) {
-      return []; // Нельзя больше снимать с головы
-    }
-
-    gameState.dice.forEach(die => {
-      const toPoint = fromPoint === 'bar'
-        ? (playerColor === 'white' ? 25 - die : die)
-        : fromPoint + (die * direction);
-
-      const targetPoint = gameState.board.get(toPoint.toString());
-
-      // В длинных нардах НЕЛЬЗЯ ходить на поле противника вообще
-      if (targetPoint && targetPoint.player && targetPoint.player !== playerColor) {
-        return; // Пункт занят соперником
-      }
-
-      destinations.add(toPoint);
-    });
-    return Array.from(destinations);
-  };
-
   const handlePointClick = (pointId) => {
     if (!isMyTurn) return;
 
-    // 1. Handle moving a checker to a destination
+    // 1. Handle moving a checker to a highlighted destination
     if (selectedPoint !== null && highlightedPoints.includes(pointId)) {
       const from = selectedPoint;
       const to = pointId;
 
-      // Send move immediately
       room.send('move', { from, to });
 
-      // Reset selection
       setSelectedPoint(null);
       setHighlightedPoints([]);
       return;
     }
 
-    // 2. Handle selecting a checker
+    // 2. Handle selecting a checker to see its possible moves
     const pointData = gameState.board.get(pointId.toString());
     if (pointData && pointData.player === playerColor) {
-      const destinations = getPossibleDestinations(pointId);
+      const destinations = gameState.possibleMoves
+        .map((moveSequence) => {
+          // A move sequence is a string like "24-23,23-22"
+          const firstMove = moveSequence.split(',')[0];
+          const [from, to] = firstMove.split('-');
+          // Return the 'to' part if the 'from' part matches the clicked point
+          if (from === pointId.toString()) {
+            // The destination can be a number or 'off'
+            return isNaN(parseInt(to, 10)) ? to : parseInt(to, 10);
+          }
+          return null;
+        })
+        .filter((to) => to !== null); // Filter out nulls
+
       setSelectedPoint(pointId);
-      setHighlightedPoints(destinations);
+      setHighlightedPoints(Array.from(new Set(destinations))); // Use Set to remove duplicate destinations
     } else {
-      // Deselect if clicking elsewhere
+      // Deselect if clicking an invalid point
       setSelectedPoint(null);
       setHighlightedPoints([]);
     }
@@ -216,6 +184,12 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           <PlayerProfile player={whitePlayer} align="right" />
         </div>
         <div className="game-board">
+          <BearOffArea
+            player="black"
+            count={renderableState.off.get('black') || 0}
+            isHighlighted={highlightedPoints.includes('off')}
+            onClick={() => handlePointClick('off')}
+          />
           <div className="board-half">
             <img src={greenLayer} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
@@ -226,7 +200,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                   pointId={id}
                   isTop={id >= 13}
                   checkers={renderableState.board.get(id.toString())}
-                  onClick={handlePointClick}
+                  onClick={() => handlePointClick(id)}
                   isSelected={selectedPoint === id}
                   isHighlighted={highlightedPoints.includes(id)}
                 />
@@ -243,7 +217,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                   pointId={id}
                   isTop={id >= 19}
                   checkers={renderableState.board.get(id.toString())}
-                  onClick={handlePointClick}
+                  onClick={() => handlePointClick(id)}
                   isSelected={selectedPoint === id}
                   isHighlighted={highlightedPoints.includes(id)}
                 />
@@ -259,6 +233,12 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               )}
             </div>
           </div>
+          <BearOffArea
+            player="white"
+            count={renderableState.off.get('white') || 0}
+            isHighlighted={highlightedPoints.includes('off')}
+            onClick={() => handlePointClick('off')}
+          />
         </div>
       </div>
       {showOpponentLeftModal && (

@@ -69,7 +69,7 @@ export class BackgammonRoom extends Room<GameState> {
     this.notifyLobby('add', this.roomInfo);
 
     this.onMessage('rollDice', (client) => this.handleRollDice(client));
-    this.onMessage('move', (client, message: string) =>
+    this.onMessage('move', (client, message: { from: number | string; to: number | string }) =>
       this.handleMove(client, message),
     );
   }
@@ -252,7 +252,10 @@ export class BackgammonRoom extends Room<GameState> {
     }
   }
 
-  handleMove(client: Client, moveString: string) {
+  handleMove(
+    client: Client,
+    moveData: { from: number | string; to: number | string },
+  ) {
     const player = this.state.players.get(client.sessionId);
 
     // Валидация игрока
@@ -266,94 +269,88 @@ export class BackgammonRoom extends Room<GameState> {
       return;
     }
 
-    // Валидация хода
-    const moveIndex = this.state.possibleMoves.indexOf(moveString);
-    if (moveIndex === -1) {
-      const { from, to } = moveData;
-      const fromNum = from === 'bar' ? 'bar' : Number(from);
-      const toNum = to === 'off' ? 'off' : Number(to);
+    const { from, to } = moveData;
+    const fromNum = from === 'bar' ? 'bar' : Number(from);
+    const toNum = to === 'off' ? 'off' : Number(to);
 
-      // Ищем подходящую последовательность в this.possibleMoves
-      // Мы ищем последовательность, которая начинается с указанного хода
-      const matchingSequenceIndex = this.possibleMoves.findIndex(
-        (seq) =>
-          seq.length > 0 && seq[0].from === fromNum && seq[0].to === toNum,
-      );
+    // Ищем подходящую последовательность в this.possibleMoves
+    const matchingSequenceIndex = this.possibleMoves.findIndex(
+      (seq) =>
+        seq.length > 0 && seq[0].from === fromNum && seq[0].to === toNum,
+    );
 
-      if (matchingSequenceIndex === -1) {
-        console.error(`Invalid move attempt by ${player}: ${from}->${to}`);
-        // Можно отправить сообщение об ошибке клиенту
-        return;
-      }
+    if (matchingSequenceIndex === -1) {
+      console.error(`Invalid move attempt by ${player}: ${from}->${to}`);
+      return;
+    }
 
-      const sequence = this.possibleMoves[matchingSequenceIndex];
-      const move = sequence[0]; // Берем первый ход
-      const dieUsed = move.die;
+    const sequence = this.possibleMoves[matchingSequenceIndex];
+    const move = sequence[0]; // Берем первый ход
+    const dieUsed = move.die;
 
-      // Применяем ход к состоянию
-      // Логика применения дублируется из applyMove, но для MapSchema
-      const opponent = player === 'white' ? 'black' : 'white';
+    // Применяем ход к состоянию
+    const opponent = player === 'white' ? 'black' : 'white';
 
-      if (fromNum === 'bar') {
-        this.state.bar.set(player, (this.state.bar.get(player) ?? 0) - 1);
-      } else {
-        const fromStr = fromNum.toString();
-        const fromPoint = this.state.board.get(fromStr);
-        if (fromPoint) {
-          fromPoint.checkers--;
-          if (fromPoint.checkers === 0) {
-            this.state.board.delete(fromStr);
-          }
-        }
-      }
-
-      if (toNum !== 'off') {
-        const toStr = toNum.toString();
-        const targetPoint = this.state.board.get(toStr);
-        if (!targetPoint) {
-          const p = new Point();
-          p.player = player;
-          p.checkers = 1;
-          this.state.board.set(toStr, p);
-        } else if (targetPoint.player === player) {
-          targetPoint.checkers++;
-        } else {
-          console.error(`CRITICAL: Move to opponent point allowed! ${toStr}`);
-          return;
-        }
-      } else {
-        // Выброс шашки
-        this.state.off.set(player, (this.state.off.get(player) ?? 0) + 1);
-      }
-
-      // Обновляем счетчик снятия с головы
-      const headPoint = player === 'white' ? 24 : 1;
-      if (fromNum === headPoint) {
-        this.state.turnMovesFromHead++;
-      }
-
-      // Удаляем использованную кость
-      const dieIndex = this.state.dice.indexOf(dieUsed);
-      if (dieIndex !== -1) {
-        this.state.dice.splice(dieIndex, 1);
-      } else {
-        console.error(`Die ${dieUsed} not found in dice list!`);
-      }
-
-      // Проверка победы
-      if (this.checkWinCondition(player)) {
-        this.state.winner = player;
-        void this.lock();
-      } else {
-        // Пересчитываем возможные ходы для следующего шага
-        this.generateAndSetPossibleMoves();
-
-        // Если ходов больше нет, завершаем ход
-        if (this.possibleMoves.length === 0) {
-          this.endTurn();
+    if (fromNum === 'bar') {
+      this.state.bar.set(player, (this.state.bar.get(player) ?? 0) - 1);
+    } else {
+      const fromStr = fromNum.toString();
+      const fromPoint = this.state.board.get(fromStr);
+      if (fromPoint) {
+        fromPoint.checkers--;
+        if (fromPoint.checkers === 0) {
+          this.state.board.delete(fromStr);
         }
       }
     }
+
+    if (toNum !== 'off') {
+      const toStr = toNum.toString();
+      const targetPoint = this.state.board.get(toStr);
+      if (!targetPoint) {
+        const p = new Point();
+        p.player = player;
+        p.checkers = 1;
+        this.state.board.set(toStr, p);
+      } else if (targetPoint.player === player) {
+        targetPoint.checkers++;
+      } else {
+        console.error(`CRITICAL: Move to opponent point allowed! ${toStr}`);
+        return;
+      }
+    } else {
+      // Выброс шашки
+      this.state.off.set(player, (this.state.off.get(player) ?? 0) + 1);
+    }
+
+    // Обновляем счетчик снятия с головы
+    const headPoint = player === 'white' ? 24 : 1;
+    if (fromNum === headPoint) {
+      this.state.turnMovesFromHead++;
+    }
+
+    // Удаляем использованную кость
+    const dieIndex = this.state.dice.indexOf(dieUsed);
+    if (dieIndex !== -1) {
+      this.state.dice.splice(dieIndex, 1);
+    } else {
+      console.error(`Die ${dieUsed} not found in dice list!`);
+    }
+
+    // Проверка победы
+    if (this.checkWinCondition(player)) {
+      this.state.winner = player;
+      void this.lock();
+    } else {
+      // Пересчитываем возможные ходы для следующего шага
+      this.generateAndSetPossibleMoves();
+
+      // Если ходов больше нет, завершаем ход
+      if (this.possibleMoves.length === 0) {
+        this.endTurn();
+      }
+    }
+  }
 
   private generateAndSetPossibleMoves() {
     this.possibleMoves = this.calculatePossibleMoves();

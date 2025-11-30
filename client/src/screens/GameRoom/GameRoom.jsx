@@ -229,7 +229,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                 />
               ))}
             </div>
-            <div className="dice-area">
+            <div className={`dice-area ${gameState.dice.length === 4 ? 'dice-area--double' : ''}`}>
               {gameState.dice.length > 0 ? (
                 gameState.dice.map((value, i) => <Dice key={i} value={value} />)
               ) : (

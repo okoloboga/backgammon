@@ -88,9 +88,20 @@
   width: 100%;
   justify-content: center;
   z-index: 20;
-  display: flex;
+  display: flex; /* Default to flex for single row */
   gap: 10px;
   cursor: pointer;
+}
+
+.dice-area--double {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  grid-template-rows: repeat(2, 1fr);    /* 2 rows */
+  gap: 5px; /* Adjust gap for 2x2 layout */
+  width: fit-content; /* Adjust width to fit the 2x2 grid */
+  padding: 5px; /* Add some padding around the grid */
+  background-color: rgba(0, 0, 0, 0.3); /* Optional: add a background for better visibility */
+  border-radius: 8px; /* Optional: rounded corners */
 }
 
 .waiting-overlay {

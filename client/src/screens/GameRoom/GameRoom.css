@@ -85,7 +85,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 100%;
+  /* width: 100%; */ /* Remove fixed width to allow content to define size */
   justify-content: center;
   z-index: 20;
   display: flex; /* Default to flex for single row */
@@ -95,8 +95,7 @@
 
 .dice-area--double {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  grid-template-rows: repeat(2, 1fr);    /* 2 rows */
+  grid-template-columns: repeat(2, auto); /* Use 'auto' to respect image size */
   gap: 5px; /* Adjust gap for 2x2 layout */
   width: fit-content; /* Adjust width to fit the 2x2 grid */
   padding: 5px; /* Add some padding around the grid */

@@ -183,13 +183,23 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const whitePlayer = getProfileForSession(whiteSessionId);
   const blackPlayer = getProfileForSession(blackSessionId);
 
-  // Modal state that was missing from the previous refactor
+  // Modal state
   const [showOpponentLeftModal, setShowOpponentLeftModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
+
+  const handleOpenQuitModal = () => setShowQuitConfirmModal(true);
+  const handleCloseQuitModal = () => setShowQuitConfirmModal(false);
+  const handleConfirmQuit = () => {
+    handleCloseQuitModal();
+    handleQuit();
+  };
 
   return (
     <div className="game-room">
-      <button onClick={handleQuit} className="quit-button">Quit</button>
+      <button onClick={handleOpenQuitModal} className="quit-button-x">
+        &times;
+      </button>
       <div className="game-area-wrapper">
         <div className="profiles-container">
           <PlayerProfile player={blackPlayer} align="left" />
@@ -247,6 +257,18 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             <h2>Game Over</h2>
             <p>{modalMessage}</p>
             <p>Returning to lobby...</p>
+          </div>
+        </div>
+      )}
+      {showQuitConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirm Quit</h2>
+            <p>Are you sure you want to quit the game?</p>
+            <div className="modal-actions">
+              <button onClick={handleConfirmQuit} className="modal-button yes">Yes</button>
+              <button onClick={handleCloseQuitModal} className="modal-button no">No</button>
+            </div>
           </div>
         </div>
       )}

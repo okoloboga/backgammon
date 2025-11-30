@@ -25,22 +25,29 @@
   margin-bottom: 10px;
 }
 
-.quit-button {
+.quit-button-x {
   position: absolute;
   top: 20px;
   right: 20px;
-  background-color: #8B0000;
+  background-color: #4a4a4a;
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
+  border: 1px solid #666;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   cursor: pointer;
   font-weight: bold;
+  font-size: 20px;
+  line-height: 30px;
+  text-align: center;
   z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.quit-button:hover {
-  background-color: #c70000;
+.quit-button-x:hover {
+  background-color: #6e6e6e;
 }
 
 .game-board {
@@ -177,6 +184,38 @@
 
 .modal-content p {
   color: #eee;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.modal-button {
+  border: none;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+}
+
+.modal-button.yes {
+  background-color: #8B0000;
+}
+
+.modal-button.yes:hover {
+  background-color: #c70000;
+}
+
+.modal-button.no {
+  background-color: #555;
+}
+
+.modal-button.no:hover {
+  background-color: #777;
 }
 
 

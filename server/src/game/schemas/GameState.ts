@@ -41,8 +41,8 @@ export class GameState extends Schema {
   @type('number')
   turnCount: number;
 
-  @type('boolean')
-  turnHasMovedFromHead: boolean;
+  @type('number')
+  turnMovesFromHead: number;
 
   constructor() {
     super();
@@ -62,6 +62,6 @@ export class GameState extends Schema {
     this.off.set('white', 0);
     this.off.set('black', 0);
     this.turnCount = 1;
-    this.turnHasMovedFromHead = false;
+    this.turnMovesFromHead = 0;
   }
 }

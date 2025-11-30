@@ -15,31 +15,12 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
     board: new Map(), bar: new Map(), off: new Map(), currentPlayer: '',
     dice: [], winner: '', possibleMoves: [], players: new Map(), playerProfiles: new Map(),
   });
-  // Local state for optimistic updates during a turn
-  const [previewState, setPreviewState] = useState(null);
-
   const [playerColor, setPlayerColor] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null); // 'bar' or point number
   const [highlightedPoints, setHighlightedPoints] = useState([]);
 
-  // State for the move sequence being built
-  const [currentMoves, setCurrentMoves] = useState([]);
-  const [remainingDice, setRemainingDice] = useState([]);
-
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const isInitialMount = useRef(true);
-
-  // Sync preview state whenever the authoritative state changes
-  useEffect(() => {
-    setPreviewState(gameState);
-    // When it becomes our turn, reset move state
-    if (playerColor && gameState.currentPlayer === playerColor) {
-      setCurrentMoves([]);
-      setRemainingDice(gameState.dice);
-      setSelectedPoint(null);
-      setHighlightedPoints([]);
-    }
-  }, [gameState, playerColor]);
 
   useEffect(() => {
     const roomInstance = colyseusService.getGameRoom();
@@ -57,7 +38,14 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           possibleMoves: newState.possibleMoves ? Array.from(newState.possibleMoves) : [],
           players: newState.players ? new Map(Array.from(newState.players.entries())) : new Map(),
           playerProfiles: newState.playerProfiles ? new Map(Array.from(newState.playerProfiles.entries())) : new Map(),
+          turnCount: newState.turnCount,
+          turnMovesFromHead: newState.turnMovesFromHead,
         };
+        setGameState(transformedState);
+
+        // Reset selection on state update
+        setSelectedPoint(null);
+        setHighlightedPoints([]);
         setGameState(transformedState);
 
         // Safely set player color here, where state is guaranteed to exist
@@ -98,18 +86,17 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
     const headPoint = playerColor === 'white' ? 24 : 1;
     const isHead = fromPoint === headPoint;
 
-    // Проверяем, снимали ли уже с головы в ТЕКУЩИХ (неподтвержденных) ходах
-    const movesFromHeadCount = currentMoves.filter(m => m.from === headPoint).length;
+    // Используем счетчик из gameState
+    const movesFromHeadCount = gameState.turnMovesFromHead || 0;
 
     // Исключение для первого хода (turnCount <= 2) и дублей 3,4,6
     const isFirstTurn = (gameState.turnCount || 1) <= 2;
     let maxHeadMoves = 1;
 
-    // Пытаемся определить, был ли это специальный дубль
-    const totalDiceCount = remainingDice.length + currentMoves.length;
-    if (isFirstTurn && totalDiceCount === 4) {
-      const dieValue = remainingDice.length > 0 ? remainingDice[0] : (currentMoves[0] ? currentMoves[0].die : 0);
-      if ([3, 4, 6].includes(dieValue)) {
+    if (isFirstTurn) {
+      // Проверяем, есть ли подходящие кости (упрощенная проверка, сервер проверит точно)
+      const hasSpecialDie = gameState.dice.some(d => [3, 4, 6].includes(d));
+      if (hasSpecialDie) {
         maxHeadMoves = 2;
       }
     }
@@ -118,12 +105,12 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       return []; // Нельзя больше снимать с головы
     }
 
-    remainingDice.forEach(die => {
+    gameState.dice.forEach(die => {
       const toPoint = fromPoint === 'bar'
         ? (playerColor === 'white' ? 25 - die : die)
         : fromPoint + (die * direction);
 
-      const targetPoint = previewState.board.get(toPoint.toString());
+      const targetPoint = gameState.board.get(toPoint.toString());
 
       // В длинных нардах НЕЛЬЗЯ ходить на поле противника вообще
       if (targetPoint && targetPoint.player && targetPoint.player !== playerColor) {
@@ -136,51 +123,15 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   };
 
   const handlePointClick = (pointId) => {
-    if (!isMyTurn || !previewState) return;
+    if (!isMyTurn) return;
 
-    // 1. Handle clicking a highlighted destination
+    // 1. Handle moving a checker to a destination
     if (selectedPoint !== null && highlightedPoints.includes(pointId)) {
       const from = selectedPoint;
       const to = pointId;
-      const direction = playerColor === 'white' ? -1 : 1;
-      const distance = from === 'bar'
-        ? (playerColor === 'white' ? 25 - to : to)
-        : Math.abs(to - from);
 
-      const dieIndex = remainingDice.indexOf(distance);
-      if (dieIndex === -1) return; // Should not happen if highlighted
-      const dieUsed = remainingDice[dieIndex];
-
-      // Create a deep copy for mutation
-      const newPreviewState = {
-        ...previewState,
-        board: new Map(previewState.board),
-      };
-
-      // Decrement 'from' point
-      if (from !== 'bar') {
-        const fromPoint = { ...newPreviewState.board.get(from.toString()) };
-        fromPoint.checkers -= 1;
-        if (fromPoint.checkers === 0) {
-          newPreviewState.board.delete(from.toString());
-        } else {
-          newPreviewState.board.set(from.toString(), fromPoint);
-        }
-      }
-
-      // Increment 'to' point
-      const toPoint = { ...(newPreviewState.board.get(to.toString()) || { player: playerColor, checkers: 0 }) };
-      toPoint.checkers += 1;
-      toPoint.player = playerColor;
-      newPreviewState.board.set(to.toString(), toPoint);
-
-      setPreviewState(newPreviewState);
-
-      // Update move sequence state
-      setCurrentMoves(prev => [...prev, { from, to, die: dieUsed }]);
-      const newRemainingDice = [...remainingDice];
-      newRemainingDice.splice(dieIndex, 1);
-      setRemainingDice(newRemainingDice);
+      // Send move immediately
+      room.send('move', { from, to });
 
       // Reset selection
       setSelectedPoint(null);
@@ -189,7 +140,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
     }
 
     // 2. Handle selecting a checker
-    const pointData = previewState.board.get(pointId.toString());
+    const pointData = gameState.board.get(pointId.toString());
     if (pointData && pointData.player === playerColor) {
       const destinations = getPossibleDestinations(pointId);
       setSelectedPoint(pointId);
@@ -201,25 +152,6 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
     }
   };
 
-  const handleConfirmMoves = () => {
-    const moveString = currentMoves.map(m => `${m.from}-${m.to}`).join(',');
-    // Check if the constructed move is one of the valid sequences
-    if (gameState.possibleMoves.includes(moveString)) {
-      room.send('move', moveString);
-    } else {
-      console.error("Client move sequence not found in server's possible moves.", moveString);
-      handleUndoMoves();
-    }
-  };
-
-  const handleUndoMoves = () => {
-    setPreviewState(gameState);
-    setCurrentMoves([]);
-    setRemainingDice(gameState.dice);
-    setSelectedPoint(null);
-    setHighlightedPoints([]);
-  };
-
   const pointRenderOrder = {
     left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
     right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
@@ -229,10 +161,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const handleQuit = () => colyseusService.leaveGameRoom().then(onQuit);
 
   const canRoll = isMyTurn && gameState.dice.length === 0;
-  // Enable confirm button when no dice are left to be played
-  const canConfirm = currentMoves.length > 0 && remainingDice.length === 0;
 
-  const renderableState = previewState || gameState;
+  const renderableState = gameState;
 
   const playersMap = new Map(renderableState.players);
   const profilesMap = new Map(renderableState.playerProfiles);
@@ -300,14 +230,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               ))}
             </div>
             <div className="dice-area">
-              {isMyTurn && currentMoves.length > 0 && (
-                <div className="move-controls">
-                  <button onClick={handleConfirmMoves} disabled={!canConfirm}>Confirm</button>
-                  <button onClick={handleUndoMoves}>Undo</button>
-                </div>
-              )}
               {gameState.dice.length > 0 ? (
-                remainingDice.map((value, i) => <Dice key={i} value={value} />)
+                gameState.dice.map((value, i) => <Dice key={i} value={value} />)
               ) : (
                 <button onClick={handleRollDice} disabled={!canRoll}>
                   {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}

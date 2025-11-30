@@ -135,7 +135,7 @@ export class BackgammonRoom extends Room<GameState> {
         ],
       ),
       turnCount: this.state.turnCount,
-      turnHasMovedFromHead: this.state.turnHasMovedFromHead,
+      turnMovesFromHead: this.state.turnMovesFromHead,
     });
   }
 
@@ -269,50 +269,46 @@ export class BackgammonRoom extends Room<GameState> {
     // Валидация хода
     const moveIndex = this.state.possibleMoves.indexOf(moveString);
     if (moveIndex === -1) {
-      console.error(`Invalid move received from ${player}:`, moveString);
-      console.log('Available moves:', this.state.possibleMoves);
-      return;
-    }
+      const { from, to } = moveData;
+      const fromNum = from === 'bar' ? 'bar' : Number(from);
+      const toNum = to === 'off' ? 'off' : Number(to);
 
-    const moveSequence = this.possibleMoves[moveIndex];
-    const opponent = player === 'white' ? 'black' : 'white';
+      // Ищем подходящую последовательность в this.possibleMoves
+      // Мы ищем последовательность, которая начинается с указанного хода
+      const matchingSequenceIndex = this.possibleMoves.findIndex(
+        (seq) =>
+          seq.length > 0 && seq[0].from === fromNum && seq[0].to === toNum,
+      );
 
-    console.log(`Player ${player} executing moves:`, moveSequence);
-
-    // Применение ходов
-    for (const move of moveSequence) {
-      const { from, to } = move;
-
-      if (from === 'bar') {
-        const currentBarCount = this.state.bar.get(player) ?? 0;
-        if (currentBarCount <= 0) {
-          console.error(
-            `Player ${player} tried to move from bar but has no checkers there`,
-          );
-          return;
-        }
-        this.state.bar.set(player, currentBarCount - 1);
-        console.log(`Moved checker from bar for ${player}`);
-      } else {
-        const fromPoint = this.state.board.get(from.toString());
-        if (!fromPoint || fromPoint.checkers <= 0) {
-          console.error(
-            `Player ${player} tried to move from empty point ${from}`,
-          );
-          return;
-        }
-        fromPoint.checkers--;
-        if (fromPoint.checkers === 0) {
-          this.state.board.delete(from.toString());
-        }
-        console.log(`Moved checker from point ${from} for ${player}`);
+      if (matchingSequenceIndex === -1) {
+        console.error(`Invalid move attempt by ${player}: ${from}->${to}`);
+        // Можно отправить сообщение об ошибке клиенту
+        return;
       }
 
-      if (to === 'off') {
-        this.state.off.set(player, (this.state.off.get(player) ?? 0) + 1);
-        console.log(`Player ${player} bore off a checker`);
+      const sequence = this.possibleMoves[matchingSequenceIndex];
+      const move = sequence[0]; // Берем первый ход
+      const dieUsed = move.die;
+
+      // Применяем ход к состоянию
+      // Логика применения дублируется из applyMove, но для MapSchema
+      const opponent = player === 'white' ? 'black' : 'white';
+
+      if (fromNum === 'bar') {
+        this.state.bar.set(player, (this.state.bar.get(player) ?? 0) - 1);
       } else {
-        const toStr = to.toString();
+        const fromStr = fromNum.toString();
+        const fromPoint = this.state.board.get(fromStr);
+        if (fromPoint) {
+          fromPoint.checkers--;
+          if (fromPoint.checkers === 0) {
+            this.state.board.delete(fromStr);
+          }
+        }
+      }
+
+      if (toNum !== 'off') {
+        const toStr = toNum.toString();
         const targetPoint = this.state.board.get(toStr);
         if (!targetPoint) {
           const p = new Point();
@@ -322,24 +318,42 @@ export class BackgammonRoom extends Room<GameState> {
         } else if (targetPoint.player === player) {
           targetPoint.checkers++;
         } else {
-          // В длинных нардах это не должно происходить!
-          console.error(
-            `INVALID MOVE: Player ${player} tried to move to opponent's point ${to}. This should have been blocked by validation!`,
-          );
+          console.error(`CRITICAL: Move to opponent point allowed! ${toStr}`);
           return;
+        }
+      } else {
+        // Выброс шашки
+        this.state.off.set(player, (this.state.off.get(player) ?? 0) + 1);
+      }
+
+      // Обновляем счетчик снятия с головы
+      const headPoint = player === 'white' ? 24 : 1;
+      if (fromNum === headPoint) {
+        this.state.turnMovesFromHead++;
+      }
+
+      // Удаляем использованную кость
+      const dieIndex = this.state.dice.indexOf(dieUsed);
+      if (dieIndex !== -1) {
+        this.state.dice.splice(dieIndex, 1);
+      } else {
+        console.error(`Die ${dieUsed} not found in dice list!`);
+      }
+
+      // Проверка победы
+      if (this.checkWinCondition(player)) {
+        this.state.winner = player;
+        void this.lock();
+      } else {
+        // Пересчитываем возможные ходы для следующего шага
+        this.generateAndSetPossibleMoves();
+
+        // Если ходов больше нет, завершаем ход
+        if (this.possibleMoves.length === 0) {
+          this.endTurn();
         }
       }
     }
-
-    // Проверка победы
-    if (this.checkWinCondition(player)) {
-      console.log(`Player ${player} won the game!`);
-      this.state.winner = player;
-      void this.lock();
-    } else {
-      this.endTurn();
-    }
-  }
 
   private generateAndSetPossibleMoves() {
     this.possibleMoves = this.calculatePossibleMoves();
@@ -405,18 +419,20 @@ export class BackgammonRoom extends Room<GameState> {
     // Первые два хода (по одному на игрока) считаются началом игры
     const isFirstTurn = this.state.turnCount <= 2;
     const isSpecialDouble = dice.length === 4 && [3, 4, 6].includes(dice[0]);
+    const currentMovesFromHead = this.state.turnMovesFromHead;
 
-    this.logger.log(`Head rule check: turnCount=${this.state.turnCount}, isFirstTurn=${isFirstTurn}, isSpecialDouble=${isSpecialDouble}`);
+    this.logger.log(`Head rule check: turnCount=${this.state.turnCount}, movesFromHead=${currentMovesFromHead}, isFirstTurn=${isFirstTurn}, isSpecialDouble=${isSpecialDouble}`);
 
     const filteredSequences = allSequences.filter(seq => {
-      const movesFromHead = seq.filter(move => move.from === headPoint).length;
+      const movesFromHeadInSeq = seq.filter(move => move.from === headPoint).length;
+      const totalMovesFromHead = currentMovesFromHead + movesFromHeadInSeq;
 
       // Исключение: в первый ход при дублях 3-3, 4-4, 6-6 можно снять 2 шашки
       if (isFirstTurn && isSpecialDouble) {
-        return movesFromHead <= 2;
+        return totalMovesFromHead <= 2;
       } else {
         // Основное правило: с головы можно снимать только 1 шашку за ход
-        return movesFromHead <= 1;
+        return totalMovesFromHead <= 1;
       }
     });
 
@@ -456,7 +472,7 @@ export class BackgammonRoom extends Room<GameState> {
         }
       }
     }
-    return sequences.length > 0 ? sequences : [[]];
+    return sequences;
   }
 
   private findAllSingleMoves(
@@ -466,24 +482,21 @@ export class BackgammonRoom extends Room<GameState> {
   ): Move[] {
     const moves: Move[] = [];
     const direction = player === 'white' ? -1 : 1;
-    const playerBarCount = board.bar[player as 'white' | 'black'] ?? 0;
+    const barCheckers = board.bar[player];
 
-    // Обработка шашек на баре
-    if (playerBarCount > 0) {
-      const from = player === 'white' ? 24 : 1;
-      const to = from + die * direction;
+    // Если есть шашки на баре, нужно ходить ими
+    if (barCheckers > 0) {
+      const to = player === 'white' ? 25 - die : die;
       const targetPoint = board.points.get(to.toString());
+
       if (
-        to >= 1 &&
-        to <= 24 &&
-        (!targetPoint ||
-          targetPoint.player === player ||
-          targetPoint.checkers <= 1)
+        !targetPoint ||
+        targetPoint.player === player
       ) {
         moves.push({ from: 'bar', to, die });
       }
     } else {
-      // Проверяем, можно ли снимать шашки (все в доме)
+      // Проверяем, можно ли снимать шашки
       let canBearOff = true;
       for (const [key, point] of board.points.entries()) {
         if (point.player === player) {
@@ -559,12 +572,11 @@ export class BackgammonRoom extends Room<GameState> {
       // Если точное значение - можно снимать
       if (24 - from + 1 === die) return true;
 
-      // Если значение больше, можно снять самую дальнюю шашку
-      if (die > 24 - from + 1) {
+      // Если значение больше позиции, можно снять только самую дальнюю шашку
+      if (die > (24 - from + 1)) {
         return this.isHighestChecker(from, player, board);
       }
     }
-
     return false;
   }
 
@@ -573,24 +585,17 @@ export class BackgammonRoom extends Room<GameState> {
     player: string,
     board: VirtualBoard,
   ): boolean {
-    if (player === 'white') {
-      // Для белых ищем самую дальнюю шашку (с наибольшим номером)
-      for (let i = from + 1; i <= 6; i++) {
-        const point = board.points.get(i.toString());
-        if (point && point.player === player && point.checkers > 0) {
-          return false; // Есть шашка дальше
-        }
-      }
-    } else {
-      // Для черных ищем самую дальнюю шашку (с наименьшим номером)
-      for (let i = from - 1; i >= 19; i--) {
-        const point = board.points.get(i.toString());
-        if (point && point.player === player && point.checkers > 0) {
-          return false; // Есть шашка дальше
+    for (const [key, point] of board.points.entries()) {
+      if (point.player === player) {
+        const pointNum = parseInt(key);
+        if (player === 'white') {
+          if (pointNum > from) return false;
+        } else {
+          if (pointNum < from) return false;
         }
       }
     }
-    return true; // Это самая дальняя шашка
+    return true;
   }
 
   private applyMove(
@@ -598,12 +603,18 @@ export class BackgammonRoom extends Room<GameState> {
     move: Move,
     player: string,
   ): VirtualBoard {
+    const { from, to } = move;
     const newBoard: VirtualBoard = {
-      points: new Map(board.points),
+      points: new Map(),
       bar: { ...board.bar },
     };
+
+    // Копируем точки
+    board.points.forEach((p, k) => {
+      newBoard.points.set(k, { ...p });
+    });
+
     const opponent = player === 'white' ? 'black' : 'white';
-    const { from, to } = move;
 
     if (from === 'bar') {
       newBoard.bar[player]--;
@@ -611,12 +622,11 @@ export class BackgammonRoom extends Room<GameState> {
       const fromStr = from.toString();
       const fromPoint = newBoard.points.get(fromStr);
       if (fromPoint) {
-        const newFromPoint = { ...fromPoint };
-        newFromPoint.checkers--;
-        if (newFromPoint.checkers === 0) {
+        fromPoint.checkers--;
+        if (fromPoint.checkers === 0) {
           newBoard.points.delete(fromStr);
         } else {
-          newBoard.points.set(fromStr, newFromPoint);
+          newBoard.points.set(fromStr, fromPoint);
         }
       }
     }
@@ -649,7 +659,7 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.currentPlayer =
       this.state.currentPlayer === 'white' ? 'black' : 'white';
     this.state.turnCount++;
-    this.state.turnHasMovedFromHead = false;
+    this.state.turnMovesFromHead = 0;
     console.log(`Turn ended. Current player: ${this.state.currentPlayer}`);
   }
 

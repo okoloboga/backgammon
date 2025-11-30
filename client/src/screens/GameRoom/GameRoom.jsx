@@ -17,11 +17,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   });
   // Local state for optimistic updates during a turn
   const [previewState, setPreviewState] = useState(null);
-  
+
   const [playerColor, setPlayerColor] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null); // 'bar' or point number
   const [highlightedPoints, setHighlightedPoints] = useState([]);
-  
+
   // State for the move sequence being built
   const [currentMoves, setCurrentMoves] = useState([]);
   const [remainingDice, setRemainingDice] = useState([]);
@@ -70,7 +70,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       });
 
       roomInstance.onMessage("error", (message) => console.error("Server error:", message));
-      
+
       roomInstance.onMessage("opponent_left", (message) => {
         setModalMessage(message.message || 'Opponent left.');
         setShowOpponentLeftModal(true);
@@ -93,17 +93,44 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const getPossibleDestinations = (fromPoint) => {
     const destinations = new Set();
     const direction = playerColor === 'white' ? -1 : 1;
+
+    // Правило головы
+    const headPoint = playerColor === 'white' ? 24 : 1;
+    const isHead = fromPoint === headPoint;
+
+    // Проверяем, снимали ли уже с головы в ТЕКУЩИХ (неподтвержденных) ходах
+    const movesFromHeadCount = currentMoves.filter(m => m.from === headPoint).length;
+
+    // Исключение для первого хода (turnCount <= 2) и дублей 3,4,6
+    const isFirstTurn = (gameState.turnCount || 1) <= 2;
+    let maxHeadMoves = 1;
+
+    // Пытаемся определить, был ли это специальный дубль
+    const totalDiceCount = remainingDice.length + currentMoves.length;
+    if (isFirstTurn && totalDiceCount === 4) {
+      const dieValue = remainingDice.length > 0 ? remainingDice[0] : (currentMoves[0] ? currentMoves[0].die : 0);
+      if ([3, 4, 6].includes(dieValue)) {
+        maxHeadMoves = 2;
+      }
+    }
+
+    if (isHead && movesFromHeadCount >= maxHeadMoves) {
+      return []; // Нельзя больше снимать с головы
+    }
+
     remainingDice.forEach(die => {
       const toPoint = fromPoint === 'bar'
         ? (playerColor === 'white' ? 25 - die : die)
         : fromPoint + (die * direction);
-      
-      // This is a simplified validation for highlighting, the server does the real validation.
-      // It doesn't account for complex blocking scenarios, but it's good for UI feedback.
+
       const targetPoint = previewState.board.get(toPoint.toString());
-      if (!targetPoint || targetPoint.player === playerColor || targetPoint.checkers <= 1) {
-        destinations.add(toPoint);
+
+      // В длинных нардах НЕЛЬЗЯ ходить на поле противника вообще
+      if (targetPoint && targetPoint.player && targetPoint.player !== playerColor) {
+        return; // Пункт занят соперником
       }
+
+      destinations.add(toPoint);
     });
     return Array.from(destinations);
   };
@@ -119,7 +146,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       const distance = from === 'bar'
         ? (playerColor === 'white' ? 25 - to : to)
         : Math.abs(to - from);
-      
+
       const dieIndex = remainingDice.indexOf(distance);
       if (dieIndex === -1) return; // Should not happen if highlighted
       const dieUsed = remainingDice[dieIndex];
@@ -129,7 +156,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         ...previewState,
         board: new Map(previewState.board),
       };
-      
+
       // Decrement 'from' point
       if (from !== 'bar') {
         const fromPoint = { ...newPreviewState.board.get(from.toString()) };
@@ -140,13 +167,13 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           newPreviewState.board.set(from.toString(), fromPoint);
         }
       }
-      
+
       // Increment 'to' point
       const toPoint = { ...(newPreviewState.board.get(to.toString()) || { player: playerColor, checkers: 0 }) };
       toPoint.checkers += 1;
       toPoint.player = playerColor;
       newPreviewState.board.set(to.toString(), toPoint);
-      
+
       setPreviewState(newPreviewState);
 
       // Update move sequence state
@@ -173,7 +200,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       setHighlightedPoints([]);
     }
   };
-  
+
   const handleConfirmMoves = () => {
     const moveString = currentMoves.map(m => `${m.from}-${m.to}`).join(',');
     // Check if the constructed move is one of the valid sequences
@@ -235,8 +262,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       <button onClick={handleQuit} className="quit-button">Quit</button>
       <div className="game-area-wrapper">
         <div className="profiles-container">
-            <PlayerProfile player={blackPlayer} align="left" />
-            <PlayerProfile player={whitePlayer} align="right" />
+          <PlayerProfile player={blackPlayer} align="left" />
+          <PlayerProfile player={whitePlayer} align="right" />
         </div>
         <div className="game-board">
           <div className="board-half">

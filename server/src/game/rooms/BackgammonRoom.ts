@@ -134,6 +134,8 @@ export class BackgammonRoom extends Room<GameState> {
           { username: profile.username, avatar: profile.avatar },
         ],
       ),
+      turnCount: this.state.turnCount,
+      turnHasMovedFromHead: this.state.turnHasMovedFromHead,
     });
   }
 
@@ -398,7 +400,29 @@ export class BackgammonRoom extends Room<GameState> {
       }
     }
 
-    return allSequences;
+    // --- ПРИМЕНЕНИЕ ПРАВИЛА "СНЯТИЯ С ГОЛОВЫ" ---
+    const headPoint = player === 'white' ? 24 : 1;
+    // Первые два хода (по одному на игрока) считаются началом игры
+    const isFirstTurn = this.state.turnCount <= 2;
+    const isSpecialDouble = dice.length === 4 && [3, 4, 6].includes(dice[0]);
+
+    this.logger.log(`Head rule check: turnCount=${this.state.turnCount}, isFirstTurn=${isFirstTurn}, isSpecialDouble=${isSpecialDouble}`);
+
+    const filteredSequences = allSequences.filter(seq => {
+      const movesFromHead = seq.filter(move => move.from === headPoint).length;
+
+      // Исключение: в первый ход при дублях 3-3, 4-4, 6-6 можно снять 2 шашки
+      if (isFirstTurn && isSpecialDouble) {
+        return movesFromHead <= 2;
+      } else {
+        // Основное правило: с головы можно снимать только 1 шашку за ход
+        return movesFromHead <= 1;
+      }
+    });
+
+    this.logger.log(`Sequences after head rule filter: ${filteredSequences.length}`);
+
+    return filteredSequences;
   }
 
   private findMoveSequences(
@@ -624,6 +648,8 @@ export class BackgammonRoom extends Room<GameState> {
     this.possibleMoves = [];
     this.state.currentPlayer =
       this.state.currentPlayer === 'white' ? 'black' : 'white';
+    this.state.turnCount++;
+    this.state.turnHasMovedFromHead = false;
     console.log(`Turn ended. Current player: ${this.state.currentPlayer}`);
   }
 

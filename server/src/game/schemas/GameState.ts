@@ -38,6 +38,12 @@ export class GameState extends Schema {
   @type({ map: PlayerProfile })
   playerProfiles: MapSchema<PlayerProfile>;
 
+  @type('number')
+  turnCount: number;
+
+  @type('boolean')
+  turnHasMovedFromHead: boolean;
+
   constructor() {
     super();
     this.board = new MapSchema<Point>();
@@ -49,11 +55,13 @@ export class GameState extends Schema {
     this.possibleMoves = new ArraySchema<string>();
     this.players = new MapSchema<string>();
     this.playerProfiles = new MapSchema<PlayerProfile>();
-    
+
     // Явно устанавливаем значения для bar и off
     this.bar.set('white', 0);
     this.bar.set('black', 0);
     this.off.set('white', 0);
     this.off.set('black', 0);
+    this.turnCount = 1;
+    this.turnHasMovedFromHead = false;
   }
 }

@@ -188,6 +188,16 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [modalMessage, setModalMessage] = useState('');
   const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
 
+  useEffect(() => {
+    if (showOpponentLeftModal) {
+      const timer = setTimeout(() => {
+        onQuit();
+      }, 3000); // 3-second delay before quitting
+
+      return () => clearTimeout(timer); // Cleanup the timer
+    }
+  }, [showOpponentLeftModal, onQuit]);
+
   const handleOpenQuitModal = () => setShowQuitConfirmModal(true);
   const handleCloseQuitModal = () => setShowQuitConfirmModal(false);
   const handleConfirmQuit = () => {

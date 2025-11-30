@@ -78,10 +78,10 @@ export class BackgammonRoom extends Room<GameState> {
     this.logger.log(`--- Client ${client.sessionId} JOINED BackgammonRoom`);
     console.log(client.sessionId, 'joined!');
     const { username = 'Player', avatar = '' } = _options || {};
-    
+
     // Логируем состояние до изменений
     this.logger.log(`--- State before join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}`);
-    
+
     const playerColor = this.state.players.size === 0 ? 'white' : 'black';
     this.state.players.set(client.sessionId, playerColor);
 
@@ -89,7 +89,7 @@ export class BackgammonRoom extends Room<GameState> {
     profile.username = username;
     profile.avatar = avatar;
     this.state.playerProfiles.set(client.sessionId, profile);
-    
+
     // Логируем состояние после изменений
     this.logger.log(`--- State after join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, playerColor=${playerColor}`);
 
@@ -112,10 +112,10 @@ export class BackgammonRoom extends Room<GameState> {
       }
       void this.lock();
     }
-    
+
     // Финальное логирование состояния
     this.logger.log(`--- Final state: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, board.size=${this.state.board.size}`);
-    
+
     // Принудительно отправляем состояние клиенту
     this.logger.log('--- Broadcasting state to client');
     // Попробуем отправить JSON состояние
@@ -147,31 +147,31 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.playerProfiles.delete(client.sessionId);
 
     if (wasPlaying && leavingPlayerColor) {
-        // Game was active, the other player wins
-        const winnerColor = leavingPlayerColor === 'white' ? 'black' : 'white';
-        this.state.winner = winnerColor;
+      // Game was active, the other player wins
+      const winnerColor = leavingPlayerColor === 'white' ? 'black' : 'white';
+      this.state.winner = winnerColor;
 
-        // Find the winning client to notify them
-        const winnerClient = this.clients.find(c => c.sessionId !== client.sessionId);
+      // Find the winning client to notify them
+      const winnerClient = this.clients.find(c => c.sessionId !== client.sessionId);
 
-        if (winnerClient) {
-            winnerClient.send('opponent_left', { message: 'Opponent has left the game. You win!' });
-            // Disconnect the winner after a short delay to allow them to see the message
-            this.clock.setTimeout(() => {
-                winnerClient.leave();
-            }, 3000); // 3 seconds delay
-        }
-        
-        if (this.roomInfo) {
-            this.roomInfo.status = 'finished';
-            this.notifyLobby('update', this.roomInfo);
-        }
-        
-    } else if (this.roomInfo) {
-        // Player left before game started
-        this.roomInfo.playersCount = this.state.players.size;
-        this.roomInfo.status = this.state.players.size === 0 ? 'finished' : 'waiting';
+      if (winnerClient) {
+        winnerClient.send('opponent_left', { message: 'Opponent has left the game. You win!' });
+        // Disconnect the winner after a short delay to allow them to see the message
+        this.clock.setTimeout(() => {
+          winnerClient.leave();
+        }, 3000); // 3 seconds delay
+      }
+
+      if (this.roomInfo) {
+        this.roomInfo.status = 'finished';
         this.notifyLobby('update', this.roomInfo);
+      }
+
+    } else if (this.roomInfo) {
+      // Player left before game started
+      this.roomInfo.playersCount = this.state.players.size;
+      this.roomInfo.status = this.state.players.size === 0 ? 'finished' : 'waiting';
+      this.notifyLobby('update', this.roomInfo);
     }
   }
 
@@ -200,7 +200,7 @@ export class BackgammonRoom extends Room<GameState> {
     blackHead.player = 'black';
     blackHead.checkers = 15;
     this.state.board.set('1', blackHead);
-    
+
     this.logger.log(`--- Board setup complete. Board size: ${this.state.board.size}`);
   }
 
@@ -313,18 +313,18 @@ export class BackgammonRoom extends Room<GameState> {
         const toStr = to.toString();
         const targetPoint = this.state.board.get(toStr);
         if (!targetPoint) {
-                    const p = new Point();
+          const p = new Point();
           p.player = player;
           p.checkers = 1;
           this.state.board.set(toStr, p);
         } else if (targetPoint.player === player) {
           targetPoint.checkers++;
         } else {
-          // Съедание шашки противника
-          targetPoint.player = player;
-          targetPoint.checkers = 1;
-          this.state.bar.set(opponent, (this.state.bar.get(opponent) ?? 0) + 1);
-          console.log(`Player ${player} hit opponent's checker at point ${to}`);
+          // В длинных нардах это не должно происходить!
+          console.error(
+            `INVALID MOVE: Player ${player} tried to move to opponent's point ${to}. This should have been blocked by validation!`,
+          );
+          return;
         }
       }
     }
@@ -500,11 +500,8 @@ export class BackgammonRoom extends Room<GameState> {
           // Обычные ходы по доске
           if (to >= 1 && to <= 24) {
             const targetPoint = board.points.get(to.toString());
-            if (
-              !targetPoint ||
-              targetPoint.player === player ||
-              targetPoint.checkers <= 1
-            ) {
+            // В длинных нардах НЕЛЬЗЯ ходить на поле противника вообще
+            if (!targetPoint || targetPoint.player === player) {
               moves.push({ from, to, die });
             }
           }
@@ -609,12 +606,13 @@ export class BackgammonRoom extends Room<GameState> {
         const newTargetPoint = { ...targetPoint };
         if (newTargetPoint.player === player) {
           newTargetPoint.checkers++;
+          newBoard.points.set(toStr, newTargetPoint);
         } else {
-          newTargetPoint.player = player;
-          newTargetPoint.checkers = 1; // It was a blot
-          newBoard.bar[opponent]++;
+          // В длинных нардах ход на поле противника невозможен
+          console.error(
+            `INVALID VIRTUAL MOVE: Attempting to move to opponent's point ${toStr}`,
+          );
         }
-        newBoard.points.set(toStr, newTargetPoint);
       }
     }
     return newBoard;

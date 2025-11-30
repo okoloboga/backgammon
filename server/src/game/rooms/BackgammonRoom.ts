@@ -381,7 +381,13 @@ export class BackgammonRoom extends Room<GameState> {
       initialBoard.points.set(k, { player: p.player, checkers: p.checkers });
     });
 
-    let allSequences = this.findMoveSequences(initialBoard, dice, player);
+    let allSequences = this.findMoveSequences(
+      initialBoard,
+      dice,
+      player,
+      this.state.turnCount,
+      this.state.turnMovesFromHead,
+    );
 
     if (allSequences.length === 0 || allSequences[0].length === 0) {
       return [];
@@ -411,37 +417,17 @@ export class BackgammonRoom extends Room<GameState> {
       }
     }
 
-    // --- ПРИМЕНЕНИЕ ПРАВИЛА "СНЯТИЯ С ГОЛОВЫ" ---
-    const headPoint = player === 'white' ? 24 : 1;
-    // Первые два хода (по одному на игрока) считаются началом игры
-    const isFirstTurn = this.state.turnCount <= 2;
-    const isSpecialDouble = dice.length === 4 && [3, 4, 6].includes(dice[0]);
-    const currentMovesFromHead = this.state.turnMovesFromHead;
-
-    this.logger.log(`Head rule check: turnCount=${this.state.turnCount}, movesFromHead=${currentMovesFromHead}, isFirstTurn=${isFirstTurn}, isSpecialDouble=${isSpecialDouble}`);
-
-    const filteredSequences = allSequences.filter(seq => {
-      const movesFromHeadInSeq = seq.filter(move => move.from === headPoint).length;
-      const totalMovesFromHead = currentMovesFromHead + movesFromHeadInSeq;
-
-      // Исключение: в первый ход при дублях 3-3, 4-4, 6-6 можно снять 2 шашки
-      if (isFirstTurn && isSpecialDouble) {
-        return totalMovesFromHead <= 2;
-      } else {
-        // Основное правило: с головы можно снимать только 1 шашку за ход
-        return totalMovesFromHead <= 1;
-      }
-    });
-
-    this.logger.log(`Sequences after head rule filter: ${filteredSequences.length}`);
-
-    return filteredSequences;
+    // The head rule is now enforced within `findAllSingleMoves`,
+    // so the post-filtering logic is no longer needed.
+    return allSequences;
   }
 
   private findMoveSequences(
     board: VirtualBoard,
     dice: number[],
     player: string,
+    turnCount: number,
+    movesFromHead: number,
   ): Move[][] {
     if (dice.length === 0) {
       return [[]];
@@ -451,17 +437,27 @@ export class BackgammonRoom extends Room<GameState> {
     const uniqueDice = [...new Set(dice)];
 
     for (const die of uniqueDice) {
-      const possibleSingleMoves = this.findAllSingleMoves(board, die, player);
+      const possibleSingleMoves = this.findAllSingleMoves(
+        board,
+        die,
+        player,
+        turnCount,
+        movesFromHead,
+      );
       if (possibleSingleMoves.length > 0) {
         const remainingDice = [...dice];
         remainingDice.splice(remainingDice.indexOf(die), 1);
 
         for (const move of possibleSingleMoves) {
           const nextBoard = this.applyMove(board, move, player);
+          const newMovesFromHead =
+            movesFromHead + (move.from === (player === 'white' ? 24 : 1) ? 1 : 0);
           const nextSequences = this.findMoveSequences(
             nextBoard,
             remainingDice,
             player,
+            turnCount,
+            newMovesFromHead,
           );
           for (const seq of nextSequences) {
             sequences.push([move, ...seq]);
@@ -476,20 +472,20 @@ export class BackgammonRoom extends Room<GameState> {
     board: VirtualBoard,
     die: number,
     player: string,
+    turnCount: number,
+    movesFromHead: number,
   ): Move[] {
     const moves: Move[] = [];
     const direction = player === 'white' ? -1 : 1;
     const barCheckers = board.bar[player];
+    const headPoint = player === 'white' ? 24 : 1;
 
     // Если есть шашки на баре, нужно ходить ими
     if (barCheckers > 0) {
       const to = player === 'white' ? 25 - die : die;
       const targetPoint = board.points.get(to.toString());
 
-      if (
-        !targetPoint ||
-        targetPoint.player === player
-      ) {
+      if (!targetPoint || targetPoint.player === player) {
         moves.push({ from: 'bar', to, die });
       }
     } else {
@@ -510,6 +506,24 @@ export class BackgammonRoom extends Room<GameState> {
       for (const [key, point] of board.points.entries()) {
         if (point.player === player) {
           const from = parseInt(key);
+
+          // --- ПРОВЕРКА ПРАВИЛА СНЯТИЯ С ГОЛОВЫ ---
+          if (from === headPoint) {
+            const isFirstTurn = turnCount <= 2;
+            const diceCount = this.state.dice.length;
+            const isSpecialDouble =
+              diceCount === 4 && [3, 4, 6].includes(this.state.dice[0]);
+
+            let maxHeadMoves = 1;
+            if (isFirstTurn && isSpecialDouble) {
+              maxHeadMoves = 2;
+            }
+
+            if (movesFromHead >= maxHeadMoves) {
+              continue; // Пропускаем ход с головы, если лимит исчерпан
+            }
+          }
+
           const to = from + die * direction;
 
           // Логика снятия шашек

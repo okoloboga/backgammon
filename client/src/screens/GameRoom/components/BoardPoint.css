@@ -14,9 +14,11 @@
 }
 
 .board-point.selected {
-  box-shadow: inset 0 0 10px 5px rgba(255, 255, 0, 0.7); /* Желтая подсветка для выбора */
+  box-shadow: inset 0 0 15px 5px rgba(255, 215, 0, 0.6); /* Gold glow for selection */
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .board-point.highlighted {
-  box-shadow: inset 0 0 10px 5px rgba(0, 255, 0, 0.6); /* Зеленая подсветка для возможного хода */
+  box-shadow: inset 0 0 15px 5px rgba(0, 255, 255, 0.6); /* Neon Cyan glow for possible moves */
+  background-color: rgba(0, 255, 255, 0.1);
 }

@@ -243,8 +243,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               {gameState.dice.length > 0 ? (
                 gameState.dice.map((value, i) => <Dice key={i} value={value} />)
               ) : (
-                <button onClick={handleRollDice} disabled={!canRoll}>
-                  {isMyTurn ? 'Roll Dice' : `Waiting for opponent`}
+                <button onClick={handleRollDice} disabled={!canRoll} className="dice-roll-button">
+                  {isMyTurn ? 'ROLL!' : `waiting...`}
                 </button>
               )}
             </div>

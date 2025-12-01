@@ -111,6 +111,7 @@ export class AuthService {
     const authToken = this.jwtUtils.createAuthToken({
       address: verifyData.account.address,
       network: 'mainnet', // You might want to pass this as parameter
+      userId: user.id,
     });
 
     this.logger.log(`User ${user.id} verified and logged in successfully`);
@@ -122,6 +123,13 @@ export class AuthService {
   }
 
   async validateJwtPayload(payload: AuthPayload): Promise<User | null> {
-    return await this.usersService.getUserById(payload.sub);
+    this.logger.log(`Validating JWT payload: sub=${payload.sub}, address=${payload.walletAddress}`);
+    const user = await this.usersService.getUserById(payload.sub);
+    if (user) {
+      this.logger.log(`User found: ${user.id} (${user.username})`);
+    } else {
+      this.logger.warn(`User not found for payload.sub=${payload.sub}`);
+    }
+    return user;
   }
 }

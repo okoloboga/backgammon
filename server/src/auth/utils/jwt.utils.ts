@@ -9,6 +9,7 @@ export interface PayloadTokenData {
 export interface AuthTokenData {
   address: string;
   network: string;
+  userId: string;
 }
 
 @Injectable()
@@ -33,7 +34,11 @@ export class JwtUtils {
   }
 
   createAuthToken(data: AuthTokenData): string {
-    return this.jwtService.sign(data, {
+    return this.jwtService.sign({
+      address: data.address,
+      network: data.network,
+      sub: data.userId, // Add user ID as 'sub' for JWT standard
+    }, {
       expiresIn: '24h', // Long expiration for auth tokens
       secret: process.env.JWT_SECRET || 'default-secret',
     });

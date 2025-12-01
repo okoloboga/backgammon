@@ -106,6 +106,10 @@ export class LobbyRoom extends Room<LobbyState> {
 
   // Метод для удаления комнаты из лобби
   removeRoom(roomId: string) {
+    if (!roomId) {
+      console.error('[LobbyRoom] Attempted to remove room with undefined roomId');
+      return;
+    }
     this.state.rooms.delete(roomId);
     console.log(`Room ${roomId} removed from lobby`);
   }

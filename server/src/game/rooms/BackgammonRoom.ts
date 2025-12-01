@@ -410,18 +410,27 @@ export class BackgammonRoom extends Room<GameState> {
   private async handleGameEnd(winnerColor: 'white' | 'black') {
     if (!winnerColor) return;
 
+    this.logger.log(`--- handleGameEnd called for winner: ${winnerColor}`);
+    this.logger.log(`--- Current clients count: ${this.clients.length}`);
+
     let winnerId: string | undefined;
     let loserId: string | undefined;
 
     // Use this.clients which is an array of all clients in the room
     this.clients.forEach((client: AuthenticatedClient) => {
       const playerColor = this.state.players.get(client.sessionId);
+      this.logger.log(`--- Client ${client.sessionId}: color=${playerColor}, auth.id=${client.auth?.id}, auth.username=${client.auth?.username}`);
+
       if (playerColor === winnerColor) {
-        winnerId = client.auth.id;
+        winnerId = client.auth?.id;
+        this.logger.log(`--- Found winner: ${winnerId}`);
       } else {
-        loserId = client.auth.id;
+        loserId = client.auth?.id;
+        this.logger.log(`--- Found loser: ${loserId}`);
       }
     });
+
+    this.logger.log(`--- Final: winnerId=${winnerId}, loserId=${loserId}`);
 
     if (winnerId && loserId) {
       this.logger.log(`Updating stats: Winner=${winnerId}, Loser=${loserId}`);

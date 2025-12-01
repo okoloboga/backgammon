@@ -7,11 +7,16 @@
 }
 
 .player-profile-gameroom.right {
-  justify-content: flex-end; /* Pushes content to the right */
+  flex-direction: row-reverse; /* Reverses the order of items */
 }
 
 .player-profile-gameroom.right .profile-details {
-  align-items: flex-end; /* Aligns text to the right */
+  align-items: flex-start; /* Aligns text to the left within its column */
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-name {
@@ -44,4 +49,13 @@
   border-radius: 50%;
   display: inline-block;
   border: 1px solid #fff;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  flex-shrink: 0;
+  object-fit: cover; /* Ensure image scales correctly within its container */
 }

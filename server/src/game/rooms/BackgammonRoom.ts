@@ -554,6 +554,15 @@ export class BackgammonRoom extends Room<GameState> {
     turnCount: number,
     movesFromHead: number,
   ): Move[][] {
+    // Check for win condition: if the player has no checkers left, it's a valid end of a sequence
+    let checkerCount = 0;
+    board.points.forEach(p => {
+      if (p.player === player) checkerCount += p.checkers;
+    });
+    if (checkerCount === 0) {
+      return [[]]; // Winning state, this is a valid end of a sequence
+    }
+
     if (dice.length === 0) {
       return [[]];
     }

@@ -359,9 +359,11 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Проверка победы
     if (this.checkWinCondition(player)) {
-      this.state.winner = player;
-      void this.handleGameEnd(player);
-      void this.lock();
+      if (player === 'white' || player === 'black') {
+        this.state.winner = player;
+        void this.handleGameEnd(player);
+        void this.lock();
+      }
     } else {
       // Пересчитываем возможные ходы для следующего шага
       this.generateAndSetPossibleMoves();

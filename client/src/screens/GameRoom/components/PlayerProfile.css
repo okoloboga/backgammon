@@ -55,7 +55,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid #ffffff;
+  border: 2px solid #67F31D;
   flex-shrink: 0;
   object-fit: cover; /* Ensure image scales correctly within its container */
 }

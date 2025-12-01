@@ -8,7 +8,8 @@ export class RoomInfo extends Schema {
   @type('number') playersCount: number;
   @type('number') maxPlayers: number;
   @type('string') status: string; // 'waiting', 'playing', 'finished'
-  @type('string') createdBy: string; // wallet address
+  @type('string') createdBy: string; // username
+  @type('string') creatorAvatar: string; // avatar URL
   @type('number') betAmount: number;
   @type('string') currency: string; // 'TON', 'RUBLE'
   @type('number') createdAt: number;

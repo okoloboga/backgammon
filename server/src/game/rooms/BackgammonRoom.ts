@@ -101,6 +101,7 @@ export class BackgammonRoom extends Room<GameState> {
       maxPlayers: 2,
       status: 'waiting',
       createdBy: options.creatorUsername || options.createdBy || 'unknown',
+      creatorAvatar: options.creatorAvatar,
       betAmount: options.betAmount || 0,
       currency: options.currency || 'TON',
       createdAt: Date.now(),

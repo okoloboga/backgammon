@@ -5,6 +5,7 @@ export interface RoomInfo {
   maxPlayers: number;
   status: 'waiting' | 'playing' | 'finished';
   createdBy: string;
+  creatorAvatar?: string;
   betAmount: number;
   currency: string;
   createdAt: number;

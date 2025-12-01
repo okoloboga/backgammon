@@ -44,6 +44,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
           betAmount: parseFloat(betAmount),
           currency: currency,
           creatorUsername: user?.username || 'Player',
+          creatorAvatar: user?.avatar,
         });
 
         const room = await colyseusService.joinWithReservation(reservation);

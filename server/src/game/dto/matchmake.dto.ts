@@ -15,4 +15,9 @@ export class MatchmakeDto {
   @IsOptional()
   @IsString()
   creatorUsername?: string;
+
+  @ApiProperty({ description: 'Creator avatar URL', type: String, required: false })
+  @IsOptional()
+  @IsString()
+  creatorAvatar?: string;
 }

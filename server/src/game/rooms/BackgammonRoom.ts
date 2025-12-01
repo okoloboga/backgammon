@@ -523,22 +523,26 @@ export class BackgammonRoom extends Room<GameState> {
     // Приоритет больших ходов: если можно использовать только один ход из двух,
     // нужно использовать больший
     if (maxDiceUsed === 1 && dice.length > 1) {
-      const dieUsed = allSequences[0][0].die;
-      const maxDie = Math.max(...dice);
-
-      if (dieUsed < maxDie) {
-        // Проверяем, можно ли использовать больший ход
-        const maxDieMoves = this.findAllSingleMoves(
+      // Find all dice that can actually be played as a single move.
+      const playableDice = new Set<number>();
+      // Use unique dice to avoid redundant checks
+      for (const die of [...new Set(dice)]) {
+        const singleMoves = this.findAllSingleMoves(
           initialBoard,
-          maxDie,
+          die,
           player,
           this.state.turnCount,
           this.state.turnMovesFromHead,
         );
-        if (maxDieMoves.length > 0) {
-          // Больший ход возможен, но не используется - это недопустимо
-          return [];
+        if (singleMoves.length > 0) {
+          playableDice.add(die);
         }
+      }
+
+      if (playableDice.size > 0) {
+        const maxPlayableDie = Math.max(...Array.from(playableDice));
+        // Filter the sequences to only keep those that use the highest playable die.
+        allSequences = allSequences.filter(seq => seq[0].die === maxPlayableDie);
       }
     }
 

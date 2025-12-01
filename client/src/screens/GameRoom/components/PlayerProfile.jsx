@@ -16,11 +16,11 @@ const PlayerProfile = ({ player, align = 'left', playerColor, bearOffCount = 0 }
         {align === 'left' ? (
           <>
             <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
-            <span>{bearOffCount}</span>
+            <span>{15 - bearOffCount}</span>
           </>
         ) : (
           <>
-            <span>{bearOffCount}</span>
+            <span>{15 - bearOffCount}</span>
             <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
           </>
         )}

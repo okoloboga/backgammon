@@ -465,14 +465,14 @@ export class BackgammonRoom extends Room<GameState> {
       if (winnerClient) {
         winnerClient.send('game_over', {
           result: 'win',
-          message: `Congratulations! You won ${betAmount} ${currency}.`,
+          message: `WIN ${betAmount} ${currency}.`,
         });
       }
 
       if (loserClient) {
         loserClient.send('game_over', {
           result: 'lose',
-          message: `You lost ${betAmount} ${currency}.`,
+          message: `LOST ${betAmount} ${currency}.`,
         });
       }
 

@@ -20,6 +20,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [playerColor, setPlayerColor] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null); // 'bar' or point number
   const [highlightedPoints, setHighlightedPoints] = useState([]);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   const isMyTurn = playerColor && gameState.currentPlayer === playerColor;
   const isInitialMount = useRef(true);
@@ -67,18 +68,35 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         setShowOpponentLeftModal(true);
       });
 
+      // Handle reconnection events
+      roomInstance.onLeave((code) => {
+        if (code === 1006 || code === 1001) {
+          setIsReconnecting(true);
+        }
+      });
+
+      // Monitor connection state from colyseusService
+      const checkReconnection = setInterval(() => {
+        const currentRoom = colyseusService.getGameRoom();
+        if (currentRoom && currentRoom.connection.isOpen) {
+          setIsReconnecting(false);
+        }
+      }, 500);
+
+      // Cleanup function
+      return () => {
+        clearInterval(checkReconnection);
+        // Guard against React 18 Strict Mode double-invocation
+        if (isInitialMount.current) {
+          isInitialMount.current = false;
+        } else {
+          colyseusService.leaveGameRoom();
+        }
+      };
+
     } else {
       onQuit();
     }
-
-    return () => {
-      // Guard against React 18 Strict Mode double-invocation
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-      } else {
-        colyseusService.leaveGameRoom();
-      }
-    };
   }, [roomId, onQuit]);
 
   const handlePointClick = (pointId) => {
@@ -259,6 +277,14 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             {gameState.dice.map((value, i) => <Dice key={`no-move-${i}`} value={value} />)}
           </div>
           <p className="no-moves-text">No moves!</p>
+        </div>
+      )}
+      {isReconnecting && (
+        <div className="modal-overlay">
+          <div className="create-room-modal" style={{ padding: '24px' }}>
+            <h2>Reconnecting...</h2>
+            <p>Connection lost. Attempting to reconnect...</p>
+          </div>
         </div>
       )}
       {showOpponentLeftModal && (

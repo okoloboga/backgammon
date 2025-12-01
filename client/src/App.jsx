@@ -168,9 +168,17 @@ function App() {
     }
   }, []);
 
-  const handleQuitGame = useCallback(() => {
+  const handleQuitGame = useCallback(async () => {
     setGameRoomId(null);
     setCurrentScreen('main-menu');
+
+    // Reload user profile to get updated stats after game
+    try {
+      const updatedProfile = await authService.getCurrentUserProfile();
+      setUser(updatedProfile);
+    } catch (error) {
+      console.error('Failed to reload user profile:', error);
+    }
   }, []);
 
   // Этот хук будет следить за состоянием пользователя и переключать экран

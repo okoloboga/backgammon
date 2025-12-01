@@ -83,6 +83,9 @@ export class BackgammonRoom extends Room<GameState> {
     );
     this.setState(new GameState());
 
+    // Enable reconnection with 30 second timeout
+    this.setMetadata({ allowReconnection: true });
+
     // Get services from options
     this.lobbyService = options.lobbyService;
     this.usersService = options.usersService;
@@ -155,10 +158,26 @@ export class BackgammonRoom extends Room<GameState> {
   }
 
   async onLeave(client: AuthenticatedClient, consented: boolean) {
-    console.log(client.sessionId, 'left!');
-
     const wasPlaying = this.state.players.size === 2;
     const leavingPlayerColor = this.state.players.get(client.sessionId);
+
+    // If the disconnection was not intentional (network issue), allow reconnection
+    if (!consented && wasPlaying) {
+      this.logger.log(`Client ${client.sessionId} disconnected unexpectedly. Allowing reconnection for 30 seconds...`);
+
+      try {
+        // Allow 30 seconds for reconnection
+        await this.allowReconnection(client, 30);
+        this.logger.log(`Client ${client.sessionId} reconnected successfully!`);
+        return; // Client reconnected, don't remove them
+      } catch (e) {
+        // Reconnection timeout - player didn't reconnect
+        this.logger.log(`Client ${client.sessionId} failed to reconnect within timeout.`);
+      }
+    }
+
+    // Player left intentionally or failed to reconnect
+    this.logger.log(`Client ${client.sessionId} left${consented ? ' (intentional)' : ' (timeout)'}!`);
 
     this.state.players.delete(client.sessionId);
     this.state.playerProfiles.delete(client.sessionId);

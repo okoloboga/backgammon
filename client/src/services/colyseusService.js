@@ -43,7 +43,7 @@ async joinWithReservation(reservation) {
     if (!reservation.roomId || !reservation.sessionId || !reservation.processId) {
       throw new Error(`Invalid reservation data: ${JSON.stringify(reservation)}`);
     }
-    
+
     // Используем joinById с sessionId из резервации
     const joinOptions = {
       sessionId: reservation.sessionId,
@@ -52,6 +52,7 @@ async joinWithReservation(reservation) {
       accessToken: authService.getAuthToken(),
     };
     this.gameRoom = await this.client.joinById(reservation.roomId, joinOptions);
+    this.setupReconnection(this.gameRoom);
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
     console.log('Full room object:', this.gameRoom);
     console.log('Room state:', this.gameRoom.state);
@@ -85,6 +86,7 @@ async joinWithReservation(reservation) {
         accessToken: authService.getAuthToken(),
       };
       this.gameRoom = await this.client.joinOrCreate(roomName, joinOptions);
+      this.setupReconnection(this.gameRoom);
       console.log(`Successfully joined game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
       return this.gameRoom;
     } catch (e) {
@@ -107,12 +109,61 @@ async joinWithReservation(reservation) {
         accessToken: authService.getAuthToken(),
       };
       this.gameRoom = await this.client.joinById(roomId, joinOptions);
+      this.setupReconnection(this.gameRoom);
       console.log(`Successfully joined existing game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
       return this.gameRoom;
     } catch (e) {
       console.error(`Failed to join existing game room '${roomId}':`, e);
       this.gameRoom = null;
       throw e;
+    }
+  }
+
+  setupReconnection(room) {
+    if (!room) return;
+
+    // Save reconnection token
+    room.onLeave((code) => {
+      console.log(`Left room with code: ${code}`);
+
+      // If disconnected unexpectedly (code 1006 = abnormal closure), try to reconnect
+      if (code === 1006 || code === 1001) {
+        console.log('Connection lost. Attempting to reconnect...');
+        this.attemptReconnection(room);
+      }
+    });
+  }
+
+  async attemptReconnection(oldRoom) {
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        console.log(`Reconnection attempt ${i + 1}/${maxRetries}...`);
+
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+
+        // Try to reconnect to the same room using reconnection token
+        const reconnectOptions = {
+          username: this.playerProfile?.username,
+          avatar: this.playerProfile?.avatar,
+          accessToken: authService.getAuthToken(),
+        };
+
+        this.gameRoom = await this.client.reconnect(oldRoom.reconnectionToken, reconnectOptions);
+        console.log('Successfully reconnected to game room!');
+        this.setupReconnection(this.gameRoom);
+        return this.gameRoom;
+      } catch (e) {
+        console.error(`Reconnection attempt ${i + 1} failed:`, e);
+
+        if (i === maxRetries - 1) {
+          console.error('All reconnection attempts failed');
+          this.gameRoom = null;
+        }
+      }
     }
   }
 

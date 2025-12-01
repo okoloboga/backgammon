@@ -107,7 +107,7 @@
 
 .dice-area--double {
   display: grid;
-  grid-template-columns: repeat(2, auto); /* Use 'auto' to respect image size */
+  grid-template-columns: repeat(2, 47px); /* Explicitly set column width to match dice width */
   gap: 5px; /* Adjust gap for 2x2 layout */
   width: fit-content; /* Adjust width to fit the 2x2 grid */
   padding: 5px; /* Add some padding around the grid */

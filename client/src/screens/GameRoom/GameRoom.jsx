@@ -275,11 +275,6 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             </div>
           </div>
         </div>
-        {showBearOffButton && (
-          <button className="bear-off-button" onClick={() => handlePointClick('off')}>
-            &rarr;
-          </button>
-        )}
       </div>
       {gameState.noMoves && (
         <div className="no-moves-overlay">

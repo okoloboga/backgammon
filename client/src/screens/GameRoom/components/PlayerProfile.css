@@ -63,7 +63,15 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid #67F31D;
+  border: 2px solid #67F31D; /* Default green border */
   flex-shrink: 0;
   object-fit: cover; /* Ensure image scales correctly within its container */
+}
+
+.profile-avatar--white {
+  border-color: #D076ED; /* Purple border for white player */
+}
+
+.profile-avatar--black {
+  border-color: #8EF04F; /* Green border for black player */
 }

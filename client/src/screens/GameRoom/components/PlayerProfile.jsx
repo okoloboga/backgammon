@@ -6,7 +6,7 @@ const PlayerProfile = ({ player, align = 'left', playerColor, bearOffCount = 0 }
   const displayAvatar = player?.avatar || '/assets/player1.png';
 
   const avatar = (
-    <img src={displayAvatar} alt="player avatar" className="profile-avatar" />
+    <img src={displayAvatar} alt="player avatar" className={`profile-avatar profile-avatar--${playerColor}`} />
   );
 
   const nameAndCount = (

@@ -155,19 +155,20 @@
 }
 
 .dice-roll-button {
-  background-color: #67F31D;
-  color: white;
+  background-color: transparent;
+  color: #67F31D; /* Green text color */
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 1.2em;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: color 0.2s ease; /* Transition color instead of background */
 }
 
 .dice-roll-button:hover:not(:disabled) {
-  background-color: #5cb817; /* Slightly darker green on hover */
+  color: #5cb817; /* Slightly darker green on hover */
+  background-color: rgba(103, 243, 29, 0.1); /* Subtle background on hover */
 }
 
 .move-controls {

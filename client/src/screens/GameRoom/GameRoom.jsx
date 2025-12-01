@@ -242,6 +242,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
                 />
               ))}
             </div>
+            {showBearOffButton && (
+              <button className="bear-off-button" onClick={() => handlePointClick('off')}>
+                &rarr;
+              </button>
+            )}
           </div>
           <div className="board-half">
             <img src={greenLayer} alt="Board layer" className="board-bg" />

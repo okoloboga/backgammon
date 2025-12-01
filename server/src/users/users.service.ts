@@ -35,6 +35,9 @@ export class UsersService {
   }
 
   async getUserById(id: string): Promise<User | null> {
+    if (!id) {
+      return null; // Prevent TypeORM from returning random user when id is undefined
+    }
     return await this.userRepository.findOne({ where: { id } });
   }
 

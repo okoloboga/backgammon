@@ -124,6 +124,12 @@ export class AuthService {
 
   async validateJwtPayload(payload: AuthPayload): Promise<User | null> {
     this.logger.log(`Validating JWT payload: sub=${payload.sub}, address=${payload.walletAddress}`);
+
+    if (!payload.sub) {
+      this.logger.warn('JWT payload missing sub (user ID) - old token format. User must re-authenticate.');
+      return null;
+    }
+
     const user = await this.usersService.getUserById(payload.sub);
     if (user) {
       this.logger.log(`User found: ${user.id} (${user.username})`);

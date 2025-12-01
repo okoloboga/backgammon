@@ -33,25 +33,26 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background-color: #4a4a4a;
+  background-color: transparent;
   color: white;
-  border: 1px solid #666;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  border: none;
+  width: auto;
+  height: auto;
+  border-radius: 0;
   cursor: pointer;
   font-weight: bold;
   font-size: 20px;
-  line-height: 30px;
-  text-align: center;
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0; /* Remove any default padding */
 }
 
 .quit-button-x:hover {
-  background-color: #6e6e6e;
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+  border-radius: 50%; /* Re-add roundness on hover for visual feedback */
+  padding: 5px; /* Add padding on hover to make it clickable */
 }
 
 .game-board {

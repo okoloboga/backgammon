@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './GameRoom.css';
-import '../../../styles/CreateRoomModal.css'; // Import shared modal styles
+import '../../styles/CreateRoomModal.css'; // Import shared modal styles
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';

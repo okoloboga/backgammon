@@ -28,8 +28,8 @@ const PlayerProfile = ({ player, align = 'left', bearOffCount = 0 }) => {
         </>
       ) : (
         <>
-          {nameAndCount}
           {avatar}
+          {nameAndCount}
         </>
       )}
     </div>

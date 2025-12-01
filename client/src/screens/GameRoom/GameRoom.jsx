@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './GameRoom.css';
+import '../../../styles/CreateRoomModal.css'; // Import shared modal styles
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
-
 import { colyseusService } from '../../services/colyseusService';
 import greenLayer from '../../assets/game/greenLayer.png';
 import purpleLayer from '../../assets/game/purpleLayer.png';
@@ -239,7 +239,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       </div>
       {showOpponentLeftModal && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="create-room-modal" style={{ padding: '24px' }}>
             <h2>Game Over</h2>
             <p>{modalMessage}</p>
             <p>Returning to lobby...</p>
@@ -247,13 +247,21 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         </div>
       )}
       {showQuitConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Confirm Quit</h2>
-            <p>Are you sure you want to quit the game?</p>
-            <div className="modal-actions">
-              <button onClick={handleConfirmQuit} className="modal-button yes">Yes</button>
-              <button onClick={handleCloseQuitModal} className="modal-button no">No</button>
+        <div className="modal-overlay" onClick={handleCloseQuitModal}>
+          <div className="create-room-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-form">
+              <h2 style={{ color: 'white', textAlign: 'center', marginTop: 0 }}>Confirm Quit</h2>
+              <p style={{ color: '#ccc', textAlign: 'center', marginTop: 0, marginBottom: '24px' }}>
+                Are you sure you want to quit the game?
+              </p>
+              <div className="modal-actions">
+                <button onClick={handleCloseQuitModal} className="cancel-button">
+                  No
+                </button>
+                <button onClick={handleConfirmQuit} className="create-button destructive">
+                  Yes, Quit
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import './GameRoom.css';
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
-import BearOffArea from './components/BearOffArea'; // Import the new component
+
 import { colyseusService } from '../../services/colyseusService';
 import greenLayer from '../../assets/game/greenLayer.png';
 import purpleLayer from '../../assets/game/purpleLayer.png';
@@ -178,18 +178,20 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       <button onClick={handleOpenQuitModal} className="quit-button-x">
         &times;
       </button>
-      <div className="game-area-wrapper">
+      <div className="game-content-wrapper">
         <div className="profiles-container">
-          <PlayerProfile player={blackPlayer} align="left" />
-          <PlayerProfile player={whitePlayer} align="right" />
+          <PlayerProfile
+            player={blackPlayer}
+            align="left"
+            bearOffCount={renderableState.off.get('black') || 0}
+          />
+          <PlayerProfile
+            player={whitePlayer}
+            align="right"
+            bearOffCount={renderableState.off.get('white') || 0}
+          />
         </div>
         <div className="game-board">
-          <BearOffArea
-            player="black"
-            count={renderableState.off.get('black') || 0}
-            isHighlighted={highlightedPoints.includes('off')}
-            onClick={() => handlePointClick('off')}
-          />
           <div className="board-half">
             <img src={greenLayer} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
@@ -233,12 +235,6 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               )}
             </div>
           </div>
-          <BearOffArea
-            player="white"
-            count={renderableState.off.get('white') || 0}
-            isHighlighted={highlightedPoints.includes('off')}
-            onClick={() => handlePointClick('off')}
-          />
         </div>
       </div>
       {showOpponentLeftModal && (

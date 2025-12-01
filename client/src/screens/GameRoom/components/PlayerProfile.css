@@ -1,15 +1,13 @@
 .player-profile-gameroom {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: white;
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 5px 10px;
-  border-radius: 8px;
+  flex-shrink: 0; /* Prevents the profile from shrinking */
 }
 
 .player-profile-gameroom.right {
-  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
 .profile-avatar {
@@ -17,10 +15,46 @@
   height: 40px;
   border-radius: 50%;
   border: 2px solid #ffffff;
+  flex-shrink: 0;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-profile-gameroom.right .profile-details {
+  align-items: flex-end;
 }
 
 .profile-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px; /* Adjust as needed */
+}
+
+.bear-off-counter-profile {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #f0f0f0;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.bear-off-chip-icon {
+  width: 10px;
+  height: 10px;
+  background-color: #a8a8a8;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid #fff;
 }

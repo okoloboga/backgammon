@@ -12,10 +12,13 @@
   flex-direction: column; /* Чтобы профили были над доской */
 }
 
-.game-area-wrapper {
+.game-content-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  max-width: 360px; /* Constrains the width to fit the board + some padding */
+  padding: 0 10px;
 }
 
 .profiles-container {
@@ -23,6 +26,7 @@
   justify-content: space-between;
   width: 100%;
   margin-bottom: 10px;
+  align-items: flex-start; /* Align items to the top */
 }
 
 .quit-button-x {

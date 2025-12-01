@@ -13,8 +13,17 @@ const PlayerProfile = ({ player, align = 'left', playerColor, bearOffCount = 0 }
     <div className="profile-details">
       <h3 className="profile-name">{displayName}</h3>
       <div className="bear-off-counter-profile">
-        <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
-        <span>{bearOffCount}</span>
+        {align === 'left' ? (
+          <>
+            <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
+            <span>{bearOffCount}</span>
+          </>
+        ) : (
+          <>
+            <span>{bearOffCount}</span>
+            <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
+          </>
+        )}
       </div>
     </div>
   );

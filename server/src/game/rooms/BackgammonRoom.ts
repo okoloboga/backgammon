@@ -160,6 +160,7 @@ export class BackgammonRoom extends Room<GameState> {
   async onLeave(client: AuthenticatedClient, consented: boolean) {
     const wasPlaying = this.state.players.size === 2;
     const leavingPlayerColor = this.state.players.get(client.sessionId);
+    const leavingPlayerId = client.auth?.id; // Save player ID BEFORE deletion!
 
     // If the disconnection was not intentional (network issue), allow reconnection
     if (!consented && wasPlaying) {
@@ -182,11 +183,11 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.players.delete(client.sessionId);
     this.state.playerProfiles.delete(client.sessionId);
 
-    if (wasPlaying && leavingPlayerColor) {
+    if (wasPlaying && leavingPlayerColor && leavingPlayerId) {
       // Game was active, the other player wins
       const winnerColor = leavingPlayerColor === 'white' ? 'black' : 'white';
       this.state.winner = winnerColor;
-      void this.handleGameEnd(winnerColor); // Update stats
+      void this.handleGameEnd(winnerColor, leavingPlayerId); // Pass leaving player ID
 
       // Find the winning client to notify them
       const winnerClient = this.clients.find(c => c.sessionId !== client.sessionId);
@@ -407,14 +408,14 @@ export class BackgammonRoom extends Room<GameState> {
     return (this.state.off.get(player) ?? 0) === 15;
   }
 
-  private async handleGameEnd(winnerColor: 'white' | 'black') {
+  private async handleGameEnd(winnerColor: 'white' | 'black', leavingPlayerId?: string) {
     if (!winnerColor) return;
 
-    this.logger.log(`--- handleGameEnd called for winner: ${winnerColor}`);
+    this.logger.log(`--- handleGameEnd called for winner: ${winnerColor}, leavingPlayerId: ${leavingPlayerId}`);
     this.logger.log(`--- Current clients count: ${this.clients.length}`);
 
     let winnerId: string | undefined;
-    let loserId: string | undefined;
+    let loserId: string | undefined = leavingPlayerId; // Use provided leaving player ID
 
     // Use this.clients which is an array of all clients in the room
     this.clients.forEach((client: AuthenticatedClient) => {
@@ -424,7 +425,8 @@ export class BackgammonRoom extends Room<GameState> {
       if (playerColor === winnerColor) {
         winnerId = client.auth?.id;
         this.logger.log(`--- Found winner: ${winnerId}`);
-      } else {
+      } else if (!leavingPlayerId) {
+        // Only look for loser in clients if not provided
         loserId = client.auth?.id;
         this.logger.log(`--- Found loser: ${loserId}`);
       }

@@ -49,6 +49,7 @@ async joinWithReservation(reservation) {
       sessionId: reservation.sessionId,
       username: this.playerProfile?.username,
       avatar: this.playerProfile?.avatar,
+      accessToken: authService.getAuthToken(),
     };
     this.gameRoom = await this.client.joinById(reservation.roomId, joinOptions);
     console.log(`Successfully joined game room: ${this.gameRoom.name} (${this.gameRoom.id})`);
@@ -81,6 +82,7 @@ async joinWithReservation(reservation) {
         ...options,
         username: this.playerProfile?.username,
         avatar: this.playerProfile?.avatar,
+        accessToken: authService.getAuthToken(),
       };
       this.gameRoom = await this.client.joinOrCreate(roomName, joinOptions);
       console.log(`Successfully joined game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);
@@ -102,6 +104,7 @@ async joinWithReservation(reservation) {
         ...options,
         username: this.playerProfile?.username,
         avatar: this.playerProfile?.avatar,
+        accessToken: authService.getAuthToken(),
       };
       this.gameRoom = await this.client.joinById(roomId, joinOptions);
       console.log(`Successfully joined existing game room: ${this.gameRoom?.name} (${this.gameRoom?.id})`);

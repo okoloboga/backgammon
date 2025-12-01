@@ -3,6 +3,9 @@ import { Logger } from '@nestjs/common';
 import { GameState, Point, PlayerProfile } from '../schemas/GameState';
 import { LobbyService } from '../services/lobby.service';
 import { RoomInfo } from '../types';
+import { UsersService } from '../../users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '../../users/entities/user.entity';
 
 interface VirtualBoard {
   points: Map<string, { player: string; checkers: number }>;
@@ -21,11 +24,19 @@ interface BackgammonRoomOptions {
   betAmount?: number;
   currency?: string;
   lobbyService: LobbyService;
+  usersService: UsersService;
+  jwtService: JwtService;
 }
 
 interface JoinOptions {
   username?: string;
   avatar?: string;
+  accessToken?: string;
+}
+
+// Extend the Colyseus Client type to include our custom user data
+interface AuthenticatedClient extends Client {
+  userData?: User;
 }
 
 export class BackgammonRoom extends Room<GameState> {
@@ -33,6 +44,30 @@ export class BackgammonRoom extends Room<GameState> {
   private possibleMoves: Move[][] = [];
   private roomInfo: RoomInfo | null = null;
   private lobbyService: LobbyService;
+  private usersService: UsersService;
+  private jwtService: JwtService;
+
+  async onAuth(client: Client, options: JoinOptions): Promise<any> {
+    this.logger.log(`--- onAuth for client ${client.sessionId}`);
+    if (!options.accessToken) {
+      this.logger.warn(`Client ${client.sessionId} failed to authenticate: no token provided.`);
+      throw new Error('Authentication failed: no token');
+    }
+
+    try {
+      const payload = this.jwtService.verify(options.accessToken);
+      const user = await this.usersService.getUserByWalletAddress(payload.address);
+      if (!user) {
+        this.logger.warn(`Authentication failed: user not found for wallet ${payload.address}`);
+        throw new Error('User not found');
+      }
+      this.logger.log(`Client ${client.sessionId} authenticated as user ${user.id} (${user.username})`);
+      return user; // This will be attached to client.auth
+    } catch (error) {
+      this.logger.error(`Authentication error for client ${client.sessionId}: ${error.message}`);
+      throw new Error('Authentication failed');
+    }
+  }
 
   onCreate(options: BackgammonRoomOptions) {
     const safeOptions = {
@@ -47,10 +82,13 @@ export class BackgammonRoom extends Room<GameState> {
       )}`,
     );
     this.setState(new GameState());
-    this.setupBoard();
 
-    // Получаем LobbyService из опций
+    // Get services from options
     this.lobbyService = options.lobbyService;
+    this.usersService = options.usersService;
+    this.jwtService = options.jwtService;
+
+    this.setupBoard();
 
     // Сохраняем информацию о комнате
     this.roomInfo = {
@@ -74,10 +112,8 @@ export class BackgammonRoom extends Room<GameState> {
     );
   }
 
-  onJoin(client: Client, _options: JoinOptions) {
+  onJoin(client: AuthenticatedClient, _options: JoinOptions) {
     this.logger.log(`--- Client ${client.sessionId} JOINED BackgammonRoom`);
-    console.log(client.sessionId, 'joined!');
-    const { username = 'Player', avatar = '' } = _options || {};
 
     // Логируем состояние до изменений
     this.logger.log(`--- State before join: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}`);
@@ -86,8 +122,9 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.players.set(client.sessionId, playerColor);
 
     const profile = new PlayerProfile();
-    profile.username = username;
-    profile.avatar = avatar;
+    // Use authenticated data from onAuth
+    profile.username = client.auth.username;
+    profile.avatar = client.auth.avatar;
     this.state.playerProfiles.set(client.sessionId, profile);
 
     // Логируем состояние после изменений
@@ -115,11 +152,9 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Финальное логирование состояния
     this.logger.log(`--- Final state: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, board.size=${this.state.board.size}`);
-
-
   }
 
-  async onLeave(client: Client, consented: boolean) {
+  async onLeave(client: AuthenticatedClient, consented: boolean) {
     console.log(client.sessionId, 'left!');
 
     const wasPlaying = this.state.players.size === 2;
@@ -132,6 +167,7 @@ export class BackgammonRoom extends Room<GameState> {
       // Game was active, the other player wins
       const winnerColor = leavingPlayerColor === 'white' ? 'black' : 'white';
       this.state.winner = winnerColor;
+      void this.handleGameEnd(winnerColor); // Update stats
 
       // Find the winning client to notify them
       const winnerClient = this.clients.find(c => c.sessionId !== client.sessionId);
@@ -324,6 +360,7 @@ export class BackgammonRoom extends Room<GameState> {
     // Проверка победы
     if (this.checkWinCondition(player)) {
       this.state.winner = player;
+      void this.handleGameEnd(player);
       void this.lock();
     } else {
       // Пересчитываем возможные ходы для следующего шага
@@ -347,6 +384,38 @@ export class BackgammonRoom extends Room<GameState> {
 
   private checkWinCondition(player: string): boolean {
     return (this.state.off.get(player) ?? 0) === 15;
+  }
+
+  private async handleGameEnd(winnerColor: 'white' | 'black') {
+    if (!winnerColor) return;
+
+    let winnerId: string | undefined;
+    let loserId: string | undefined;
+
+    // Use this.clients which is an array of all clients in the room
+    this.clients.forEach((client: AuthenticatedClient) => {
+      const playerColor = this.state.players.get(client.sessionId);
+      if (playerColor === winnerColor) {
+        winnerId = client.auth.id;
+      } else {
+        loserId = client.auth.id;
+      }
+    });
+
+    if (winnerId && loserId) {
+      this.logger.log(`Updating stats: Winner=${winnerId}, Loser=${loserId}`);
+      try {
+        await Promise.all([
+          this.usersService.updateUserStats(winnerId, true),
+          this.usersService.updateUserStats(loserId, false),
+        ]);
+        this.logger.log(`Stats updated successfully.`);
+      } catch (error) {
+        this.logger.error(`Failed to update user stats: ${error.message}`);
+      }
+    } else {
+      this.logger.warn(`Could not find both winner and loser IDs to update stats.`);
+    }
   }
 
   private calculatePossibleMoves(): Move[][] {

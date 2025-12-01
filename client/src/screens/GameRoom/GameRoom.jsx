@@ -154,9 +154,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const blackPlayer = getProfileForSession(blackSessionId);
 
   // Modal state
-  const [showOpponentLeftModal, setShowOpponentLeftModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
   const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
+  const [showBearOffButton, setShowBearOffButton] = useState(false);
 
   useEffect(() => {
     if (showOpponentLeftModal) {
@@ -167,6 +166,12 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       return () => clearTimeout(timer); // Cleanup the timer
     }
   }, [showOpponentLeftModal, onQuit]);
+
+  // Effect to control the visibility of the bear-off button
+  useEffect(() => {
+    const shouldShow = selectedPoint !== null && highlightedPoints.includes('off');
+    setShowBearOffButton(shouldShow);
+  }, [selectedPoint, highlightedPoints]);
 
   const handleOpenQuitModal = () => setShowQuitConfirmModal(true);
   const handleCloseQuitModal = () => setShowQuitConfirmModal(false);
@@ -186,13 +191,13 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             player={blackPlayer}
             align="left"
             playerColor="black"
-            bearOffCount={renderableState.off.get('black') || 0}
+            bearOffCount={15 - (renderableState.off.get('black') || 0)}
           />
           <PlayerProfile
             player={whitePlayer}
             align="right"
             playerColor="white"
-            bearOffCount={renderableState.off.get('white') || 0}
+            bearOffCount={15 - (renderableState.off.get('white') || 0)}
           />
         </div>
         <div className="game-board">
@@ -240,6 +245,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             </div>
           </div>
         </div>
+        {showBearOffButton && (
+          <button className="bear-off-button" onClick={() => handlePointClick('off')}>
+            &rarr;
+          </button>
+        )}
       </div>
       {gameState.noMoves && (
         <div className="no-moves-overlay">

@@ -21,6 +21,8 @@ interface Move {
 interface BackgammonRoomOptions {
   roomName?: string;
   createdBy?: string;
+  creatorUsername?: string;
+  creatorAvatar?: string;
   betAmount?: number;
   currency?: string;
   lobbyService: LobbyService;

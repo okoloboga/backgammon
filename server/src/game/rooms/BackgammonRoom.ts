@@ -116,27 +116,7 @@ export class BackgammonRoom extends Room<GameState> {
     // Финальное логирование состояния
     this.logger.log(`--- Final state: players.size=${this.state.players.size}, currentPlayer=${this.state.currentPlayer}, board.size=${this.state.board.size}`);
 
-    // Принудительно отправляем состояние клиенту
-    this.logger.log('--- Broadcasting state to client');
-    // Попробуем отправить JSON состояние
-    this.broadcast('state_update', {
-      board: Array.from(this.state.board.entries()),
-      bar: Array.from(this.state.bar.entries()),
-      off: Array.from(this.state.off.entries()),
-      currentPlayer: this.state.currentPlayer,
-      dice: Array.from(this.state.dice),
-      winner: this.state.winner,
-      possibleMoves: Array.from(this.state.possibleMoves),
-      players: Array.from(this.state.players.entries()),
-      playerProfiles: Array.from(this.state.playerProfiles.entries()).map(
-        ([sessionId, profile]) => [
-          sessionId,
-          { username: profile.username, avatar: profile.avatar },
-        ],
-      ),
-      turnCount: this.state.turnCount,
-      turnMovesFromHead: this.state.turnMovesFromHead,
-    });
+
   }
 
   async onLeave(client: Client, consented: boolean) {

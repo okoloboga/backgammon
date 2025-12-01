@@ -51,6 +51,14 @@
   border: 1px solid #fff;
 }
 
+.bear-off-chip-icon--white {
+  background-color: #D076ED; /* Purple */
+}
+
+.bear-off-chip-icon--black {
+  background-color: #8EF04F; /* Green */
+}
+
 .profile-avatar {
   width: 40px;
   height: 40px;

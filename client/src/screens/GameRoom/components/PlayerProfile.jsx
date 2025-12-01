@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import './PlayerProfile.css';
 
-const PlayerProfile = ({ player, align = 'left', bearOffCount = 0 }) => {
+const PlayerProfile = ({ player, align = 'left', playerColor, bearOffCount = 0 }) => {
   const displayName = player?.username || 'Player';
   const displayAvatar = player?.avatar || '/assets/player1.png';
 
@@ -13,7 +13,7 @@ const PlayerProfile = ({ player, align = 'left', bearOffCount = 0 }) => {
     <div className="profile-details">
       <h3 className="profile-name">{displayName}</h3>
       <div className="bear-off-counter-profile">
-        <span className="bear-off-chip-icon"></span>
+        <span className={`bear-off-chip-icon bear-off-chip-icon--${playerColor}`}></span>
         <span>{bearOffCount}</span>
       </div>
     </div>
@@ -42,6 +42,7 @@ PlayerProfile.propTypes = {
     avatar: PropTypes.string,
   }),
   align: PropTypes.oneOf(['left', 'right']),
+  playerColor: PropTypes.oneOf(['white', 'black']),
   bearOffCount: PropTypes.number,
 };
 

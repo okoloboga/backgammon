@@ -18,7 +18,12 @@ export class LobbyService {
     }
 
     try {
-      const payload = JSON.stringify({ action, roomInfo });
+      // For 'remove', we only need the roomId.
+      const payload =
+        action === 'remove'
+          ? JSON.stringify({ action, roomInfo: roomInfo.roomId })
+          : JSON.stringify({ action, roomInfo });
+
       console.log(
         `[LobbyService] Publishing lobby update: action=${action} room=${roomInfo.roomId} players=${roomInfo.playersCount} status=${roomInfo.status}`,
       );

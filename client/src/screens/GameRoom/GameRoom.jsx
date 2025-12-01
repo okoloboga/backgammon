@@ -193,13 +193,13 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
             player={blackPlayer}
             align="left"
             playerColor="black"
-            bearOffCount={15 - (renderableState.off.get('black') || 0)}
+            bearOffCount={renderableState.off.get('black') || 0}
           />
           <PlayerProfile
             player={whitePlayer}
             align="right"
             playerColor="white"
-            bearOffCount={15 - (renderableState.off.get('white') || 0)}
+            bearOffCount={renderableState.off.get('white') || 0}
           />
         </div>
         <div className="game-board">

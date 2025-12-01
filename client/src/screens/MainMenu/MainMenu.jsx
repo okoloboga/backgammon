@@ -33,11 +33,12 @@ const MainMenu = ({ user, onNavigateToGame }) => {
         </div>
       </div>
 
-      <CreateRoomModal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
+      <CreateRoomModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
         balances={{ ton, ruble, loading: balancesLoading }}
         onNavigateToGame={onNavigateToGame}
+        user={user}
       />
     </div>
   );

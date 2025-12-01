@@ -13,7 +13,7 @@ const formatBalance = (num) => {
 };
 
 // Модальное окно для создания комнаты
-const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
+const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) => {
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
   const [debugError, setDebugError] = useState(null);
@@ -43,6 +43,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame }) => {
         const reservation = await colyseusService.createRoom({
           betAmount: parseFloat(betAmount),
           currency: currency,
+          creatorUsername: user?.username || 'Player',
         });
 
         const room = await colyseusService.joinWithReservation(reservation);
@@ -149,6 +150,7 @@ CreateRoomModal.propTypes = {
     loading: PropTypes.bool,
   }),
   onNavigateToGame: PropTypes.func.isRequired,
+  user: PropTypes.object,
 };
 
 export default CreateRoomModal;

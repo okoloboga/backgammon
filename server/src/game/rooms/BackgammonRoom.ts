@@ -223,8 +223,12 @@ export class BackgammonRoom extends Room<GameState> {
     this.generateAndSetPossibleMoves();
 
     if (this.possibleMoves.length === 0) {
-      console.log(`No possible moves for ${playerColor}, ending turn`);
-      this.endTurn();
+      console.log(`No possible moves for ${playerColor}, ending turn soon`);
+      this.state.noMoves = true;
+      // Automatically end the turn after a short delay
+      this.clock.setTimeout(() => {
+        this.endTurn();
+      }, 2500);
     } else {
       console.log(
         `Generated ${this.possibleMoves.length} possible move sequences`,
@@ -649,6 +653,7 @@ export class BackgammonRoom extends Room<GameState> {
     this.state.dice.clear();
     this.state.possibleMoves.clear();
     this.possibleMoves = [];
+    this.state.noMoves = false; // Reset the flag
     this.state.currentPlayer =
       this.state.currentPlayer === 'white' ? 'black' : 'white';
     this.state.turnCount++;

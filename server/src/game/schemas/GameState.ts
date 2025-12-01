@@ -44,6 +44,9 @@ export class GameState extends Schema {
   @type('number')
   turnMovesFromHead: number;
 
+  @type('boolean')
+  noMoves: boolean;
+
   constructor() {
     super();
     this.board = new MapSchema<Point>();
@@ -63,5 +66,6 @@ export class GameState extends Schema {
     this.off.set('black', 0);
     this.turnCount = 1;
     this.turnMovesFromHead = 0;
+    this.noMoves = false;
   }
 }

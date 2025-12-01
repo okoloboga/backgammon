@@ -171,11 +171,32 @@
   background-color: rgba(103, 243, 29, 0.1); /* Subtle background on hover */
 }
 
-.move-controls {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+.modal-button.no:hover {
+  background-color: #777;
 }
+
+.no-moves-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.no-moves-text {
+  color: #67F31D; /* Green color */
+  font-size: 1.5em;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
 
 
 

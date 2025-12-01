@@ -15,6 +15,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   const [gameState, setGameState] = useState({
     board: new Map(), bar: new Map(), off: new Map(), currentPlayer: '',
     dice: [], winner: '', possibleMoves: [], players: new Map(), playerProfiles: new Map(),
+    noMoves: false,
   });
   const [playerColor, setPlayerColor] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null); // 'bar' or point number
@@ -41,6 +42,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           playerProfiles: newState.playerProfiles ? new Map(Array.from(newState.playerProfiles.entries())) : new Map(),
           turnCount: newState.turnCount,
           turnMovesFromHead: newState.turnMovesFromHead,
+          noMoves: newState.noMoves || false,
         };
         setGameState(transformedState);
 
@@ -228,7 +230,7 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
               ))}
             </div>
             <div className={`dice-area ${gameState.dice.length === 4 ? 'dice-area--double' : ''}`}>
-              {gameState.dice.length > 0 ? (
+              {gameState.dice.length > 0 && !gameState.noMoves ? (
                 gameState.dice.map((value, i) => <Dice key={i} value={value} />)
               ) : (
                 <button onClick={handleRollDice} disabled={!canRoll} className="dice-roll-button">
@@ -239,6 +241,14 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           </div>
         </div>
       </div>
+      {gameState.noMoves && (
+        <div className="no-moves-overlay">
+          <div className="dice-area">
+            {gameState.dice.map((value, i) => <Dice key={`no-move-${i}`} value={value} />)}
+          </div>
+          <p className="no-moves-text">No moves!</p>
+        </div>
+      )}
       {showOpponentLeftModal && (
         <div className="modal-overlay">
           <div className="create-room-modal" style={{ padding: '24px' }}>

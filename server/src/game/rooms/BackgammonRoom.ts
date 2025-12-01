@@ -409,6 +409,8 @@ export class BackgammonRoom extends Room<GameState> {
           initialBoard,
           maxDie,
           player,
+          this.state.turnCount,
+          this.state.turnMovesFromHead,
         );
         if (maxDieMoves.length > 0) {
           // Больший ход возможен, но не используется - это недопустимо

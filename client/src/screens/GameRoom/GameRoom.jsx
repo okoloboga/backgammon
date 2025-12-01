@@ -68,6 +68,11 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
         setShowOpponentLeftModal(true);
       });
 
+      roomInstance.onMessage("game_over", (message) => {
+        setModalMessage(message.message || 'Game is over.');
+        setShowOpponentLeftModal(true); // Reuse the same modal
+      });
+
       // Handle reconnection events
       roomInstance.onLeave((code) => {
         if (code === 1006 || code === 1001) {

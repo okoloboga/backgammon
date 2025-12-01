@@ -418,7 +418,9 @@ export class BackgammonRoom extends Room<GameState> {
     this.logger.log(`--- Current clients count: ${this.clients.length}`);
 
     let winnerId: string | undefined;
-    let loserId: string | undefined = leavingPlayerId; // Use provided leaving player ID
+    let loserId: string | undefined = leavingPlayerId;
+    let winnerClient: AuthenticatedClient | undefined;
+    let loserClient: AuthenticatedClient | undefined;
 
     // Use this.clients which is an array of all clients in the room
     this.clients.forEach((client: AuthenticatedClient) => {
@@ -427,10 +429,12 @@ export class BackgammonRoom extends Room<GameState> {
 
       if (playerColor === winnerColor) {
         winnerId = client.auth?.id;
+        winnerClient = client;
         this.logger.log(`--- Found winner: ${winnerId}`);
       } else if (!leavingPlayerId) {
         // Only look for loser in clients if not provided
         loserId = client.auth?.id;
+        loserClient = client;
         this.logger.log(`--- Found loser: ${loserId}`);
       }
     });
@@ -450,6 +454,37 @@ export class BackgammonRoom extends Room<GameState> {
       }
     } else {
       this.logger.warn(`Could not find both winner and loser IDs to update stats.`);
+    }
+
+    // This part should only run when the game ends normally, not when a player leaves.
+    // When a player leaves, `onLeave` handles notifications.
+    if (!leavingPlayerId) {
+      const betAmount = this.roomInfo?.betAmount || 0;
+      const currency = this.roomInfo?.currency || 'TON';
+
+      if (winnerClient) {
+        winnerClient.send('game_over', {
+          result: 'win',
+          message: `Congratulations! You won ${betAmount} ${currency}.`,
+        });
+      }
+
+      if (loserClient) {
+        loserClient.send('game_over', {
+          result: 'lose',
+          message: `You lost ${betAmount} ${currency}.`,
+        });
+      }
+
+      if (this.roomInfo) {
+        this.roomInfo.status = 'finished';
+        this.notifyLobby('update', this.roomInfo);
+      }
+
+      // Disconnect both players after a delay
+      this.clock.setTimeout(() => {
+        this.clients.forEach(c => c.leave());
+      }, 5000); // 5 seconds delay
     }
   }
 

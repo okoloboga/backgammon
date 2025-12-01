@@ -156,6 +156,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   // Modal state
   const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
   const [showBearOffButton, setShowBearOffButton] = useState(false);
+  const [showOpponentLeftModal, setShowOpponentLeftModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
     if (showOpponentLeftModal) {

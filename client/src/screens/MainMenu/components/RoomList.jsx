@@ -60,10 +60,10 @@ const RoomList = ({ onNavigateToGame }) => {
     }
   }, [])
 
-  const handleEnterRoom = (roomId) => {
-    console.log(`Entering room ${roomId}`);
+  const handleEnterRoom = (room) => {
+    console.log(`Entering room ${room.roomId}`);
     if (onNavigateToGame) {
-      onNavigateToGame(roomId);
+      onNavigateToGame(room);
     }
   }
 

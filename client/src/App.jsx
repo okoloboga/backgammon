@@ -17,6 +17,7 @@ function App() {
   const [clientId, setClientId] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
   const [user, setUser] = useState(null);
+  const [roomInfo, setRoomInfo] = useState(null); // NEW: State to hold room details
 
   const [tonConnectUI] = useTonConnectUI();
   const firstProofLoading = useRef(true);
@@ -137,8 +138,8 @@ function App() {
     }
   };
 
-  const navigateToGame = useCallback(async (roomId) => {
-    if (!roomId) {
+  const navigateToGame = useCallback(async (info) => { // Changed parameter to 'info' object
+    if (!info || !info.roomId) {
       console.error("navigateToGame called with no roomId");
       return;
     }
@@ -149,17 +150,18 @@ function App() {
     try {
       const currentRoom = colyseusService.getGameRoom();
       // Check if we are already in the correct room
-      if (currentRoom && currentRoom.roomId === roomId) {
+      if (currentRoom && currentRoom.roomId === info.roomId) {
         console.log('Already in the correct room. Navigating...');
       } else {
-        console.log(`Joining room ${roomId}...`);
-        await colyseusService.joinExistingRoom(roomId);
+        console.log(`Joining room ${info.roomId}...`);
+        await colyseusService.joinExistingRoom(info.roomId);
       }
       
-      setGameRoomId(roomId);
+      setGameRoomId(info.roomId);
+      setRoomInfo(info); // Store the full room info
       setCurrentScreen('game-room');
     } catch (e) {
-      console.error(`Failed to navigate to game room ${roomId}:`, e);
+      console.error(`Failed to navigate to game room ${info.roomId}:`, e);
       setError('Failed to join the game. Please try again.');
       // Go back to the main menu on failure
       setCurrentScreen('main-menu');
@@ -170,6 +172,7 @@ function App() {
 
   const handleQuitGame = useCallback(async () => {
     setGameRoomId(null);
+    setRoomInfo(null); // Clear room info on quit
     setCurrentScreen('main-menu');
 
     // Reload user profile to get updated stats after game
@@ -218,7 +221,15 @@ function App() {
         />
       )}
       {currentScreen === 'main-menu' && <MainMenu user={user} onNavigateToGame={navigateToGame} />}
-      {currentScreen === 'game-room' && <GameRoom roomId={gameRoomId} onQuit={handleQuitGame} currentUser={user} />}
+      {currentScreen === 'game-room' && (
+        <GameRoom
+          roomId={gameRoomId}
+          betAmount={roomInfo?.betAmount} // Pass betAmount
+          currency={roomInfo?.currency}   // Pass currency
+          onQuit={handleQuitGame}
+          currentUser={user}
+        />
+      )}
     </div>
   );
 }

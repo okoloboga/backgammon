@@ -8,7 +8,7 @@ const RoomCard = ({ room, onEnter }) => {
   const truncatedCreator = createdBy.length > 11 ? `${createdBy.substring(0, 11)}...` : createdBy;
 
   const handleEnterRoom = () => {
-    onEnter(roomId);
+    onEnter(room);
   };
 
   return (

@@ -9,7 +9,7 @@ import { colyseusService } from '../../services/colyseusService';
 import greenLayer from '../../assets/game/greenLayer.png';
 import purpleLayer from '../../assets/game/purpleLayer.png';
 
-const GameRoom = ({ roomId, onQuit, currentUser }) => {
+const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
   const [room, setRoom] = useState(null);
   // Authoritative state from the server
   const [gameState, setGameState] = useState({
@@ -64,13 +64,18 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
       roomInstance.onMessage("error", (message) => console.error("Server error:", message));
 
       roomInstance.onMessage("opponent_left", (message) => {
-        setModalMessage(message.message || 'Opponent left.');
-        setShowOpponentLeftModal(true);
+        setModalMessage(
+          <>
+            <p style={{ color: 'white', fontSize: '1.5em', margin: 0 }}>Opponent left</p>
+            <p style={{ color: 'white', fontSize: '1em', margin: '10px 0' }}>Your bet is returned</p>
+          </>
+        );
+        setShowEndGameModal(true);
       });
 
       roomInstance.onMessage("game_over", (message) => {
-        setModalMessage(message.message || 'Game is over.');
-        setShowOpponentLeftModal(true); // Reuse the same modal
+        // This is handled by the useEffect watching gameState.winner
+        // No explicit message setting here to avoid conflicts.
       });
 
       // Handle reconnection events
@@ -179,18 +184,42 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
   // Modal state
   const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
   const [showBearOffButton, setShowBearOffButton] = useState(false);
-  const [showOpponentLeftModal, setShowOpponentLeftModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  const [showEndGameModal, setShowEndGameModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState(null); // Changed to null for JSX
 
   useEffect(() => {
-    if (showOpponentLeftModal) {
+    if (gameState.winner && gameState.winner !== '') {
+      const prizeAmount = betAmount * 2;
+      const prizeText = `${prizeAmount} ${currency}`;
+
+      if (gameState.winner === playerColor) {
+        setModalMessage(
+          <>
+            <p style={{ color: '#2E8B57', fontSize: '2em', margin: 0, fontWeight: 'bold' }}>WIN</p>
+            <p style={{ color: 'white', fontSize: '1.5em', margin: '10px 0' }}>{prizeText}</p>
+          </>
+        );
+      } else {
+        setModalMessage(
+          <>
+            <p style={{ color: '#DC143C', fontSize: '2em', margin: 0, fontWeight: 'bold' }}>LOSE</p>
+            <p style={{ color: 'white', fontSize: '1.5em', margin: '10px 0' }}>{`-${betAmount} ${currency}`}</p>
+          </>
+        );
+      }
+      setShowEndGameModal(true);
+    }
+  }, [gameState.winner, playerColor, betAmount, currency]);
+
+  useEffect(() => {
+    if (showEndGameModal) {
       const timer = setTimeout(() => {
         onQuit();
       }, 3000); // 3-second delay before quitting
 
       return () => clearTimeout(timer); // Cleanup the timer
     }
-  }, [showOpponentLeftModal, onQuit]);
+  }, [showEndGameModal, onQuit]);
 
   // Effect to control the visibility of the bear-off button
   useEffect(() => {
@@ -292,12 +321,10 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
           </div>
         </div>
       )}
-      {showOpponentLeftModal && (
+      {showEndGameModal && (
         <div className="modal-overlay">
-          <div className="create-room-modal" style={{ padding: '24px' }}>
-            <h2>Game Over</h2>
-            <p>{modalMessage}</p>
-            <p>Returning to lobby...</p>
+          <div className="create-room-modal" style={{ padding: '24px', textAlign: 'center' }}>
+            {modalMessage}
           </div>
         </div>
       )}
@@ -327,6 +354,8 @@ const GameRoom = ({ roomId, onQuit, currentUser }) => {
 
 GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
+  betAmount: PropTypes.number.isRequired,
+  currency: PropTypes.string.isRequired,
   onQuit: PropTypes.func.isRequired,
   currentUser: PropTypes.shape({
     username: PropTypes.string,

@@ -52,7 +52,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
         onClose();
         setBetAmount('');
         if (onNavigateToGame) {
-          onNavigateToGame(room.roomId);
+          onNavigateToGame(room);
         }
       } catch (error) {
         console.error('Failed to create or join room:', error);

@@ -150,10 +150,21 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
     }
   };
 
-  const pointRenderOrder = {
-    left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
-    right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
-  };
+  // Порядок отрисовки пунктов зависит от цвета игрока
+  // Каждый игрок видит свои шашки в верхнем правом углу, дом в нижнем правом
+  const pointRenderOrder = playerColor === 'black'
+    ? {
+        // Для BLACK (доска повернута на 180°):
+        // Старт на пункте 12 (верхний правый угол), дом 13-18 (нижний правый угол)
+        left: [1, 2, 3, 4, 5, 6, 24, 23, 22, 21, 20, 19],
+        right: [7, 8, 9, 10, 11, 12, 18, 17, 16, 15, 14, 13],
+      }
+    : {
+        // Для WHITE (обычная доска):
+        // Старт на пункте 24 (верхний правый угол), дом 1-6 (нижний правый угол)
+        left: [13, 14, 15, 16, 17, 18, 12, 11, 10, 9, 8, 7],
+        right: [19, 20, 21, 22, 23, 24, 6, 5, 4, 3, 2, 1],
+      };
 
   const handleRollDice = () => room && canRoll && room.send('rollDice');
   const handleQuit = () => colyseusService.leaveGameRoom().then(onQuit);
@@ -241,35 +252,63 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
       </button>
       <div className="game-content-wrapper">
         <div className="profiles-container">
-          <PlayerProfile
-            player={blackPlayer}
-            align="left"
-            playerColor="black"
-            bearOffCount={renderableState.off.get('black') || 0}
-          />
-          <PlayerProfile
-            player={whitePlayer}
-            align="right"
-            playerColor="white"
-            bearOffCount={renderableState.off.get('white') || 0}
-          />
+          {playerColor === 'black' ? (
+            // Для BLACK игрока: противник (white) слева, я (black) справа
+            <>
+              <PlayerProfile
+                player={whitePlayer}
+                align="left"
+                playerColor="white"
+                bearOffCount={renderableState.off.get('white') || 0}
+              />
+              <PlayerProfile
+                player={blackPlayer}
+                align="right"
+                playerColor="black"
+                bearOffCount={renderableState.off.get('black') || 0}
+              />
+            </>
+          ) : (
+            // Для WHITE игрока: противник (black) слева, я (white) справа
+            <>
+              <PlayerProfile
+                player={blackPlayer}
+                align="left"
+                playerColor="black"
+                bearOffCount={renderableState.off.get('black') || 0}
+              />
+              <PlayerProfile
+                player={whitePlayer}
+                align="right"
+                playerColor="white"
+                bearOffCount={renderableState.off.get('white') || 0}
+              />
+            </>
+          )}
         </div>
         <div className="game-board">
           <div className="board-half">
             <img src={greenLayer} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
-              {pointRenderOrder.left.map((id) => (
-                <BoardPoint
-                  key={id}
-                  pointId={id}
-                  isTop={id >= 13}
-                  checkers={renderableState.board.get(id.toString())}
-                  onClick={() => handlePointClick(id)}
-                  isSelected={selectedPoint === id}
-                  isHighlighted={highlightedPoints.includes(id)}
-                />
-              ))}
+              {pointRenderOrder.left.map((id) => {
+                // Определяем isTop в зависимости от playerColor
+                const isTop = playerColor === 'black'
+                  ? id <= 6  // Для BLACK: верх = 1-6
+                  : id >= 13; // Для WHITE: верх = 13-18
+
+                return (
+                  <BoardPoint
+                    key={id}
+                    pointId={id}
+                    isTop={isTop}
+                    checkers={renderableState.board.get(id.toString())}
+                    onClick={() => handlePointClick(id)}
+                    isSelected={selectedPoint === id}
+                    isHighlighted={highlightedPoints.includes(id)}
+                  />
+                );
+              })}
             </div>
             {showBearOffButton && (
               <button className="bear-off-button" onClick={() => handlePointClick('off')}>
@@ -281,17 +320,24 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
             <img src={greenLayer} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
-              {pointRenderOrder.right.map((id) => (
-                <BoardPoint
-                  key={id}
-                  pointId={id}
-                  isTop={id >= 19}
-                  checkers={renderableState.board.get(id.toString())}
-                  onClick={() => handlePointClick(id)}
-                  isSelected={selectedPoint === id}
-                  isHighlighted={highlightedPoints.includes(id)}
-                />
-              ))}
+              {pointRenderOrder.right.map((id) => {
+                // Определяем isTop в зависимости от playerColor
+                const isTop = playerColor === 'black'
+                  ? (id >= 7 && id <= 12)  // Для BLACK: верх = 7-12
+                  : id >= 19;               // Для WHITE: верх = 19-24
+
+                return (
+                  <BoardPoint
+                    key={id}
+                    pointId={id}
+                    isTop={isTop}
+                    checkers={renderableState.board.get(id.toString())}
+                    onClick={() => handlePointClick(id)}
+                    isSelected={selectedPoint === id}
+                    isHighlighted={highlightedPoints.includes(id)}
+                  />
+                );
+              })}
             </div>
             <div className={`dice-area ${gameState.dice.length === 4 ? 'dice-area--double' : ''}`}>
               {gameState.dice.length > 0 && !gameState.noMoves ? (

@@ -236,11 +236,11 @@ export class BackgammonRoom extends Room<GameState> {
     whiteHead.checkers = 15;
     this.state.board.set('24', whiteHead);
 
-    // Черные: все 15 шашек на пункте 1
+    // Черные: все 15 шашек на пункте 12
     const blackHead = new Point();
     blackHead.player = 'black';
     blackHead.checkers = 15;
-    this.state.board.set('1', blackHead);
+    this.state.board.set('12', blackHead);
 
     this.logger.log(`--- Board setup complete. Board size: ${this.state.board.size}`);
   }
@@ -367,7 +367,7 @@ export class BackgammonRoom extends Room<GameState> {
     }
 
     // Обновляем счетчик снятия с головы
-    const headPoint = player === 'white' ? 24 : 1;
+    const headPoint = player === 'white' ? 24 : 12;
     if (fromNum === headPoint) {
       this.state.turnMovesFromHead++;
     }
@@ -548,6 +548,20 @@ export class BackgammonRoom extends Room<GameState> {
 
     // The head rule is now enforced within `findAllSingleMoves`,
     // so the post-filtering logic is no longer needed.
+
+    // Фильтрация по правилу блокировки 6 пунктов подряд
+    const opponent = player === 'white' ? 'black' : 'white';
+    allSequences = allSequences.filter((sequence) => {
+      // Применяем все ходы в последовательности к виртуальной доске
+      let virtualBoard = { ...initialBoard };
+      for (const move of sequence) {
+        virtualBoard = this.applyMove(virtualBoard, move, player);
+      }
+
+      // Проверяем, создает ли эта последовательность блок для противника
+      return !this.createsBlockOfSix(virtualBoard, player, opponent);
+    });
+
     return allSequences;
   }
 
@@ -589,7 +603,7 @@ export class BackgammonRoom extends Room<GameState> {
         for (const move of possibleSingleMoves) {
           const nextBoard = this.applyMove(board, move, player);
           const newMovesFromHead =
-            movesFromHead + (move.from === (player === 'white' ? 24 : 1) ? 1 : 0);
+            movesFromHead + (move.from === (player === 'white' ? 24 : 12) ? 1 : 0);
           const nextSequences = this.findMoveSequences(
             nextBoard,
             remainingDice,
@@ -606,6 +620,95 @@ export class BackgammonRoom extends Room<GameState> {
     return sequences;
   }
 
+  /**
+   * Вычисляет следующий пункт для черных с учетом их маршрута: 12→11→...→1→24→23→...→13
+   */
+  private getNextPointForBlack(from: number, distance: number): number {
+    let current = from;
+    for (let i = 0; i < distance; i++) {
+      current--;
+      if (current < 1) {
+        current = 24;
+      }
+    }
+    return current;
+  }
+
+  /**
+   * Возвращает полный маршрут игрока от старта до дома
+   */
+  private getPlayerRoute(player: string): number[] {
+    if (player === 'white') {
+      // Белые: 24 → 23 → ... → 1 (дом 1-6)
+      return Array.from({ length: 24 }, (_, i) => 24 - i);
+    } else {
+      // Черные: 12 → 11 → ... → 1 → 24 → 23 → ... → 13 (дом 13-18)
+      const route: number[] = [];
+      // От 12 до 1
+      for (let i = 12; i >= 1; i--) {
+        route.push(i);
+      }
+      // От 24 до 13
+      for (let i = 24; i >= 13; i--) {
+        route.push(i);
+      }
+      return route;
+    }
+  }
+
+  /**
+   * Проверяет, есть ли у игрока хотя бы одна фишка в его доме
+   */
+  private hasCheckersInHome(board: VirtualBoard, player: string): boolean {
+    const homeRange = player === 'white'
+      ? { min: 1, max: 6 }      // Белые: дом 1-6
+      : { min: 13, max: 18 };   // Черные: дом 13-18
+
+    for (const [key, point] of board.points.entries()) {
+      if (point.player === player) {
+        const pointNum = parseInt(key);
+        if (pointNum >= homeRange.min && pointNum <= homeRange.max) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Проверяет, создает ли текущая позиция блок из 6 пунктов подряд для противника
+   * @param board - виртуальная доска
+   * @param currentPlayer - игрок, который делает ход
+   * @param opponent - противник
+   */
+  private createsBlockOfSix(board: VirtualBoard, currentPlayer: string, opponent: string): boolean {
+    // Если у противника уже есть фишка в доме, правило не применяется
+    if (this.hasCheckersInHome(board, opponent)) {
+      return false;
+    }
+
+    // Получаем маршрут противника
+    const opponentRoute = this.getPlayerRoute(opponent);
+
+    // Ищем блок из 6 пунктов подряд, занятых текущим игроком
+    let consecutiveCount = 0;
+
+    for (const pointNum of opponentRoute) {
+      const point = board.points.get(pointNum.toString());
+
+      if (point && point.player === currentPlayer) {
+        consecutiveCount++;
+        if (consecutiveCount >= 6) {
+          return true; // Блок из 6 пунктов найден
+        }
+      } else {
+        consecutiveCount = 0; // Прерываем последовательность
+      }
+    }
+
+    return false;
+  }
+
   private findAllSingleMoves(
     board: VirtualBoard,
     die: number,
@@ -614,13 +717,19 @@ export class BackgammonRoom extends Room<GameState> {
     movesFromHead: number,
   ): Move[] {
     const moves: Move[] = [];
-    const direction = player === 'white' ? -1 : 1;
     const barCheckers = board.bar[player];
-    const headPoint = player === 'white' ? 24 : 1;
+    const headPoint = player === 'white' ? 24 : 12;
 
     // Если есть шашки на баре, нужно ходить ими
     if (barCheckers > 0) {
-      const to = player === 'white' ? 25 - die : die;
+      let to: number;
+      if (player === 'white') {
+        to = 25 - die;
+      } else {
+        // Для черных: вход с бара следует маршруту 12→11→...→1
+        // Бар находится "после" пункта 12, поэтому вход идет с учетом маршрута
+        to = this.getNextPointForBlack(12, die);
+      }
       const targetPoint = board.points.get(to.toString());
 
       if (!targetPoint || targetPoint.player === player) {
@@ -632,8 +741,8 @@ export class BackgammonRoom extends Room<GameState> {
       for (const [key, point] of board.points.entries()) {
         if (point.player === player) {
           const pointNum = parseInt(key);
-          // Для белых дом: 1-6, для черных дом: 19-24
-          if (player === 'white' ? pointNum > 6 : pointNum < 19) {
+          // Для белых дом: 1-6, для черных дом: 13-18
+          if (player === 'white' ? pointNum > 6 : (pointNum < 13 || pointNum > 18)) {
             canBearOff = false;
             break;
           }
@@ -662,24 +771,25 @@ export class BackgammonRoom extends Room<GameState> {
             }
           }
 
-          const to = from + die * direction;
+          // Вычисляем целевой пункт
+          let to: number;
+          if (player === 'white') {
+            to = from - die; // Белые идут по убыванию
+          } else {
+            to = this.getNextPointForBlack(from, die); // Черные идут по своему маршруту
+          }
 
           // Логика снятия шашек
           if (canBearOff) {
-            if (to < 1 || to > 24) {
-              // Можно снимать
+            // Проверяем, можно ли снять с текущей позиции
+            const canBearOffFromHere = this.canBearOffFromPosition(
+              from,
+              die,
+              player,
+              board,
+            );
+            if (canBearOffFromHere) {
               moves.push({ from, to: 'off', die });
-            } else {
-              // Проверяем, можно ли снять с текущей позиции
-              const canBearOffFromHere = this.canBearOffFromPosition(
-                from,
-                die,
-                player,
-                board,
-              );
-              if (canBearOffFromHere) {
-                moves.push({ from, to: 'off', die });
-              }
             }
           }
 
@@ -715,14 +825,17 @@ export class BackgammonRoom extends Room<GameState> {
         return this.isHighestChecker(from, player, board);
       }
     } else {
-      // Для черных: дом 19-24
-      if (from < 19) return false;
+      // Для черных: дом 13-18 (маршрут: ...→15→14→13)
+      if (from < 13 || from > 18) return false;
+
+      // Расстояние от текущего пункта до выхода (пункт 13 = выход)
+      const distanceToExit = from - 13 + 1; // Пример: пункт 15 → расстояние 3
 
       // Если точное значение - можно снимать
-      if (24 - from + 1 === die) return true;
+      if (distanceToExit === die) return true;
 
-      // Если значение больше позиции, можно снять только самую дальнюю шашку
-      if (die > (24 - from + 1)) {
+      // Если значение больше расстояния, можно снять только самую дальнюю шашку
+      if (die > distanceToExit) {
         return this.isHighestChecker(from, player, board);
       }
     }
@@ -738,9 +851,11 @@ export class BackgammonRoom extends Room<GameState> {
       if (point.player === player) {
         const pointNum = parseInt(key);
         if (player === 'white') {
+          // Для белых: самая дальняя шашка - с наибольшим номером в доме (6, 5, 4...)
           if (pointNum > from) return false;
         } else {
-          if (pointNum < from) return false;
+          // Для черных: самая дальняя шашка в доме 13-18 - с наибольшим номером (18, 17, 16...)
+          if (pointNum >= 13 && pointNum <= 18 && pointNum > from) return false;
         }
       }
     }

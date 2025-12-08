@@ -1,5 +1,7 @@
 .checker {
   width: 100%; /* Ширина шашки равна ширине ячейки */
   display: block;
+  image-rendering: -webkit-optimize-contrast; /* For Webkit browsers */
+  image-rendering: crisp-edges;
 }
 

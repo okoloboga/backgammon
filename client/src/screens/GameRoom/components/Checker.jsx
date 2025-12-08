@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import './Checker.css';
 
-import chipPurple from '../../../assets/game/chipPurple.png';
-import chipGreen from '../../../assets/game/chipGreen.png';
+import chipPurpleSvg from '../../../assets/game/chipPurple.svg';
+import chipGreenSvg from '../../../assets/game/chipGreen.svg';
 
 const Checker = ({ color, style }) => {
-  const image = color === 'white' ? chipPurple : chipGreen;
-  
+  const image = color === 'white' ? chipPurpleSvg : chipGreenSvg;
+
   const finalStyle = {
     ...style,
     width: '25px',

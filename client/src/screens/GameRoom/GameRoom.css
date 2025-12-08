@@ -74,6 +74,9 @@
   height: 100%;
   z-index: 1;
   object-fit: fill; /* Растягиваем фон до размеров контейнера */
+  /* SVG оптимизация для четкости на всех экранах */
+  image-rendering: auto;
+  shape-rendering: geometricPrecision;
 }
 
 .board-bg.overlay {

@@ -39,6 +39,10 @@ const ProfileCard = ({ user, balances }) => {
 
   const { username, winrate, wins, loses, avatar } = user;
 
+  // Debug: Log avatar value to console
+  console.log('[ProfileCard] Avatar value:', avatar);
+  console.log('[ProfileCard] Full user object:', user);
+
   const truncatedUsername =
     username && username.length > 15 ? `${username.substring(0, 15)}...` : username;
 

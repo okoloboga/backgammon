@@ -6,7 +6,11 @@ import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
 import { colyseusService } from '../../services/colyseusService';
-import greenLayer from '../../assets/game/greenLayer.png';
+// PNG версия greenLayer (оригинал 1x, закомментирован)
+// import greenLayer from '../../assets/game/greenLayer.png';
+// PNG версия greenLayer 2x для лучшего качества на мобильных
+import greenLayer2x from '../../assets/game/greenLayer2.png';
+// purpleLayer остается PNG 1x
 import purpleLayer from '../../assets/game/purpleLayer.png';
 
 const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
@@ -288,7 +292,7 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
         </div>
         <div className="game-board">
           <div className="board-half">
-            <img src={greenLayer} alt="Board layer" className="board-bg" />
+            <img src={greenLayer2x} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
               {pointRenderOrder.left.map((id) => {
@@ -317,7 +321,7 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
             )}
           </div>
           <div className="board-half">
-            <img src={greenLayer} alt="Board layer" className="board-bg" />
+            <img src={greenLayer2x} alt="Board layer" className="board-bg" />
             <img src={purpleLayer} alt="Board overlay" className="board-bg overlay" />
             <div className="point-grid-container">
               {pointRenderOrder.right.map((id) => {

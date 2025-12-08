@@ -59,13 +59,17 @@ export class AuthService {
     let username: string | undefined;
     let avatarUrl: string | undefined;
 
+    this.logger.log(`Processing initData: ${verifyData.initData ? 'present' : 'not present'}`);
+
     if (verifyData.initData) {
       try {
         const params = new URLSearchParams(verifyData.initData);
+        this.logger.log(`InitData params: ${verifyData.initData}`);
 
         // Try to get data from 'user' field (Telegram WebApp format)
         const userJson = params.get('user');
         if (userJson) {
+          this.logger.log(`Found 'user' field in initData: ${userJson}`);
           interface TelegramUserData {
             first_name?: string;
             photo_url?: string;
@@ -73,14 +77,18 @@ export class AuthService {
           const userData = JSON.parse(userJson) as TelegramUserData;
           username = userData.first_name;
           avatarUrl = userData.photo_url;
+          this.logger.log(`Parsed Telegram user data: username=${username}, avatarUrl=${avatarUrl}`);
         } else {
           // Fallback: get data from direct parameters (our custom format)
           username = params.get('username') || undefined;
           avatarUrl = params.get('avatar_url') || undefined;
+          this.logger.log(`Using fallback params: username=${username}, avatarUrl=${avatarUrl}`);
         }
       } catch (e) {
         this.logger.error('Failed to parse initData', e);
       }
+    } else {
+      this.logger.warn('No initData provided - avatar and username will not be set');
     }
 
     if (!user) {
@@ -93,13 +101,18 @@ export class AuthService {
         avatarUrl,
       );
     } else {
+      this.logger.log(`User already exists: ${user.id}, current avatar: ${user.avatar}`);
       // If user exists, update their profile info if new data is provided
       if (username !== undefined || avatarUrl !== undefined) {
+        this.logger.log(`Updating user profile with: username=${username}, avatarUrl=${avatarUrl}`);
         user = await this.usersService.updateUserProfile(
           user.id,
           username,
           avatarUrl,
         );
+        this.logger.log(`Profile updated. New avatar: ${user?.avatar}`);
+      } else {
+        this.logger.log('No new username or avatar to update');
       }
     }
 

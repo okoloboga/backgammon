@@ -493,6 +493,9 @@ export class BackgammonRoom extends Room<GameState> {
     if (!player) return [];
     const dice: number[] = Array.from(this.state.dice);
 
+    // Сохраняем изначальное количество костей для проверки специального дубля
+    const initialDiceCount = dice.length;
+
     const initialBoard: VirtualBoard = {
       points: new Map(),
       bar: {
@@ -510,6 +513,7 @@ export class BackgammonRoom extends Room<GameState> {
       player,
       this.state.turnCount,
       this.state.turnMovesFromHead,
+      initialDiceCount,
     );
 
     if (allSequences.length === 0 || allSequences[0].length === 0) {
@@ -533,6 +537,7 @@ export class BackgammonRoom extends Room<GameState> {
           player,
           this.state.turnCount,
           this.state.turnMovesFromHead,
+          initialDiceCount,
         );
         if (singleMoves.length > 0) {
           playableDice.add(die);
@@ -571,6 +576,7 @@ export class BackgammonRoom extends Room<GameState> {
     player: string,
     turnCount: number,
     movesFromHead: number,
+    initialDiceCount: number,
   ): Move[][] {
     // Check for win condition: if the player has no checkers left, it's a valid end of a sequence
     let checkerCount = 0;
@@ -595,6 +601,7 @@ export class BackgammonRoom extends Room<GameState> {
         player,
         turnCount,
         movesFromHead,
+        initialDiceCount,
       );
       if (possibleSingleMoves.length > 0) {
         const remainingDice = [...dice];
@@ -610,6 +617,7 @@ export class BackgammonRoom extends Room<GameState> {
             player,
             turnCount,
             newMovesFromHead,
+            initialDiceCount,
           );
           for (const seq of nextSequences) {
             sequences.push([move, ...seq]);
@@ -715,6 +723,7 @@ export class BackgammonRoom extends Room<GameState> {
     player: string,
     turnCount: number,
     movesFromHead: number,
+    initialDiceCount: number,
   ): Move[] {
     const moves: Move[] = [];
     const barCheckers = board.bar[player];
@@ -757,9 +766,9 @@ export class BackgammonRoom extends Room<GameState> {
           // --- ПРОВЕРКА ПРАВИЛА СНЯТИЯ С ГОЛОВЫ ---
           if (from === headPoint) {
             const isFirstTurn = turnCount <= 2;
-            const diceCount = this.state.dice.length;
+            // Используем изначальное количество костей, а не текущее
             const isSpecialDouble =
-              diceCount === 4 && [3, 4, 6].includes(this.state.dice[0]);
+              initialDiceCount === 4 && [3, 4, 6].includes(die);
 
             let maxHeadMoves = 1;
             if (isFirstTurn && isSpecialDouble) {

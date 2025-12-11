@@ -24,6 +24,12 @@ function App() {
 
   // Read Telegram data from URL on mount
   useEffect(() => {
+    const preSplashScreen = document.getElementById('pre-splash-screen');
+    if (preSplashScreen) {
+      setTimeout(() => {
+        preSplashScreen.style.display = 'none';
+      }, 2000);
+    }
     const params = new URLSearchParams(window.location.search);
     const tgData = {
       telegramId: params.get('telegram_id'),

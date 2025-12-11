@@ -5,16 +5,7 @@ import '../../styles/SplashScreen.css';
 const SplashScreen = ({ onNavigate, isLoading, error }) => {
   return (
     <div className="splash-screen">
-      <div className="logo-container">
-        <h1 className="logo-title">BACKGAMMON</h1>
-        <img
-          src="/assets/ruble.png"
-          alt="Ruble"
-          className="logo-image"
-          onClick={onNavigate}
-        />
-        <h1 className="logo-title">RUBLE</h1>
-
+      <div className="splash-content">
         <div className="splash-ton-connect">
           {error && <div className="error-message">{error}</div>}
           {isLoading ? (
@@ -24,6 +15,7 @@ const SplashScreen = ({ onNavigate, isLoading, error }) => {
           )}
         </div>
       </div>
+      <div className="age-restriction">18+ ONLY</div>
     </div>
   );
 };

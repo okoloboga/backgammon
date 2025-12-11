@@ -1,59 +1,58 @@
 .splash-screen {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #03142A 0%, #020f1f 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.splash-screen::before {
-  content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(0, 255, 85, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(139, 0, 255, 0.1) 0%, transparent 40%);
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  background-image: url('/assets/load.png');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 20px;
 }
 
-.logo-container {
-  text-align: center;
-  margin-bottom: 60px;
-  position: relative;
-  z-index: 2;
+.splash-content {
+  position: absolute;
+  top: 66.66%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
-.logo-title {
-  font-size: 10vw;
-  font-weight: 800;
-  background: linear-gradient(45deg, #00FF55, #8B00FF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.splash-screen .age-restriction {
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
   margin-bottom: 20px;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0, 255, 85, 0.3);
-  max-width: 90vw;
 }
 
-.logo-image {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.splash-ton-connect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
-.logo-image:hover {
-  transform: scale(1.1) rotate(5deg);
+.error-message {
+  color: #ff4444;
+  font-size: 1rem;
+  text-align: center;
+  padding: 10px 20px;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.loading-message {
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  padding: 10px 20px;
 }

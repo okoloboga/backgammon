@@ -28,7 +28,7 @@ function App() {
     if (preSplashScreen) {
       setTimeout(() => {
         preSplashScreen.style.display = 'none';
-      }, 2000);
+      }, 3000);
     }
     const params = new URLSearchParams(window.location.search);
     const tgData = {

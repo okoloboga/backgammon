@@ -47,6 +47,9 @@ export class GameState extends Schema {
   @type('boolean')
   noMoves: boolean;
 
+  @type('number')
+  turnInitialDiceCount: number;
+
   constructor() {
     super();
     this.board = new MapSchema<Point>();
@@ -67,5 +70,6 @@ export class GameState extends Schema {
     this.turnCount = 1;
     this.turnMovesFromHead = 0;
     this.noMoves = false;
+    this.turnInitialDiceCount = 0;
   }
 }

@@ -274,9 +274,11 @@ export class BackgammonRoom extends Room<GameState> {
 
     if (die1 === die2) {
       this.state.dice.push(die1, die1, die1, die1);
+      this.state.turnInitialDiceCount = 4;
       console.log(`Double! Player gets 4 moves of ${die1}`);
     } else {
       this.state.dice.push(die1, die2);
+      this.state.turnInitialDiceCount = 2;
     }
 
     this.generateAndSetPossibleMoves();
@@ -493,8 +495,8 @@ export class BackgammonRoom extends Room<GameState> {
     if (!player) return [];
     const dice: number[] = Array.from(this.state.dice);
 
-    // Сохраняем изначальное количество костей для проверки специального дубля
-    const initialDiceCount = dice.length;
+    // Используем сохраненное изначальное количество костей для проверки специального дубля
+    const initialDiceCount = this.state.turnInitialDiceCount;
 
     const initialBoard: VirtualBoard = {
       points: new Map(),
@@ -948,6 +950,7 @@ export class BackgammonRoom extends Room<GameState> {
       this.state.currentPlayer === 'white' ? 'black' : 'white';
     this.state.turnCount++;
     this.state.turnMovesFromHead = 0;
+    this.state.turnInitialDiceCount = 0;
     console.log(`Turn ended. Current player: ${this.state.currentPlayer}`);
   }
 

@@ -625,6 +625,20 @@ export class BackgammonRoom extends Room<GameState> {
         }
       }
     }
+
+    // Если нет возможных ходов, но это первый ход со специальным дублем (3-3, 4-4, 6-6),
+    // и мы уже сняли максимум 2 фишки с головы, то это валидное завершение последовательности.
+    // Правило "максимум 2 с головы" физически не позволяет использовать больше ходов.
+    if (sequences.length === 0 && dice.length > 0) {
+      const isFirstTurn = turnCount <= 2;
+      const isSpecialDouble = initialDiceCount === 4 && [3, 4, 6].includes(dice[0]);
+      const usedTwoFromHead = movesFromHead >= 2;
+
+      if (isFirstTurn && isSpecialDouble && usedTwoFromHead) {
+        return [[]]; // Валидное завершение: правило головы ограничивает дальнейшие ходы
+      }
+    }
+
     return sequences;
   }
 

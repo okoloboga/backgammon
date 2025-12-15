@@ -71,10 +71,9 @@ async def on_start(message: Message) -> None:
 
     kb = InlineKeyboardBuilder()
     kb.button(text="Открыть игру", web_app=WebAppInfo(url=launch_url))
-    kb.button(text="Открыть в браузере", url=launch_url)
 
     await message.answer(
-        "Жми кнопку, чтобы открыть нарды. Мы передадим твои данные в мини-приложение.",
+        "🎲 Привет! Готов кинуть кубики? Жми кнопку, и мы передадим твои данные в мини-приложение.",
         reply_markup=kb.as_markup(resize_keyboard=True),
     )
 

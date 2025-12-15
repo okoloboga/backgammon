@@ -54,5 +54,17 @@ services:
     ports:
       - "6379:6379"
 
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    env_file:
+      - bot/.env
+    environment:
+      - MINI_APP_URL=https://backgammon.ruble.website
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   postgres_data:

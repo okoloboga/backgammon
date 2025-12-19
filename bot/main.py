@@ -73,7 +73,7 @@ async def on_start(message: Message) -> None:
     kb.button(text="Открыть игру", web_app=WebAppInfo(url=launch_url))
 
     await message.answer(
-        "🎲 Привет! Готов кинуть кубики? Жми кнопку, и мы передадим твои данные в мини-приложение.",
+        "Are you ready? Let's see how lucky you are, roll the dice. Good luck.",
         reply_markup=kb.as_markup(resize_keyboard=True),
     )
 

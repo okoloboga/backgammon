@@ -217,6 +217,7 @@ function App() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-dark-bg">
       {currentScreen === 'splash' && (
         <SplashScreen
@@ -237,6 +238,12 @@ function App() {
         />
       )}
     </div>
+    <footer className="app-footer">
+      <a href="https://t.me/ruble_app_bot" target="_blank" rel="noopener noreferrer" className="rulabs-button">
+        RULABS
+      </a>
+    </footer>
+    </>
   );
 }
 

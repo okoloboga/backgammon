@@ -82,3 +82,36 @@ button {
   color: #00FF55;
   border: 1px solid rgba(0, 255, 85, 0.3);
 }
+
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+.rulabs-button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #00FF55, #00B8FF);
+  color: #03142A;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.rulabs-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 255, 85, 0.3);
+}

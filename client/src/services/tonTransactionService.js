@@ -9,7 +9,8 @@ const DEFAULT_JOIN_TIMEOUT = 600;
 const GAS_AMOUNT = '50000000'; // 0.05 TON
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  || `${window.location.origin}/api`;
 
 class TonTransactionService {
   constructor() {

@@ -1,15 +1,12 @@
 import * as colyseus from 'colyseus.js';
 import { authService } from './authService';
 
-// Адрес вашего игрового сервера Colyseus
-// В идеале, это должно быть в .env файле
-const COLYSEUS_ENDPOINT = import.meta.env.MODE === 'production' 
-  ? 'wss://backgammon.ruble.website/api' 
-  : 'ws://localhost:2567/api';
+// Адрес вашего игрового сервера Colyseus (можно переопределить через .env)
+const COLYSEUS_ENDPOINT = import.meta.env.VITE_COLYSEUS_ENDPOINT
+  || `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/api`;
 
-const API_BASE_URL = import.meta.env.MODE === 'production' 
-  ? 'https://backgammon.ruble.website/api' 
-  : 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  || `${window.location.origin}/api`;
 
 class ColyseusService {
   constructor() {

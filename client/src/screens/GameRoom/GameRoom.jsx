@@ -32,7 +32,8 @@ const GameRoom = ({ roomId, betAmount, currency, escrowGameId, onQuit, currentUs
 
   useEffect(() => {
     const roomInstance = colyseusService.getGameRoom();
-    if (roomInstance && roomInstance.roomId === roomId) {
+    const roomInstanceId = roomInstance?.id || roomInstance?.roomId;
+    if (roomInstance && roomInstanceId === roomId) {
       setRoom(roomInstance);
 
       roomInstance.onStateChange((newState) => {

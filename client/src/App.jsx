@@ -153,7 +153,8 @@ function App() {
   };
 
   const navigateToGame = useCallback(async (info) => { // Changed parameter to 'info' object
-    if (!info || !info.roomId) {
+    const targetRoomId = info?.roomId || info?.id;
+    if (!targetRoomId) {
       console.error("navigateToGame called with no roomId");
       return;
     }
@@ -164,18 +165,18 @@ function App() {
     try {
       const currentRoom = colyseusService.getGameRoom();
       // Check if we are already in the correct room (Colyseus Room uses .id, not .roomId)
-      if (currentRoom && currentRoom.id === info.roomId) {
+      if (currentRoom && currentRoom.id === targetRoomId) {
         console.log('Already in the correct room. Navigating...');
       } else {
-        console.log(`Joining room ${info.roomId}...`);
-        await colyseusService.joinExistingRoom(info.roomId);
+        console.log(`Joining room ${targetRoomId}...`);
+        await colyseusService.joinExistingRoom(targetRoomId);
       }
       
-      setGameRoomId(info.roomId);
+      setGameRoomId(targetRoomId);
       setRoomInfo(info); // Store the full room info
       setCurrentScreen('game-room');
     } catch (e) {
-      console.error(`Failed to navigate to game room ${info.roomId}:`, e);
+      console.error(`Failed to navigate to game room ${targetRoomId}:`, e);
       setError('Failed to join the game. Please try again.');
       // Go back to the main menu on failure
       setCurrentScreen('main-menu');

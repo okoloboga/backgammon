@@ -117,9 +117,10 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
       onClose();
       setBetAmount('');
       if (onNavigateToGame) {
+        const resolvedRoomId = room?.id || room?.roomId;
         // Pass full room info including escrowGameId
         onNavigateToGame({
-          roomId: room.id,
+          roomId: resolvedRoomId,
           betAmount: parseFloat(betAmount),
           currency: currency,
           escrowGameId: escrowGameId,

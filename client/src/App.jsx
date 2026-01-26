@@ -164,8 +164,9 @@ function App() {
 
     try {
       const currentRoom = colyseusService.getGameRoom();
+      const currentRoomId = currentRoom?.id || currentRoom?.roomId;
       // Check if we are already in the correct room (Colyseus Room uses .id, not .roomId)
-      if (currentRoom && currentRoom.id === targetRoomId) {
+      if (currentRoom && currentRoomId === targetRoomId) {
         console.log('Already in the correct room. Navigating...');
       } else {
         console.log(`Joining room ${targetRoomId}...`);

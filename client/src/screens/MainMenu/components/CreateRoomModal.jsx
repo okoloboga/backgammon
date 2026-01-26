@@ -4,7 +4,8 @@ import { colyseusService } from '../../../services/colyseusService';
 import { tonTransactionService } from '../../../services/tonTransactionService';
 import '../../../styles/CreateRoomModal.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  || `${window.location.origin}/api`;
 
 // Функция для форматирования баланса с точностью до 2 знаков после запятой
 const formatBalance = (num) => {

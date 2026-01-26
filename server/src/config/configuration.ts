@@ -6,6 +6,11 @@ export default () => ({
     apiKey: process.env.TON_API_KEY,
     network: process.env.TON_NETWORK || 'mainnet',
   },
+  escrow: {
+    contractAddress: process.env.TON_ESCROW_ADDRESS || '',
+    adminMnemonic: process.env.TON_ADMIN_MNEMONIC || '',
+    useMockTransactions: process.env.USE_MOCK_TRANSACTIONS !== 'false',
+  },
   database: {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432'),

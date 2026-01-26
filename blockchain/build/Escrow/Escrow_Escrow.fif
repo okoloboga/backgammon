@@ -1,4 +1,4 @@
-// automatically generated from `@stdlib/std/stdlib.fc` `/home/user/code/backgammon_contract/build/Escrow/Escrow_Escrow.fc` 
+// automatically generated from `@stdlib/std/stdlib.fc` `/Users/core/code/backgammon/blockchain/build/Escrow/Escrow_Escrow.fc` 
 PROGRAM{
   DECLPROC __tact_store_address_opt
   DECLPROC __tact_not_null
@@ -7,6 +7,8 @@ PROGRAM{
   DECLPROC __tact_slice_eq_bits_nullable_right
   DECLPROC __tact_dict_get_uint_cell
   DECLPROC __tact_dict_set_uint_cell
+  DECLPROC $DeployOk$_store
+  DECLPROC $DeployOk$_store_cell
   DECLPROC $Game$_store
   DECLPROC $Game$_store_cell
   DECLPROC $Game$_load
@@ -21,9 +23,12 @@ PROGRAM{
   DECLPROC $Escrow$_contract_init
   DECLPROC $Escrow$_contract_load
   DECLPROC $Escrow$_contract_store
-  DECLPROC $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed
+  DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
+  DECLPROC $Escrow$_fun_notify
+  DECLPROC $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout
   DECLPROC $MessageParameters$_constructor_to_value_mode
   DECLPROC $MessageParameters$_constructor_to_value_bounce_body
+  DECLPROC $DeployOk$_constructor_queryId
   DECLPROC recv_internal
   65535 DECLMETHOD __tact_selector_hack
   DECLGLOBVAR __tact_context
@@ -86,16 +91,27 @@ PROGRAM{
       DICTUSETREF
     }>
   }>
-  $Game$_store PROCINLINE:<{
-    s9 s10 XCHG2
+  $DeployOk$_store PROCINLINE:<{
+    2952335191 PUSHINT
+    ROT
+    32 STU
     64 STU
-    s1 s7 XCHG
-    STSLICE
-    s0 s5 XCHG2
-    __tact_store_address_opt INLINECALLDICT
-    s0 s3 XCHG2
-    __tact_store_address_opt INLINECALLDICT
+  }>
+  $DeployOk$_store_cell PROCINLINE:<{
     SWAP
+    $DeployOk$_store INLINECALLDICT
+    ENDC
+  }>
+  $Game$_store PROCREF:<{
+    s10 s11 XCHG2
+    64 STU
+    s1 s8 XCHG
+    STSLICE
+    s0 s6 XCHG2
+    __tact_store_address_opt INLINECALLDICT
+    s0 s4 XCHG2
+    __tact_store_address_opt INLINECALLDICT
+    ROT
     STVARUINT16
     SWAP
     NEWC
@@ -123,14 +139,16 @@ PROGRAM{
     __tact_store_address_opt INLINECALLDICT
     s1 s2 XCHG
     1 STI
+    s1 s2 XCHG
+    32 STU
     STBREFR
   }>
   $Game$_store_cell PROCINLINE:<{
-    10 -ROLL
+    11 -ROLL
     $Game$_store INLINECALLDICT
     ENDC
   }>
-  $Game$_load PROCINLINE:<{
+  $Game$_load PROCREF:<{
     64 LDU
     LDMSGADDR
                 b{00} SDBEGINSQ
@@ -174,15 +192,16 @@ PROGRAM{
                 }>
     SWAP
     1 LDI
+    32 LDU
     DROP
-    s5 s10 XCHG
-    s5 s9 XCHG
-    s5 s8 XCHG
-    s5 s7 XCHG
-    s5 s6 XCHG
+    s6 s11 XCHG
+    s6 s10 XCHG
+    s6 s9 XCHG
+    s6 s8 XCHG
+    s6 s7 XCHG
   }>
   $Game$_as_optional PROCINLINE:<{
-        10 TUPLE
+        11 TUPLE
   }>
   $Game$_load_opt PROCINLINE:<{
     DUP
@@ -193,7 +212,7 @@ PROGRAM{
     }>ELSE<{
       CTOS
       $Game$_load INLINECALLDICT
-      1 10 BLKDROP2
+      1 11 BLKDROP2
       $Game$_as_optional INLINECALLDICT
     }>
   }>
@@ -228,7 +247,7 @@ PROGRAM{
     DUP
     ISNULL
     128 THROWIF
-        10 UNTUPLE
+        11 UNTUPLE
   }>
   $Escrow$init$_load PROCINLINE:<{
     LDMSGADDR
@@ -267,7 +286,37 @@ PROGRAM{
     ENDC
     c4 POP
   }>
-  $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed PROCINLINE:<{
+  $MessageParameters$_constructor_bounce_to_value_mode_body PROCINLINE:<{
+    s3 s3 XCHG2
+    s0 s4 XCHG
+  }>
+  $Escrow$_fun_notify PROCINLINE:<{
+    __tact_context_get_sender INLINECALLDICT
+    FALSE
+    0 PUSHINT
+    s0 s3 XCHG2
+    66 PUSHINT
+    SWAP
+    $MessageParameters$_constructor_bounce_to_value_mode_body INLINECALLDICT
+        NEWC
+        b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+        1 STI               // store `bounce`
+        b{000} STSLICECONST // store bounced = false and src = addr_none
+        STSLICE             // store `to`
+        SWAP
+        STGRAMS             // store `value`
+        106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+        STZEROES
+        // → Stack state
+        // s0: Builder
+        // s1: `body`
+        // s2: `mode`
+        STDICT
+        ENDC
+        SWAP
+        SENDRAWMSG
+  }>
+  $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout PROCINLINE:<{
   }>
   $MessageParameters$_constructor_to_value_mode PROCINLINE:<{
     PUSHNULL
@@ -278,6 +327,8 @@ PROGRAM{
     0 PUSHINT
     s4 s4 XCHG2
     s3 s1 s3 XCHG3
+  }>
+  $DeployOk$_constructor_queryId PROCINLINE:<{
   }>
   recv_internal PROC:<{
     SWAP
@@ -306,18 +357,19 @@ PROGRAM{
     IFJMP:<{
       NIP
       LDVARUINT16
+      32 LDU
       DROP
       __tact_context_get INLINECALLDICT
       $Context$_get_value INLINECALLDICT
       19635 PUSHINT
-      s1 s2 PUSH2
+      s1 s3 PUSH2
       GEQ
       THROWANYIFNOT
       5913 PUSHINT
-      s2 s6 PUSH2
+      s3 s7 PUSH2
       GEQ
       THROWANYIFNOT
-      s4 PUSH
+      s5 PUSH
       INC
       __tact_context_get_sender INLINECALLDICT
       PUSHNULL
@@ -326,15 +378,14 @@ PROGRAM{
           NOW
       PUSHNULL
       PUSHNULL
-      s12 PUSH
-      s0 s7 XCHG
-      s0 s6 XCHG
-      s0 s5 XCHG
-      s4 s10 XCPU
-      s4 s3 s4 XCHG3
       FALSE
-      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-      s0 s9 XCHG
+      s14 PUSH
+      s9 s12 XCPU
+      6 -ROLL
+      s0 s12 XCHG
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+      s9 s10 XCHG
+      s0 s10 XCHG
       s0 s8 XCHG
       s0 s7 XCHG
       s0 s6 XCHG
@@ -342,13 +393,13 @@ PROGRAM{
       s0 s4 XCHG
       s3 s1 s3 XCHG3
       64 PUSHINT
-      s2 s10 XCHG2
+      s2 s11 XCHG2
       NEWC
       $Game$_store_cell INLINECALLDICT
       s3 s9 XCHG
       s1 s7 s0 XCHG3
       __tact_dict_set_uint_cell INLINECALLDICT
-      s6 s6 XCHG2
+      s4 s4 XCHG2
       SUB
       DUP
       0 GTINT
@@ -377,7 +428,7 @@ PROGRAM{
       }>ELSE<{
         DROP
       }>
-      s0 s3 s4 XCHG3
+      2SWAP
       $Escrow$_contract_store INLINECALLDICT
     }>
     OVER
@@ -397,37 +448,42 @@ PROGRAM{
       NOT
       THROWANYIFNOT
       $Game$_not_null INLINECALLDICT
+      s8 POP
       3 BLKDROP
-      s4 POP
       26218 PUSHINT
-      SWAP
+      s0 s2 XCHG
       0 EQINT
+      s1 s2 XCHG
       THROWANYIFNOT
       53249 PUSHINT
       __tact_context_get_sender INLINECALLDICT
-      s5 s(-1) PUXC
+      s6 s(-1) PUXC
       SDEQ
       NOT
       THROWANYIFNOT
       __tact_context_get INLINECALLDICT
       $Context$_get_value INLINECALLDICT
       41490 PUSHINT
-      s1 s2 PUSH2
+      s1 s3 PUSH2
       GEQ
       THROWANYIFNOT
       __tact_context_get_sender INLINECALLDICT
       1 PUSHINT
           NOW
+      s7 s9 XCHG
       s6 s8 XCHG
-      s4 PUSH
-      s6 s8 XCHG
-      s3 s5 XCHG
+      s2 s5 XCHG
       s4 s8 XCHG
-      s9 s9 XCHG2
       PUSHNULL
       FALSE
-      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-      s0 s9 XCHG
+      s4 PUSH
+      s0 s6 XCHG
+      s4 s5 XCHG
+      s4 s11 XCHG
+      s0 s12 XCHG
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+      s9 s10 XCHG
+      s0 s10 XCHG
       s0 s8 XCHG
       s0 s7 XCHG
       s0 s6 XCHG
@@ -435,13 +491,13 @@ PROGRAM{
       s0 s4 XCHG
       s3 s1 s3 XCHG3
       64 PUSHINT
-      s2 s10 XCHG2
+      s2 s11 XCHG2
       NEWC
       $Game$_store_cell INLINECALLDICT
       s3 s9 XCHG
       s1 s4 s0 XCHG3
       __tact_dict_set_uint_cell INLINECALLDICT
-      s0 s6 XCHG
+      s6 s6 XCHG2
       SUB
       DUP
       0 GTINT
@@ -492,32 +548,32 @@ PROGRAM{
       $Game$_not_null INLINECALLDICT
       61763 PUSHINT
       __tact_context_get_sender INLINECALLDICT
-      s10 PUSH
+      s11 PUSH
       SDEQ
       THROWANYIFNOT
       18980 PUSHINT
-      s0 s5 XCHG
+      s0 s6 XCHG
       0 EQINT
-      s1 s5 XCHG
+      s1 s6 XCHG
       THROWANYIFNOT
-      3600 PUSHINT
       5486 PUSHINT
           NOW
-      s5 s2 PUXC
+      s5 s6 PUSH2
       ADD
-      s1 s2 XCHG
       GREATER
       THROWANYIFNOT
-      s5 s8 XCHG
-      3 PUSHINT
-      s8 PUSH
-      s6 s10 XCPU
       s6 s9 XCHG
-      s4 s5 s4 XC2PU
-      s3 s10 XCHG2
-      s1 s4 XCHG
-      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-      s0 s9 XCHG
+      3 PUSHINT
+      s9 PUSH
+      s7 s11 XCPU
+      s7 s10 XCHG
+      s1 s6 s5 PUXC2
+      s0 s3 XCHG
+      s5 s1 s5 XCHG3
+      s4 s11 XCHG2
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+      s9 s10 XCHG
+      s0 s10 XCHG
       s0 s8 XCHG
       s0 s7 XCHG
       s0 s6 XCHG
@@ -525,15 +581,16 @@ PROGRAM{
       s0 s4 XCHG
       s3 s1 s3 XCHG3
       64 PUSHINT
-      s2 s10 XCHG2
+      s2 s11 XCHG2
       NEWC
       $Game$_store_cell INLINECALLDICT
       s3 s10 XCHG
       s1 s5 s0 XCHG3
       __tact_dict_set_uint_cell INLINECALLDICT
-      SWAP
+      OVER
       ISNULL
       IF:<{
+        NIP
         s6 s6 XCHG2
         2 PUSHINT
         $MessageParameters$_constructor_to_value_mode INLINECALLDICT
@@ -555,8 +612,49 @@ PROGRAM{
             SWAP
             SENDRAWMSG
       }>ELSE<{
-        s6 POP
-        DROP
+        SWAP
+        __tact_not_null INLINECALLDICT
+        50000000 PUSHINT
+        TRUE
+            NEWC
+            ENDC
+        TRUE
+            NEWC
+        260734629 PUSHINT
+        SWAP
+        32 STU
+        s12 PUSH
+            STSLICER
+        s0 s7 XCHG2
+            STVARUINT16
+        0 PUSHINT
+            STVARUINT16
+        s0 s11 XCHG2
+            STSLICER
+        s1 s5 XCHG
+            1 STI
+        s1 s9 XCHG
+            STREF
+            ENDC
+        s8 s3 s0 XCHG3
+        $MessageParameters$_constructor_to_value_bounce_body INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+            STZEROES
+            // → Stack state
+            // s0: Builder
+            // s1: `body`
+            // s2: `mode`
+            STDICT
+            ENDC
+            SWAP
+            SENDRAWMSG
       }>
       s0 s3 s4 XCHG3
       $Escrow$_contract_store INLINECALLDICT
@@ -584,31 +682,32 @@ PROGRAM{
       NOT
       THROWANYIFNOT
       $Game$_not_null INLINECALLDICT
-      NIP
+      s2 POP
       56165 PUSHINT
-      s0 s4 XCHG
+      s0 s5 XCHG
       1 EQINT
-      s1 s4 XCHG
+      s1 s5 XCHG
       THROWANYIFNOT
       10541 PUSHINT
-      s9 s7 PUSH2
+      s10 s8 PUSH2
       SDEQ
       IF:<{
         TRUE
       }>ELSE<{
-        s9 s6 PUSH2
+        s10 s7 PUSH2
         __tact_slice_eq_bits_nullable_right INLINECALLDICT
       }>
       THROWANYIFNOT
-      s5 s7 XCHG
-      5 3 REVERSE
+      s6 s8 XCHG
+      5 4 REVERSE
       2 PUSHINT
-      s7 PUSH
-      s4 s9 XCPU
-      s4 s1 s4 XCHG3
-      s3 s11 s3 XCPUXC
-      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-      s0 s9 XCHG
+      s8 PUSH
+      s5 s10 XCPU
+      s4 s1 s5 XCHG3
+      s12 s(-1) s3 PUXC2
+      $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+      s9 s10 XCHG
+      s0 s10 XCHG
       s0 s8 XCHG
       s0 s7 XCHG
       s0 s6 XCHG
@@ -616,7 +715,7 @@ PROGRAM{
       s0 s4 XCHG
       s3 s1 s3 XCHG3
       64 PUSHINT
-      s2 s10 XCHG2
+      s2 s11 XCHG2
       NEWC
       $Game$_store_cell INLINECALLDICT
       s3 s10 XCHG
@@ -711,23 +810,28 @@ PROGRAM{
         NOT
         THROWANYIFNOT
         $Game$_not_null INLINECALLDICT
+        s8 POP
         3 BLKDROP
-        s4 POP
         26218 PUSHINT
-        SWAP
+        s0 s2 XCHG
         0 EQINT
+        s1 s2 XCHG
         THROWANYIFNOT
         1 PUSHINT
             NOW
+        s7 s8 XCHG
         s6 s7 XCHG
-        s5 s6 XCHG
-        s5 s8 XCHG
+        s6 s9 XCHG
+        s4 s5 XCHG
         s3 s4 XCHG
-        s1 s3 s0 XCHG3
         PUSHNULL
+        ROT
+        s0 s4 XCHG
         FALSE
-        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-        s0 s9 XCHG
+        SWAP
+        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+        s9 s10 XCHG
+        s0 s10 XCHG
         s0 s8 XCHG
         s0 s7 XCHG
         s0 s6 XCHG
@@ -735,7 +839,7 @@ PROGRAM{
         s0 s4 XCHG
         s3 s1 s3 XCHG3
         64 PUSHINT
-        s2 s10 XCHG2
+        s2 s11 XCHG2
         NEWC
         $Game$_store_cell INLINECALLDICT
         s3 s7 XCHG
@@ -757,8 +861,10 @@ PROGRAM{
         PUSHNULL
         PUSHNULL
         FALSE
-        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed INLINECALLDICT
-        s0 s9 XCHG
+        3600 PUSHINT
+        $Game$_constructor_id_creator_joiner_jettonMaster_amount_state_createdAt_joinedAt_winner_claimed_joinTimeout INLINECALLDICT
+        s9 s10 XCHG
+        s0 s10 XCHG
         s0 s8 XCHG
         s0 s7 XCHG
         s0 s6 XCHG
@@ -766,7 +872,7 @@ PROGRAM{
         s0 s4 XCHG
         s3 s1 s3 XCHG3
         64 PUSHINT
-        s2 s10 XCHG2
+        s2 s11 XCHG2
         NEWC
         $Game$_store_cell INLINECALLDICT
         s3 s7 XCHG
@@ -794,35 +900,37 @@ PROGRAM{
       THROWANYIFNOT
       $Game$_not_null INLINECALLDICT
       50049 PUSHINT
-      s5 PUSH
+      s6 PUSH
       2 EQINT
       THROWANYIFNOT
       52959 PUSHINT
-      s7 PUSH
+      s8 PUSH
       ISNULL
       NOT
       THROWANYIFNOT
       6423 PUSHINT
       __tact_context_get_sender INLINECALLDICT
-      s3 PUSH
+      s4 PUSH
       __tact_slice_eq_bits_nullable_right INLINECALLDICT
       THROWANYIFNOT
       44463 PUSHINT
-      SWAP
+      s0 s2 XCHG
       NOT
+      s1 s2 XCHG
       THROWANYIFNOT
+      s5 s9 XCHG
       s4 s8 XCHG
       s3 s7 XCHG
-      s2 s6 XCHG
       TRUE
       64 PUSHINT
-      s7 PUSH
-      s4 s11 XCPU
-      s4 s0 XCPU
-      s4 s12 XCHG
-      s3 s11 XCHG
-      s0 s12 XCHG
       NEWC
+      s9 PUSH
+      s6 s13 XCPU
+      s0 s6 XCHG
+      s5 s13 XCHG
+      s4 s12 XCHG
+      s3 s0 s2 XCPUXC
+      s13 s14 s0 XCHG3
       $Game$_store_cell INLINECALLDICT
       s3 s10 XCHG
       s1 s5 XCHG
@@ -879,9 +987,10 @@ PROGRAM{
       s0 s3 s4 XCHG3
       $Escrow$_contract_store INLINECALLDICT
     }>
-    DROP
+    OVER
     5 EQINT
     IFJMP:<{
+      2DROP
       21885 PUSHINT
       __tact_context_get_sender INLINECALLDICT
       s3 PUSH
@@ -922,7 +1031,21 @@ PROGRAM{
       s0 s3 s4 XCHG3
       $Escrow$_contract_store INLINECALLDICT
     }>
-    5 BLKDROP
+    SWAP
+    2490013878 PUSHINT
+    EQUAL
+    IFJMP:<{
+      64 LDU
+      DROP
+      $DeployOk$_constructor_queryId INLINECALLDICT
+      NEWC
+      $DeployOk$_store_cell INLINECALLDICT
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      $Escrow$_fun_notify INLINECALLDICT
+      $Escrow$_contract_store INLINECALLDICT
+    }>
+    6 BLKDROP
     130 THROW
   }>
   __tact_selector_hack PROC:<{

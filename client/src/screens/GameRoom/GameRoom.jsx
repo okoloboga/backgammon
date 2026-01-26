@@ -5,6 +5,7 @@ import '../../styles/CreateRoomModal.css'; // Import shared modal styles
 import BoardPoint from './components/BoardPoint';
 import Dice from './components/Dice';
 import PlayerProfile from './components/PlayerProfile';
+import GameFinished from './components/GameFinished';
 import { colyseusService } from '../../services/colyseusService';
 // PNG версия greenLayer (оригинал 1x, закомментирован)
 // import greenLayer from '../../assets/game/greenLayer.png';
@@ -13,7 +14,7 @@ import greenLayer2x from '../../assets/game/greenLayer2.png';
 // purpleLayer остается PNG 1x
 import purpleLayer from '../../assets/game/purpleLayer.png';
 
-const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
+const GameRoom = ({ roomId, betAmount, currency, escrowGameId, onQuit, currentUser }) => {
   const [room, setRoom] = useState(null);
   // Authoritative state from the server
   const [gameState, setGameState] = useState({
@@ -78,8 +79,11 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
       });
 
       roomInstance.onMessage("game_over", (message) => {
-        // This is handled by the useEffect watching gameState.winner
-        // No explicit message setting here to avoid conflicts.
+        // Store txHash if provided (for explorer link)
+        if (message.txHash) {
+          setTxHash(message.txHash);
+        }
+        // The rest is handled by the useEffect watching gameState.winner
       });
 
       // Handle reconnection events
@@ -200,41 +204,32 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
   const [showQuitConfirmModal, setShowQuitConfirmModal] = useState(false);
   const [showBearOffButton, setShowBearOffButton] = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState(null); // Changed to null for JSX
+  const [txHash, setTxHash] = useState(null);
 
   useEffect(() => {
     if (gameState.winner && gameState.winner !== '') {
-      const prizeAmount = betAmount * 2;
-      const prizeText = `${prizeAmount} ${currency}`;
-
-      if (gameState.winner === playerColor) {
-        setModalMessage(
-          <>
-            <p style={{ color: '#2E8B57', fontSize: '2em', margin: 0, fontWeight: 'bold' }}>WIN</p>
-            <p style={{ color: 'white', fontSize: '1.5em', margin: '10px 0' }}>{prizeText}</p>
-          </>
-        );
-      } else {
-        setModalMessage(
-          <>
-            <p style={{ color: '#DC143C', fontSize: '2em', margin: 0, fontWeight: 'bold' }}>LOSE</p>
-            <p style={{ color: 'white', fontSize: '1.5em', margin: '10px 0' }}>{`-${betAmount} ${currency}`}</p>
-          </>
-        );
-      }
       setShowEndGameModal(true);
     }
-  }, [gameState.winner, playerColor, betAmount, currency]);
+  }, [gameState.winner]);
 
+  // Auto-close for non-RUBLE games or losers after 5 seconds
   useEffect(() => {
     if (showEndGameModal) {
+      const isWinner = gameState.winner === playerColor;
+      const isRuble = currency === 'RUBLE';
+
+      // Don't auto-close for RUBLE winners (they need to claim)
+      if (isRuble && isWinner) {
+        return;
+      }
+
       const timer = setTimeout(() => {
         onQuit();
-      }, 3000); // 3-second delay before quitting
+      }, 5000); // 5-second delay before auto-quit
 
       return () => clearTimeout(timer); // Cleanup the timer
     }
-  }, [showEndGameModal, onQuit]);
+  }, [showEndGameModal, gameState.winner, playerColor, currency, onQuit]);
 
   // Effect to control the visibility of the bear-off button
   useEffect(() => {
@@ -372,11 +367,14 @@ const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
         </div>
       )}
       {showEndGameModal && (
-        <div className="modal-overlay">
-          <div className="create-room-modal" style={{ padding: '24px', textAlign: 'center' }}>
-            {modalMessage}
-          </div>
-        </div>
+        <GameFinished
+          isWinner={gameState.winner === playerColor}
+          betAmount={betAmount}
+          currency={currency}
+          escrowGameId={escrowGameId}
+          txHash={txHash}
+          onClose={onQuit}
+        />
       )}
       {showQuitConfirmModal && (
         <div className="modal-overlay" onClick={handleCloseQuitModal}>
@@ -406,6 +404,7 @@ GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
   betAmount: PropTypes.number.isRequired,
   currency: PropTypes.string.isRequired,
+  escrowGameId: PropTypes.string,
   onQuit: PropTypes.func.isRequired,
   currentUser: PropTypes.shape({
     username: PropTypes.string,
@@ -415,6 +414,7 @@ GameRoom.propTypes = {
 
 GameRoom.defaultProps = {
   currentUser: null,
+  escrowGameId: null,
 };
 
 export default GameRoom;

@@ -12,6 +12,7 @@ struct Game {
   joinedAt: Int?;
   winner: Address?;
   claimed: Bool;    // для Jetton
+  joinTimeout: Int as uint32;  // timeout в секундах для ожидания второго игрока
 }
 
 struct JettonPayload {
@@ -55,7 +56,7 @@ const STATE_INPROGRESS: Int = 1;
 const STATE_FINISHED: Int = 2;
 const STATE_CANCELLED: Int = 3;
 
-contract Escrow {
+contract Escrow with Deployable {
   nextGameId: Int as uint64;
   admin: Address;
   feeWallet: Address;
@@ -89,7 +90,8 @@ contract Escrow {
       createdAt: now(),
       joinedAt: null,
       winner: null,
-      claimed: false
+      claimed: false,
+      joinTimeout: msg.joinTimeout
     };
     self.games.set(id, game);
 
@@ -119,7 +121,8 @@ contract Escrow {
       createdAt: g.createdAt,
       joinedAt: now(),
       winner: null,
-      claimed: false
+      claimed: false,
+      joinTimeout: g.joinTimeout
     };
     self.games.set(msg.gameId, newG);
 
@@ -136,8 +139,8 @@ contract Escrow {
     require(sender() == g.creator, "only creator can cancel");
     require(g.state == STATE_WAITING, "only waiting games can be cancelled");
 
-    let joinTimeout: Int = 3600;
-    require(now() > g.createdAt + joinTimeout, "join timeout not passed");
+    // Используем сохранённый joinTimeout из игры
+    require(now() > g.createdAt + g.joinTimeout, "join timeout not passed");
 
     let cancelled = Game{
         id: g.id,
@@ -149,13 +152,32 @@ contract Escrow {
         createdAt: g.createdAt,
         joinedAt: g.joinedAt,
         winner: g.winner,
-        claimed: g.claimed
+        claimed: g.claimed,
+        joinTimeout: g.joinTimeout
     };
     self.games.set(msg.gameId, cancelled);
 
     // refund creator
     if (g.jettonMaster == null) {
+      // TON игра - возвращаем TON
       message(MessageParameters{ to: g.creator, value: g.amount, mode: SendIgnoreErrors });
+    } else {
+      // Jetton игра - возвращаем токены через transfer
+      let jettonMaster = g.jettonMaster!!;
+      message(MessageParameters{
+        to: jettonMaster,
+        value: ton("0.05"),
+        bounce: true,
+        body: beginCell()
+          .storeUint(0xf8a7ea5, 32)   // selector transfer
+          .storeAddress(g.creator)
+          .storeCoins(g.amount)
+          .storeCoins(0)              // deployWalletValue
+          .storeAddress(g.creator)
+          .storeBit(true)             // notify
+          .storeRef(beginCell().endCell()) // payload
+        .endCell()
+      });
     }
   }
 
@@ -177,7 +199,8 @@ contract Escrow {
       createdAt: g.createdAt,
       joinedAt: g.joinedAt,
       winner: msg.winner,
-      claimed: g.claimed
+      claimed: g.claimed,
+      joinTimeout: g.joinTimeout
     };
 
     self.games.set(msg.gameId, finished);
@@ -214,7 +237,8 @@ contract Escrow {
         createdAt: now(),
         joinedAt: null,
         winner: null,
-        claimed: false
+        claimed: false,
+        joinTimeout: 3600  // default 1 hour for Jetton games
       };
       self.games.set(id, game);
     } else {
@@ -231,7 +255,8 @@ contract Escrow {
         createdAt: g.createdAt,
         joinedAt: now(),
         winner: null,
-        claimed: false
+        claimed: false,
+        joinTimeout: g.joinTimeout
       };
 
       self.games.set(msg.payload.gameId, newG);

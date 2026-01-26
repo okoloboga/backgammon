@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { TonConnectUIProvider, useTonConnectUI } from '@tonconnect/ui-react';
 import { authService } from './services/authService';
 import { colyseusService } from './services/colyseusService';
+import { tonTransactionService } from './services/tonTransactionService';
 import SplashScreen from './screens/SplashScreen/SplashScreen';
 import MainMenu from './screens/MainMenu/MainMenu';
 import GameRoom from './screens/GameRoom/GameRoom';
@@ -83,6 +84,13 @@ function App() {
       recreateProofPayload();
     }
   }, [recreateProofPayload]);
+
+  // Initialize tonTransactionService with TonConnect UI
+  useEffect(() => {
+    if (tonConnectUI) {
+      tonTransactionService.setTonConnect(tonConnectUI);
+    }
+  }, [tonConnectUI]);
 
   useEffect(() => {
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
@@ -233,6 +241,7 @@ function App() {
           roomId={gameRoomId}
           betAmount={roomInfo?.betAmount} // Pass betAmount
           currency={roomInfo?.currency}   // Pass currency
+          escrowGameId={roomInfo?.escrowGameId} // Pass escrowGameId
           onQuit={handleQuitGame}
           currentUser={user}
         />

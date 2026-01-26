@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { colyseusService } from '../../../services/colyseusService';
+import { tonTransactionService } from '../../../services/tonTransactionService';
 import '../../../styles/CreateRoomModal.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // Функция для форматирования баланса с точностью до 2 знаков после запятой
 const formatBalance = (num) => {
@@ -17,6 +20,8 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
   const [betAmount, setBetAmount] = useState('');
   const [currency, setCurrency] = useState('TON');
   const [debugError, setDebugError] = useState(null);
+  const [txStatus, setTxStatus] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const getMaxBet = () => {
     if (balances?.loading) return 0;
@@ -38,26 +43,69 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isValidBetAmount()) {
-      try {
-        const reservation = await colyseusService.createRoom({
+    if (!isValidBetAmount()) return;
+
+    setIsProcessing(true);
+    setDebugError(null);
+    let escrowGameId = null;
+
+    try {
+      // 1. Send blockchain transaction (if not mock mode and TON currency)
+      if (!tonTransactionService.isMockMode() && currency === 'TON') {
+        setTxStatus('Signing transaction...');
+        const txResult = await tonTransactionService.createGameTon(parseFloat(betAmount));
+
+        if (!txResult.success) {
+          throw new Error(txResult.error || 'Transaction failed');
+        }
+
+        setTxStatus('Verifying transaction...');
+        const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderAddress: tonTransactionService.getConnectedAddress(),
+            expectedAmount: parseFloat(betAmount),
+          }),
+        });
+        const verifyData = await verifyRes.json();
+        escrowGameId = verifyData.gameId?.toString();
+
+        if (!escrowGameId) {
+          console.warn('Could not verify escrow gameId, proceeding without it');
+        }
+      }
+
+      // 2. Create Colyseus room
+      setTxStatus('Creating room...');
+      const reservation = await colyseusService.createRoom({
+        betAmount: parseFloat(betAmount),
+        currency: currency,
+        escrowGameId,
+        creatorUsername: user?.username || 'Player',
+        creatorAvatar: user?.avatar,
+      });
+
+      // 3. Join and navigate to game
+      const room = await colyseusService.joinWithReservation(reservation);
+
+      onClose();
+      setBetAmount('');
+      if (onNavigateToGame) {
+        // Pass full room info including escrowGameId
+        onNavigateToGame({
+          roomId: room.id,
           betAmount: parseFloat(betAmount),
           currency: currency,
-          creatorUsername: user?.username || 'Player',
-          creatorAvatar: user?.avatar,
+          escrowGameId: escrowGameId,
         });
-
-        const room = await colyseusService.joinWithReservation(reservation);
-
-        onClose();
-        setBetAmount('');
-        if (onNavigateToGame) {
-          onNavigateToGame(room);
-        }
-      } catch (error) {
-        console.error('Failed to create or join room:', error);
-        setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
       }
+    } catch (error) {
+      console.error('Failed to create or join room:', error);
+      setDebugError(`ERROR: ${error.message}\n\nSTACK: ${error.stack}`);
+    } finally {
+      setIsProcessing(false);
+      setTxStatus(null);
     }
   };
 
@@ -124,16 +172,19 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
               </div>
             )}
           </div>
+          {isProcessing && txStatus && (
+            <div className="tx-status">{txStatus}</div>
+          )}
           <div className="modal-actions">
-            <button type="button" onClick={handleClose} className="cancel-button">
+            <button type="button" onClick={handleClose} className="cancel-button" disabled={isProcessing}>
               Cancel
             </button>
             <button
               type="submit"
-              className={`create-button ${!isValidBetAmount() ? 'disabled' : ''}`}
-              disabled={!isValidBetAmount()}
+              className={`create-button ${!isValidBetAmount() || isProcessing ? 'disabled' : ''}`}
+              disabled={!isValidBetAmount() || isProcessing}
             >
-              Create
+              {isProcessing ? 'Processing...' : 'Create'}
             </button>
           </div>
         </form>

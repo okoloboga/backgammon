@@ -7,6 +7,7 @@ import { LobbyService } from './services/lobby.service';
 import * as http from 'http';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { EscrowService } from '../ton/escrow.service';
 
 @Injectable()
 export class GameService {
@@ -16,6 +17,7 @@ export class GameService {
     private readonly lobbyService: LobbyService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly escrowService: EscrowService,
   ) {}
 
   initialize(httpServer: http.Server) {
@@ -28,6 +30,7 @@ export class GameService {
       lobbyService: this.lobbyService,
       usersService: this.usersService,
       jwtService: this.jwtService,
+      escrowService: this.escrowService,
     });
 
     // Define the lobby room

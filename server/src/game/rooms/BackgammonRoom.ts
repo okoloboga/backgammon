@@ -6,6 +6,8 @@ import { RoomInfo } from '../types';
 import { UsersService } from '../../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../../users/entities/user.entity';
+import { EscrowService } from '../../ton/escrow.service';
+import { Address } from '@ton/ton';
 
 interface VirtualBoard {
   points: Map<string, { player: string; checkers: number }>;
@@ -25,9 +27,11 @@ interface BackgammonRoomOptions {
   creatorAvatar?: string;
   betAmount?: number;
   currency?: string;
+  escrowGameId?: string;
   lobbyService: LobbyService;
   usersService: UsersService;
   jwtService: JwtService;
+  escrowService: EscrowService;
 }
 
 interface JoinOptions {
@@ -48,6 +52,7 @@ export class BackgammonRoom extends Room<GameState> {
   private lobbyService: LobbyService;
   private usersService: UsersService;
   private jwtService: JwtService;
+  private escrowService: EscrowService;
 
   async onAuth(client: Client, options: JoinOptions): Promise<any> {
     this.logger.log(`--- onAuth for client ${client.sessionId}`);
@@ -92,6 +97,7 @@ export class BackgammonRoom extends Room<GameState> {
     this.lobbyService = options.lobbyService;
     this.usersService = options.usersService;
     this.jwtService = options.jwtService;
+    this.escrowService = options.escrowService;
 
     this.setupBoard();
 
@@ -107,6 +113,7 @@ export class BackgammonRoom extends Room<GameState> {
       betAmount: options.betAmount || 0,
       currency: options.currency || 'TON',
       createdAt: Date.now(),
+      escrowGameId: options.escrowGameId,
     };
 
     // Уведомляем лобби о создании комнаты
@@ -458,6 +465,25 @@ export class BackgammonRoom extends Room<GameState> {
       this.logger.warn(`Could not find both winner and loser IDs to update stats.`);
     }
 
+    // Escrow payout (only for real mode with TON currency)
+    let txHash: string | undefined;
+    if (this.roomInfo?.escrowGameId && !this.escrowService?.isMockMode() && this.roomInfo?.currency === 'TON') {
+      const winnerAddress = winnerClient?.auth?.walletAddress;
+      if (winnerAddress) {
+        try {
+          txHash = await this.escrowService.reportWinner(
+            BigInt(this.roomInfo.escrowGameId),
+            Address.parse(winnerAddress)
+          );
+          this.logger.log(`Escrow payout initiated: txHash=${txHash}`);
+        } catch (error) {
+          this.logger.error(`ReportWinner failed for game ${this.roomInfo.escrowGameId}:`, error);
+        }
+      } else {
+        this.logger.warn(`Winner wallet address not found for escrow payout`);
+      }
+    }
+
     // This part should only run when the game ends normally, not when a player leaves.
     // When a player leaves, `onLeave` handles notifications.
     if (!leavingPlayerId) {
@@ -468,6 +494,7 @@ export class BackgammonRoom extends Room<GameState> {
         winnerClient.send('game_over', {
           result: 'win',
           message: `WIN ${betAmount} ${currency}.`,
+          txHash,
         });
       }
 
@@ -475,6 +502,7 @@ export class BackgammonRoom extends Room<GameState> {
         loserClient.send('game_over', {
           result: 'lose',
           message: `LOST ${betAmount} ${currency}.`,
+          txHash,
         });
       }
 

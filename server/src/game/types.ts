@@ -9,4 +9,5 @@ export interface RoomInfo {
   betAmount: number;
   currency: string;
   createdAt: number;
+  escrowGameId?: string;
 }

@@ -18,8 +18,9 @@ struct Game {
   joinedAt: uint32?;    // timestamp when the second player joined
   winner: Address?;     // winner's address
   claimed: Bool;        // for Jetton pull-model
+  joinTimeout: uint32;  // timeout in seconds for waiting for second player
 }
-````
+```
 
 ### JettonPayload
 
@@ -36,15 +37,16 @@ struct JettonPayload {
 
 ## 2. Messages
 
-| Opcode | Message           | Description                                                                                      |
-| ------ | ----------------- | ------------------------------------------------------------------------------------------------ |
-| 0x01   | CreateGameTon     | Create a TON game. Parameters: `amount`, `joinTimeout`                                           |
-| 0x02   | JoinGameTon       | Join an existing TON game. Parameter: `gameId`                                                   |
-| 0x03   | CancelGame        | Cancel a waiting TON game after timeout. Parameter: `gameId`                                     |
-| 0x04   | ReportWinner      | Admin reports the winner. Parameters: `gameId`, `winner`                                         |
-| 0x05   | WithdrawUnclaimed | Admin withdraws remaining TON from the contract                                                  |
-| 0x10   | OnJettonTransfer  | Callback for incoming Jetton payments. Parameters: `sender`, `amount`, `payload`, `jettonMaster` |
-| 0x11   | ClaimJetton       | Pull-model claim for Jetton payout. Parameter: `gameId`                                          |
+| Opcode     | Message           | Description                                                                                      |
+| ---------- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| 0x01       | CreateGameTon     | Create a TON game. Parameters: `amount`, `joinTimeout`                                           |
+| 0x02       | JoinGameTon       | Join an existing TON game. Parameter: `gameId`                                                   |
+| 0x03       | CancelGame        | Cancel a waiting game after timeout. Parameter: `gameId`. Works for TON and Jetton games         |
+| 0x04       | ReportWinner      | Admin reports the winner. Parameters: `gameId`, `winner`                                         |
+| 0x05       | WithdrawUnclaimed | Admin withdraws remaining TON from the contract                                                  |
+| 0x10       | OnJettonTransfer  | Callback for incoming Jetton payments. Parameters: `sender`, `amount`, `payload`, `jettonMaster` |
+| 0x11       | ClaimJetton       | Pull-model claim for Jetton payout. Parameter: `gameId`                                          |
+| 0x946a98b6 | Deploy            | Standard deploy message (from Deployable trait). Parameter: `queryId`                            |
 
 ---
 
@@ -78,8 +80,11 @@ STATE_CANCELLED: 3
 ### 4.3 CancelGame
 
 * Creator can cancel a waiting game if no player has joined and the `joinTimeout` passed.
+* Uses the `joinTimeout` value stored in the game (custom per game, default 3600s).
 * Sets `state = Cancelled`.
-* Refunds the creator (TON only).
+* Refunds the creator:
+  * **TON games**: sends TON back to creator.
+  * **Jetton games**: sends Jetton transfer back to creator via `jettonMaster`.
 
 ### 4.4 ReportWinner
 
@@ -140,12 +145,45 @@ STATE_CANCELLED: 3
 
 ## 7. Timeouts and Fees
 
-| Currency | Fee | Join Timeout    |
-| -------- | --- | --------------- |
-| TON      | 5%  | 3600s (default) |
-| Jetton   | 0%  | 3600s (default) |
+| Currency | Fee | Join Timeout              |
+| -------- | --- | ------------------------- |
+| TON      | 5%  | Custom (default 3600s)    |
+| Jetton   | 0%  | 3600s (fixed for Jetton)  |
 
 * TON fee is deducted from total winnings (`2 * amount`).
 * Jetton is fully paid to winner via pull-model.
+* `joinTimeout` for TON games can be set in `CreateGameTon` message.
+
+---
+
+## 8. Deployment
+
+Contract uses `Deployable` trait from `@stdlib/deploy`.
+
+### Init Parameters
+
+| Parameter       | Type    | Description                              |
+| --------------- | ------- | ---------------------------------------- |
+| `adminAddr`     | Address | Admin address (can call ReportWinner, WithdrawUnclaimed) |
+| `feeWalletAddr` | Address | Address to receive 5% fees from TON games |
+
+### Deploy Command
+
+```bash
+# Testnet
+npx blueprint run deployEscrow --testnet
+
+# Mainnet
+npx blueprint run deployEscrow --mainnet
+```
+
+### Configuration
+
+Edit `scripts/deployEscrow.ts` before deployment:
+
+```typescript
+const ADMIN_ADDRESS = 'UQ...';      // Backend wallet address
+const FEE_WALLET_ADDRESS = 'UQ...'; // Fee collection address
+```
 
 

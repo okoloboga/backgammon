@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Escrow
-BoC Size: 2380 bytes
+BoC Size: 1888 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 23
@@ -58,8 +58,8 @@ TL-B: `factory_deploy#6d0ff13b queryId:uint64 cashback:address = FactoryDeploy`
 Signature: `FactoryDeploy{queryId:uint64,cashback:address}`
 
 ### Game
-TL-B: `_ id:uint64 creator:address joiner:address jettonMaster:address amount:coins state:int257 createdAt:uint32 joinedAt:Maybe int257 winner:address claimed:bool = Game`
-Signature: `Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool}`
+TL-B: `_ id:uint64 creator:address joiner:address jettonMaster:address amount:coins state:int257 createdAt:uint32 joinedAt:Maybe int257 winner:address claimed:bool joinTimeout:uint32 = Game`
+Signature: `Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool,joinTimeout:uint32}`
 
 ### JettonPayload
 TL-B: `_ action:uint8 gameId:uint64 = JettonPayload`
@@ -94,8 +94,8 @@ TL-B: `claim_jetton#00000011 gameId:uint64 = ClaimJetton`
 Signature: `ClaimJetton{gameId:uint64}`
 
 ### Escrow$Data
-TL-B: `_ nextGameId:uint64 admin:address feeWallet:address minTon:coins games:dict<uint64, ^Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool}> = Escrow`
-Signature: `Escrow{nextGameId:uint64,admin:address,feeWallet:address,minTon:coins,games:dict<uint64, ^Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool}>}`
+TL-B: `_ nextGameId:uint64 admin:address feeWallet:address minTon:coins games:dict<uint64, ^Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool,joinTimeout:uint32}> = Escrow`
+Signature: `Escrow{nextGameId:uint64,admin:address,feeWallet:address,minTon:coins,games:dict<uint64, ^Game{id:uint64,creator:address,joiner:address,jettonMaster:address,amount:coins,state:int257,createdAt:uint32,joinedAt:Maybe int257,winner:address,claimed:bool,joinTimeout:uint32}>}`
 
 ## Get methods
 Total get methods: 0
@@ -161,6 +161,8 @@ Total get methods: 0
 graph TD
 Escrow
 Escrow --> BaseTrait
+Escrow --> Deployable
+Deployable --> BaseTrait
 ```
 
 ## Contract dependency diagram

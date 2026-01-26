@@ -462,5 +462,162 @@ describe('Escrow', () => {
             success: false,
         });
     });
+// ---------------- Jetton cancel and WithdrawUnclaimed tests ----------------
+
+    it('creator can cancel Jetton game after timeout and get refund', async () => {
+        const user1 = await blockchain.treasury('user1');
+        const jettonMaster = await blockchain.treasury('jettonMaster');
+
+        // Создаём Jetton игру
+        const payload0: JettonPayload = { $$type: 'JettonPayload', action: 0n, gameId: 0n };
+        await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.1') },
+            { $$type: 'OnJettonTransfer', sender: user1.address, amount: toNano('10'), payload: payload0, jettonMaster: jettonMaster.address }
+        );
+
+        // Устанавливаем время +2 часа (timeout = 1 час)
+        const current = blockchain.now ?? Math.floor(Date.now() / 1000);
+        blockchain.now = current + 7200;
+
+        // Отменяем игру
+        const cancelResult = await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.1') },
+            { $$type: 'CancelGame', gameId: 1n }
+        );
+
+        // Проверяем что транзакция прошла успешно
+        expect(cancelResult.transactions).toHaveTransaction({
+            from: user1.address,
+            to: escrow.address,
+            success: true,
+        });
+
+        // Проверяем что отправлено сообщение на jettonMaster для возврата токенов
+        expect(cancelResult.transactions).toHaveTransaction({
+            from: escrow.address,
+            to: jettonMaster.address,
+            success: true,
+        });
+    });
+
+    it('creator cannot cancel Jetton game before timeout', async () => {
+        const user1 = await blockchain.treasury('user1');
+        const jettonMaster = await blockchain.treasury('jettonMaster');
+
+        // Создаём Jetton игру
+        const payload0: JettonPayload = { $$type: 'JettonPayload', action: 0n, gameId: 0n };
+        await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.1') },
+            { $$type: 'OnJettonTransfer', sender: user1.address, amount: toNano('10'), payload: payload0, jettonMaster: jettonMaster.address }
+        );
+
+        // Устанавливаем время +30 минут (timeout = 1 час, ещё не прошёл)
+        const current = blockchain.now ?? Math.floor(Date.now() / 1000);
+        blockchain.now = current + 1800;
+
+        // Пытаемся отменить игру
+        const cancelResult = await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.1') },
+            { $$type: 'CancelGame', gameId: 1n }
+        );
+
+        // Должно провалиться
+        expect(cancelResult.transactions).toHaveTransaction({
+            from: user1.address,
+            to: escrow.address,
+            success: false,
+        });
+    });
+
+    it('admin can withdraw unclaimed TON', async () => {
+        const user1 = await blockchain.treasury('user1');
+        const admin = deployer;
+
+        // Создаём TON игру (депозит 1 TON)
+        await escrow.send(
+            user1.getSender(),
+            { value: toNano('2') },
+            { $$type: 'CreateGameTon', amount: toNano('1'), joinTimeout: 3600n }
+        );
+
+        // Админ выводит unclaimed средства
+        const withdrawResult = await escrow.send(
+            admin.getSender(),
+            { value: toNano('0.05') },
+            { $$type: 'WithdrawUnclaimed' }
+        );
+
+        // Проверяем что транзакция прошла
+        expect(withdrawResult.transactions).toHaveTransaction({
+            from: admin.address,
+            to: escrow.address,
+            success: true,
+        });
+
+        // Проверяем что средства отправлены на feeWallet (deployer)
+        expect(withdrawResult.transactions).toHaveTransaction({
+            from: escrow.address,
+            to: deployer.address,
+            success: true,
+        });
+    });
+
+    it('non-admin cannot withdraw unclaimed TON', async () => {
+        const user1 = await blockchain.treasury('user1');
+
+        // Создаём TON игру
+        await escrow.send(
+            user1.getSender(),
+            { value: toNano('2') },
+            { $$type: 'CreateGameTon', amount: toNano('1'), joinTimeout: 3600n }
+        );
+
+        // Обычный пользователь пытается вывести средства
+        const withdrawResult = await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.05') },
+            { $$type: 'WithdrawUnclaimed' }
+        );
+
+        // Должно провалиться
+        expect(withdrawResult.transactions).toHaveTransaction({
+            from: user1.address,
+            to: escrow.address,
+            success: false,
+        });
+    });
+
+    it('custom joinTimeout is respected for TON game', async () => {
+        const user1 = await blockchain.treasury('user1');
+
+        // Создаём игру с коротким timeout (600 сек = 10 минут)
+        await escrow.send(
+            user1.getSender(),
+            { value: toNano('2') },
+            { $$type: 'CreateGameTon', amount: toNano('1'), joinTimeout: 600n }
+        );
+
+        // Устанавливаем время +15 минут (больше 10 минут)
+        const current = blockchain.now ?? Math.floor(Date.now() / 1000);
+        blockchain.now = current + 900;
+
+        // Отменяем игру - должно работать т.к. прошло больше 10 минут
+        const cancelResult = await escrow.send(
+            user1.getSender(),
+            { value: toNano('0.01') },
+            { $$type: 'CancelGame', gameId: 1n }
+        );
+
+        expect(cancelResult.transactions).toHaveTransaction({
+            from: user1.address,
+            to: escrow.address,
+            success: true,
+        });
+    });
+
 // ---------------- end of additional tests ----------------
 });

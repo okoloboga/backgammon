@@ -104,8 +104,21 @@
   margin-left: auto;
 }
 
-.enter-button:hover {
+.enter-button:hover:not(:disabled) {
   background: #00FF55;
   color: #03142A;
   transform: scale(1.05);
+}
+
+.enter-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.join-error {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
+  width: 100%;
 }

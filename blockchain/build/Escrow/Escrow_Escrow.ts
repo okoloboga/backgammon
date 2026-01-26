@@ -768,6 +768,7 @@ export type Game = {
     joinedAt: bigint | null;
     winner: Address | null;
     claimed: boolean;
+    joinTimeout: bigint;
 }
 
 export function storeGame(src: Game) {
@@ -784,6 +785,7 @@ export function storeGame(src: Game) {
         if (src.joinedAt !== null && src.joinedAt !== undefined) { b_1.storeBit(true).storeInt(src.joinedAt, 257); } else { b_1.storeBit(false); }
         b_1.storeAddress(src.winner);
         b_1.storeBit(src.claimed);
+        b_1.storeUint(src.joinTimeout, 32);
         b_0.storeRef(b_1.endCell());
     };
 }
@@ -801,7 +803,8 @@ export function loadGame(slice: Slice) {
     const _joinedAt = sc_1.loadBit() ? sc_1.loadIntBig(257) : null;
     const _winner = sc_1.loadMaybeAddress();
     const _claimed = sc_1.loadBit();
-    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed };
+    const _joinTimeout = sc_1.loadUintBig(32);
+    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed, joinTimeout: _joinTimeout };
 }
 
 export function loadTupleGame(source: TupleReader) {
@@ -815,7 +818,8 @@ export function loadTupleGame(source: TupleReader) {
     const _joinedAt = source.readBigNumberOpt();
     const _winner = source.readAddressOpt();
     const _claimed = source.readBoolean();
-    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed };
+    const _joinTimeout = source.readBigNumber();
+    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed, joinTimeout: _joinTimeout };
 }
 
 export function loadGetterTupleGame(source: TupleReader) {
@@ -829,7 +833,8 @@ export function loadGetterTupleGame(source: TupleReader) {
     const _joinedAt = source.readBigNumberOpt();
     const _winner = source.readAddressOpt();
     const _claimed = source.readBoolean();
-    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed };
+    const _joinTimeout = source.readBigNumber();
+    return { $$type: 'Game' as const, id: _id, creator: _creator, joiner: _joiner, jettonMaster: _jettonMaster, amount: _amount, state: _state, createdAt: _createdAt, joinedAt: _joinedAt, winner: _winner, claimed: _claimed, joinTimeout: _joinTimeout };
 }
 
 export function storeTupleGame(source: Game) {
@@ -844,6 +849,7 @@ export function storeTupleGame(source: Game) {
     builder.writeNumber(source.joinedAt);
     builder.writeAddress(source.winner);
     builder.writeBoolean(source.claimed);
+    builder.writeNumber(source.joinTimeout);
     return builder.build();
 }
 
@@ -1346,7 +1352,7 @@ function initEscrow_init_args(src: Escrow_init_args) {
 }
 
 async function Escrow_init(adminAddr: Address, feeWalletAddr: Address) {
-    const __code = Cell.fromHex('b5ee9c7241021b01000940000114ff00208e8130e1f2c80b0104bc01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019ed33ffa40fa40fa00f40455406c158e11fa40fa405902d101715982103b9aca006de206925f06e004d70d1ff2e08221c001e30221c002e30221c003e30221c0040204080c017831fa0030f8416f24135f03814cb35312bef2f48117195326bef2f424a4f8426d6d70f8236d6d2c070605514a44347009080706050443138040502ac80302e65590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc910394170206e953059f45b30944133f417e25066a120c2009130e30d4034071101fe31d33f302580402259f40f6fa192306ddf206e92306d8e50d0d33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d20030105a10591058105710566c1a6f0ae28200c52f216eb3f2f4206ef2d0806f2a5f033481666a05018201c000f2f48200d001f8425250c705b3f2f4f8416f24135f038200a2125312bef2f4f84271f82310682410681035104850996d7009080706050443138040502ac80602e45590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc910394140206e953059f45b30944133f417e206a120c2009130e30d40340711003ef84201726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0001fe31d33f302580402259f40f6fa192306ddf206e92306d8e50d0d33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d20030105a10591058105710566c1a6f0ae28200c52f216eb3f2f4206ef2d0806f2a8200f143f8420901702ac705f2f4814a2405c00015f2f4810e1081156ef8235253a012bcf2f410587328516a1069541454503a1409080706050443138040502ac80a02e05590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc9103a4150206e953059f45b30944133f417e2016e923630e30d40340b11003c5066726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb000468e30221c0108f2931fa40fa00d307d33f5902fa403001e30f4430c87f01ca0055405045cb3f12cece01fa02f400c9ed54e021c0110d12141601fc31d33ffa40308165acf84225c705f2f42680402359f40f6fa192306ddf206e92306d8e50d0d33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d20030105a10591058105710566c1a6f0ae28200c52f216eb3f2f40e0188206ef2d0806f2a318200db6504c00114f2f481292d5397c705917f9b5396206e925b7092c705e2e2f2f410575e337227514944145423b409080706050443138040502ac80f02e05590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc9103a4150206e953059f45b30944133f417e2026e923035e30d40341011009e06aa0020a7058064a90466a117726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0025c2008e1e5216726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb009135e2002cc87f01ca0055405045cb3f12cece01fa02f400c9ed5401fc30312680402259f40f6fa192306ddf206e92306d8e50d0d33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d20030105a10591058105710566c1a6f0ae28200c52f216eb3f2f4206ef2d0806f2a5f033481666a011301f0c000f2f471f823106710561058103441306d7009080706050443138040502ac85590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc91037121501f23125a46d70f8232906105710341037596d6d7009080706050443138040502ac85590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc91037415015001c206e953059f45b30944133f417e201cce30230c0058e5981557df84223c705f2f4f8276f10f8416f24135f03a182089896805cbc8e1fa15210726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb00915be24034c87f01ca0055405045cb3f12cece01fa02f400c9ed54e05f05f2c0821701fc31d33f302580402259f40f6fa192306ddf206e92306d8e50d0d33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d20030105a10591058105710566c1a6f0ae28200c52f216eb3f2f4206ef2d0806f2a8200c38125180174c002f2f48200cedf276eb3f2f4811917f84223206e925b7092c705e2f2f48200adaf01b3f2f41048103710267f804027514b5140104c103b0cc81901fe5590509acb3f17ce5005206e9430cf84809201cee25003206e9430cf84809201cee201fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca00cdc9103a15206e953059f45b30944133f417e202206ef2d08001aa00820afaf0807fc8c97fc882100f8a7ea51a00b201cb1f2c206ef2d080cf165005fa0270fa020b206ef2d0801bcf1613ca0019ccc9102310287050444313c8cf8580ca00cf8440ce01fa02806acf40f400c901fb004034c87f01ca0055405045cb3f12cece01fa02f400c9ed5431ccd4d2');
+    const __code = Cell.fromHex('b5ee9c7241021401000754000114ff00208e8130e1f2c80b0104bc01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200019ed33ffa40fa40fa00f40455406c158e11fa40fa405902d101715982103b9aca006de206925f06e004d70d1ff2e08221c001e30221c002e30221c003e30221c0040204060902fe31fa00d31f30f8416f24135f03814cb35313bef2f48117195337bef2f425a4f8426d6d70f8236d6d702e519c55500c109a0a080706050443138040502bc855a0db3cc910394170206e953059f45b30944133f417e25044a120c2008e1ff84201726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb009130e20f03002e5ac87f01ca0055405045cb3f12cece01fa02f400c9ed5402fc31d33f302580402259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be28200c52f216eb3f2f4206ef2d0806f2b385f0381666a02c00012f2f48200d001f8425260c705b3f2f4f8416f24135f038200a2125313bef2f4f84271f82310791068102510486d7024061045104b0c109a0a080706050443138040502bc80e0501b255a0db3cc910394140206e953059f45b30944133f417e25066a120c2008e1ff84201726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb009130e24034c87f01ca0055405045cb3f12cece01fa02f400c9ed540f03ee31d33f302580402259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be28200c52f216eb3f2f4206ef2d0806f2b8200f143f8422bc705f2f4814a2406c00016f2f481156ef8235356a0bcf2f410697329517b107a544176034515504b109a0a080706050443138040502bc855a0db3cc9103a41500e0f0701fe206e953059f45b30944133f417e2216e8e1f315066726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb008e4b01206ef2d080820afaf0807fc8c97fc882100f8a7ea501cb1f2ccf165007fa0270fa02500bcf1615ca0019ccc948307050444313c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00e20800304034c87f01ca0055405045cb3f12cece01fa02f400c9ed5403fe8f7b31d33ffa40308165acf84225c705f2f42680402359f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be28200c52f216eb3f2f4206ef2d0806f2b328200db6505c00115f2f481292d53a8c705917f9b53a7206e925b7092c705e2e2f2f410685e347228515a4415544c04109a0a080706050443138040502bc8e0210e0a0b02e055a0db3cc9103a4150206e953059f45b30944133f417e2026e8e4f06aa0020a7058064a90466a117726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0025c2008e1e5216726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb009135e2923035e240340f1104e8c0108f6731fa40fa00d307d33f5902fa4030018ebc3125a46d70f8232906105710341037596d6d70810e10109a0a080706050443138040502bc855a0db3cc910374150206e953059f45b30944133f417e2e30d4430c87f01ca0055405045cb3f12cece01fa02f400c9ed54e021c011e30221c0050f0c0d1202e230312680402259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be28200c52f216eb3f2f4206ef2d0806f2b385f0381666a02c00012f2f471f823107810671069104510346d58047001109a0a080706050443138040502bc855a0db3cc9103712206e953059f45b30944133f417e20e0f03f631d33f302580402259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be28200c52f216eb3f2f4206ef2d0806f2b8200c38126c002f2f48200cedf286eb3f2f4811917f84224206e925b7092c705e2f2f48200adaf02b312f2f41059104810377f8040c829516d06105d104c5423034de055a0db3cc9103a150e0f10009ad33ffa40d72c01916d93fa4001e201d72c01916d93fa4001e201fa00d401d0810101d700d31fd2000195810101d700926d01e2d72c01916d93fa4001e201d200d31f30106b106a10691068106700aa50abcb3f18ce5006206e9430cf84809201cee25004206e9430cf84809201cee258fa0201c8810101cf0012cb1f226eb39a7f01ca0012810101cf0095327058ca00e258206e9430cf84809201cee212ca0012cb1fcd01d4206e953059f45b30944133f417e202206ef2d08001aa00820afaf0807fc8c97fc882100f8a7ea501cb1f2c206ef2d080cf165005fa0270fa020b206ef2d0801bcf1613ca0019ccc9102310287050444313c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00403411002cc87f01ca0055405045cb3f12cece01fa02f400c9ed5401d88e5a5b81557df84223c705f2f4f8276f10f8416f24135f03a182089896805cbc8e1fa15210726d40037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb00915be24034c87f01ca0055405045cb3f12cece01fa02f400c9ed54e0018210946a98b6bae3025f06f2c08213009cd33f30c8018210aff90f5758cb1fcb3fc910354430f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca0055405045cb3f12cece01fa02f400c9ed54d1e67b13');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initEscrow_init_args({ $$type: 'Escrow_init_args', adminAddr, feeWalletAddr })(builder);
@@ -1480,7 +1486,7 @@ const Escrow_types: ABIType[] = [
     {"name":"Deploy","header":2490013878,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"FactoryDeploy","header":1829761339,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"cashback","type":{"kind":"simple","type":"address","optional":false}}]},
-    {"name":"Game","header":null,"fields":[{"name":"id","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"creator","type":{"kind":"simple","type":"address","optional":false}},{"name":"joiner","type":{"kind":"simple","type":"address","optional":true}},{"name":"jettonMaster","type":{"kind":"simple","type":"address","optional":true}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"state","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"createdAt","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"joinedAt","type":{"kind":"simple","type":"int","optional":true,"format":257}},{"name":"winner","type":{"kind":"simple","type":"address","optional":true}},{"name":"claimed","type":{"kind":"simple","type":"bool","optional":false}}]},
+    {"name":"Game","header":null,"fields":[{"name":"id","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"creator","type":{"kind":"simple","type":"address","optional":false}},{"name":"joiner","type":{"kind":"simple","type":"address","optional":true}},{"name":"jettonMaster","type":{"kind":"simple","type":"address","optional":true}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"state","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"createdAt","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"joinedAt","type":{"kind":"simple","type":"int","optional":true,"format":257}},{"name":"winner","type":{"kind":"simple","type":"address","optional":true}},{"name":"claimed","type":{"kind":"simple","type":"bool","optional":false}},{"name":"joinTimeout","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
     {"name":"JettonPayload","header":null,"fields":[{"name":"action","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"gameId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"CreateGameTon","header":1,"fields":[{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"joinTimeout","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
     {"name":"JoinGameTon","header":2,"fields":[{"name":"gameId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
@@ -1519,6 +1525,7 @@ const Escrow_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"typed","type":"OnJettonTransfer"}},
     {"receiver":"internal","message":{"kind":"typed","type":"ClaimJetton"}},
     {"receiver":"internal","message":{"kind":"typed","type":"WithdrawUnclaimed"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
 
 export const STATE_WAITING = 0n;
@@ -1560,7 +1567,7 @@ export class Escrow implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateGameTon | JoinGameTon | CancelGame | ReportWinner | OnJettonTransfer | ClaimJetton | WithdrawUnclaimed) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: CreateGameTon | JoinGameTon | CancelGame | ReportWinner | OnJettonTransfer | ClaimJetton | WithdrawUnclaimed | Deploy) {
         
         let body: Cell | null = null;
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'CreateGameTon') {
@@ -1583,6 +1590,9 @@ export class Escrow implements Contract {
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'WithdrawUnclaimed') {
             body = beginCell().store(storeWithdrawUnclaimed(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'Deploy') {
+            body = beginCell().store(storeDeploy(message)).endCell();
         }
         if (body === null) { throw new Error('Invalid message type'); }
         

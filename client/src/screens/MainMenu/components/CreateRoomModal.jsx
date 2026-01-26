@@ -50,29 +50,54 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
     let escrowGameId = null;
 
     try {
-      // 1. Send blockchain transaction (if not mock mode and TON currency)
-      if (!tonTransactionService.isMockMode() && currency === 'TON') {
-        setTxStatus('Signing transaction...');
-        const txResult = await tonTransactionService.createGameTon(parseFloat(betAmount));
+      // 1. Send blockchain transaction (if not mock mode)
+      if (!tonTransactionService.isMockMode()) {
+        if (currency === 'TON') {
+          setTxStatus('Signing transaction...');
+          const txResult = await tonTransactionService.createGameTon(parseFloat(betAmount));
 
-        if (!txResult.success) {
-          throw new Error(txResult.error || 'Transaction failed');
-        }
+          if (!txResult.success) {
+            throw new Error(txResult.error || 'Transaction failed');
+          }
 
-        setTxStatus('Verifying transaction...');
-        const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            senderAddress: tonTransactionService.getConnectedAddress(),
-            expectedAmount: parseFloat(betAmount),
-          }),
-        });
-        const verifyData = await verifyRes.json();
-        escrowGameId = verifyData.gameId?.toString();
+          setTxStatus('Verifying transaction...');
+          const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              senderAddress: tonTransactionService.getConnectedAddress(),
+              expectedAmount: parseFloat(betAmount),
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          escrowGameId = verifyData.gameId?.toString();
 
-        if (!escrowGameId) {
-          console.warn('Could not verify escrow gameId, proceeding without it');
+          if (!escrowGameId) {
+            console.warn('Could not verify escrow gameId, proceeding without it');
+          }
+        } else if (currency === 'RUBLE') {
+          setTxStatus('Signing RUBLE transaction...');
+          const txResult = await tonTransactionService.createGameRuble(parseFloat(betAmount));
+
+          if (!txResult.success) {
+            throw new Error(txResult.error || 'RUBLE transaction failed');
+          }
+
+          setTxStatus('Verifying transaction...');
+          const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              senderAddress: tonTransactionService.getConnectedAddress(),
+              expectedAmount: parseFloat(betAmount),
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          escrowGameId = verifyData.gameId?.toString();
+
+          if (!escrowGameId) {
+            console.warn('Could not verify escrow gameId, proceeding without it');
+          }
         }
       }
 

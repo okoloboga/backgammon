@@ -188,4 +188,58 @@ async matchmake( @Body() options: MatchmakeDto): Promise<{
       escrowAddress: this.escrowService.getContractAddress(),
     };
   }
+
+  @Post('build-create-ruble-payload')
+  @ApiOperation({ summary: 'Build CreateGameRuble payload for client to sign' })
+  @ApiResponse({
+    status: 200,
+    description: 'Base64-encoded BOC payload for RUBLE game creation',
+    schema: {
+      type: 'object',
+      properties: {
+        payload: { type: 'string', description: 'Base64-encoded BOC' },
+        escrowAddress: { type: 'string', description: 'Escrow contract address' },
+      },
+    },
+  })
+  buildCreateRublePayload(
+    @Body() dto: { amount: string; senderAddress: string },
+  ) {
+    this.logger.log(`Building CreateGameRuble payload: sender=${dto.senderAddress}, amount=${dto.amount}`);
+    const amountNano = BigInt(Math.floor(parseFloat(dto.amount) * 1e9));
+    const payload = this.escrowService.buildCreateGameRublePayload(dto.senderAddress, amountNano);
+    return {
+      payload,
+      escrowAddress: this.escrowService.getContractAddress(),
+    };
+  }
+
+  @Post('build-join-ruble-payload')
+  @ApiOperation({ summary: 'Build JoinGameRuble payload for client to sign' })
+  @ApiResponse({
+    status: 200,
+    description: 'Base64-encoded BOC payload for RUBLE game join',
+    schema: {
+      type: 'object',
+      properties: {
+        payload: { type: 'string', description: 'Base64-encoded BOC' },
+        escrowAddress: { type: 'string', description: 'Escrow contract address' },
+      },
+    },
+  })
+  buildJoinRublePayload(
+    @Body() dto: { gameId: string; amount: string; senderAddress: string },
+  ) {
+    this.logger.log(`Building JoinGameRuble payload: sender=${dto.senderAddress}, gameId=${dto.gameId}, amount=${dto.amount}`);
+    const amountNano = BigInt(Math.floor(parseFloat(dto.amount) * 1e9));
+    const payload = this.escrowService.buildJoinGameRublePayload(
+      dto.senderAddress,
+      BigInt(dto.gameId),
+      amountNano,
+    );
+    return {
+      payload,
+      escrowAddress: this.escrowService.getContractAddress(),
+    };
+  }
 }

@@ -9,6 +9,7 @@ export default () => ({
   escrow: {
     contractAddress: process.env.TON_ESCROW_ADDRESS || '',
     adminMnemonic: process.env.TON_ADMIN_MNEMONIC || '',
+    rubleJettonMaster: process.env.RUBLE_JETTON_MASTER || '',
     useMockTransactions: process.env.USE_MOCK_TRANSACTIONS !== 'false',
   },
   database: {

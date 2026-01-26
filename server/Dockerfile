@@ -10,7 +10,7 @@ FROM base AS prod-deps
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
-RUN pnpm install --filter backend --prod --frozen-lockfile
+RUN pnpm install --filter backend --prod --frozen-lockfile --node-linker=hoisted
 
 # 3. Build Stage
 FROM base AS builder
@@ -18,7 +18,9 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 # Install all dependencies (including dev)
-RUN pnpm install --filter backend --frozen-lockfile
+RUN pnpm install --filter backend --frozen-lockfile --node-linker=hoisted
+# Copy blockchain build files (needed for EscrowService types)
+COPY blockchain/build/ ./blockchain/build/
 # Copy source code
 COPY server/ ./server/
 # Build the application
@@ -45,4 +47,4 @@ COPY --from=builder --chown=nodejs:nodejs /app/server/dist ./server/dist
 USER nodejs
 
 EXPOSE 3000
-CMD ["node", "server/dist/main.js"]
+CMD ["node", "server/dist/server/src/main.js"]

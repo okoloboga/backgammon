@@ -22,7 +22,7 @@ const formatBalance = (num) => {
 
 // Компонент профиля пользователя
 const ProfileCard = ({ user, balances }) => {
-  const { ton, ruble, loading: balancesLoading, error: balancesError } = balances || { ton: 0, ruble: 0, loading: true, error: null };
+  const { ton, loading: balancesLoading, error: balancesError } = balances || { ton: 0, loading: true, error: null };
 
   // Показываем заглушку, если данные пользователя еще не загружены
   if (!user) {
@@ -64,12 +64,6 @@ const ProfileCard = ({ user, balances }) => {
                   {balancesLoading ? '...' : formatBalance(ton)}
                 </span>
               </div>
-              <div className="balance-item">
-                <span className="currency-badge currency-ruble">RUBLE</span>
-                <span className="balance-amount">
-                  {balancesLoading ? '...' : formatBalance(ruble)}
-                </span>
-              </div>
             </div>
             {balancesError && (
               <div className="balance-error">
@@ -108,7 +102,6 @@ ProfileCard.propTypes = {
   }),
   balances: PropTypes.shape({
     ton: PropTypes.number,
-    ruble: PropTypes.number,
     loading: PropTypes.bool,
     error: PropTypes.string
   })

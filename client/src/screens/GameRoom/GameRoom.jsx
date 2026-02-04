@@ -14,7 +14,7 @@ import greenLayer2x from '../../assets/game/greenLayer2.png';
 // purpleLayer остается PNG 1x
 import purpleLayer from '../../assets/game/purpleLayer.png';
 
-const GameRoom = ({ roomId, betAmount, currency, escrowGameId, onQuit, currentUser }) => {
+const GameRoom = ({ roomId, betAmount, currency, onQuit, currentUser }) => {
   const [room, setRoom] = useState(null);
   // Authoritative state from the server
   const [gameState, setGameState] = useState({
@@ -213,24 +213,16 @@ const GameRoom = ({ roomId, betAmount, currency, escrowGameId, onQuit, currentUs
     }
   }, [gameState.winner]);
 
-  // Auto-close for non-RUBLE games or losers after 5 seconds
+  // Auto-close after 5 seconds
   useEffect(() => {
     if (showEndGameModal) {
-      const isWinner = gameState.winner === playerColor;
-      const isRuble = currency === 'RUBLE';
-
-      // Don't auto-close for RUBLE winners (they need to claim)
-      if (isRuble && isWinner) {
-        return;
-      }
-
       const timer = setTimeout(() => {
         onQuit();
       }, 5000); // 5-second delay before auto-quit
 
       return () => clearTimeout(timer); // Cleanup the timer
     }
-  }, [showEndGameModal, gameState.winner, playerColor, currency, onQuit]);
+  }, [showEndGameModal, onQuit]);
 
   // Effect to control the visibility of the bear-off button
   useEffect(() => {
@@ -372,7 +364,6 @@ const GameRoom = ({ roomId, betAmount, currency, escrowGameId, onQuit, currentUs
           isWinner={gameState.winner === playerColor}
           betAmount={betAmount}
           currency={currency}
-          escrowGameId={escrowGameId}
           txHash={txHash}
           onClose={onQuit}
         />
@@ -405,7 +396,6 @@ GameRoom.propTypes = {
   roomId: PropTypes.string.isRequired,
   betAmount: PropTypes.number.isRequired,
   currency: PropTypes.string.isRequired,
-  escrowGameId: PropTypes.string,
   onQuit: PropTypes.func.isRequired,
   currentUser: PropTypes.shape({
     username: PropTypes.string,
@@ -415,7 +405,6 @@ GameRoom.propTypes = {
 
 GameRoom.defaultProps = {
   currentUser: null,
-  escrowGameId: null,
 };
 
 export default GameRoom;

@@ -19,27 +19,23 @@ const formatBalance = (num) => {
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) => {
   const [betAmount, setBetAmount] = useState('');
-  const [currency, setCurrency] = useState('TON');
   const [debugError, setDebugError] = useState(null);
   const [txStatus, setTxStatus] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const currency = 'TON';
+
   const getMaxBet = () => {
     if (balances?.loading) return 0;
-    return currency === 'TON' ? balances?.ton || 0 : balances?.ruble || 0;
+    return balances?.ton || 0;
   };
 
   const isValidBetAmount = () => {
     if (!betAmount || betAmount === '') return false;
     const amount = parseFloat(betAmount);
     if (isNaN(amount) || amount <= 0) return false;
-    const maxBet = getMaxBet();
-    if (amount > maxBet) return false;
-    if (currency === 'TON') {
-      return amount >= 1.0;
-    } else {
-      return amount >= 1000;
-    }
+    if (amount > getMaxBet()) return false;
+    return amount >= 1.0;
   };
 
   const handleSubmit = async (e) => {
@@ -53,52 +49,27 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
     try {
       // 1. Send blockchain transaction (if not mock mode)
       if (!tonTransactionService.isMockMode()) {
-        if (currency === 'TON') {
-          setTxStatus('Signing transaction...');
-          const txResult = await tonTransactionService.createGameTon(parseFloat(betAmount));
+        setTxStatus('Signing transaction...');
+        const txResult = await tonTransactionService.createGameTon(parseFloat(betAmount));
 
-          if (!txResult.success) {
-            throw new Error(txResult.error || 'Transaction failed');
-          }
+        if (!txResult.success) {
+          throw new Error(txResult.error || 'Transaction failed');
+        }
 
-          setTxStatus('Verifying transaction...');
-          const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              senderAddress: tonTransactionService.getConnectedAddress(),
-              expectedAmount: parseFloat(betAmount),
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          escrowGameId = verifyData.gameId?.toString();
+        setTxStatus('Verifying transaction...');
+        const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderAddress: tonTransactionService.getConnectedAddress(),
+            expectedAmount: parseFloat(betAmount),
+          }),
+        });
+        const verifyData = await verifyRes.json();
+        escrowGameId = verifyData.gameId?.toString();
 
-          if (!escrowGameId) {
-            console.warn('Could not verify escrow gameId, proceeding without it');
-          }
-        } else if (currency === 'RUBLE') {
-          setTxStatus('Signing RUBLE transaction...');
-          const txResult = await tonTransactionService.createGameRuble(parseFloat(betAmount));
-
-          if (!txResult.success) {
-            throw new Error(txResult.error || 'RUBLE transaction failed');
-          }
-
-          setTxStatus('Verifying transaction...');
-          const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              senderAddress: tonTransactionService.getConnectedAddress(),
-              expectedAmount: parseFloat(betAmount),
-            }),
-          });
-          const verifyData = await verifyRes.json();
-          escrowGameId = verifyData.gameId?.toString();
-
-          if (!escrowGameId) {
-            console.warn('Could not verify escrow gameId, proceeding without it');
-          }
+        if (!escrowGameId) {
+          console.warn('Could not verify escrow gameId, proceeding without it');
         }
       }
 
@@ -106,7 +77,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
       setTxStatus('Creating room...');
       const reservation = await colyseusService.createRoom({
         betAmount: parseFloat(betAmount),
-        currency: currency,
+        currency,
         escrowGameId,
         creatorUsername: user?.username || 'Player',
         creatorAvatar: user?.avatar,
@@ -119,12 +90,11 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
       setBetAmount('');
       if (onNavigateToGame) {
         const resolvedRoomId = room?.id || room?.roomId;
-        // Pass full room info including escrowGameId
         onNavigateToGame({
           roomId: resolvedRoomId,
           betAmount: parseFloat(betAmount),
-          currency: currency,
-          escrowGameId: escrowGameId,
+          currency,
+          escrowGameId,
         });
       }
     } catch (error) {
@@ -139,7 +109,6 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
   const handleClose = () => {
     onClose();
     setBetAmount('');
-    setCurrency('TON');
   };
 
   if (!isOpen) return null;
@@ -154,30 +123,6 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
         )}
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <div className="radio-group">
-              <label className={`radio-option ${currency === 'TON' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="currency"
-                  value="TON"
-                  checked={currency === 'TON'}
-                  onChange={(e) => setCurrency(e.target.value)}
-                />
-                <span className="radio-label">TON</span>
-              </label>
-              <label className={`radio-option ${currency === 'RUBLE' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="currency"
-                  value="RUBLE"
-                  checked={currency === 'RUBLE'}
-                  onChange={(e) => setCurrency(e.target.value)}
-                />
-                <span className="radio-label">RUBLE</span>
-              </label>
-            </div>
-          </div>
-          <div className="form-group">
             <input
               type="number"
               inputMode="decimal"
@@ -188,14 +133,12 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
               placeholder={
                 balances?.loading
                   ? 'Loading balance...'
-                  : currency === 'TON'
-                  ? `Enter amount (min 1.0, max ${formatBalance(getMaxBet())})`
-                  : `Enter amount (min 1k, max ${formatBalance(getMaxBet())})`
+                  : `Enter amount (min 1.0, max ${formatBalance(getMaxBet())})`
               }
             />
             {betAmount && parseFloat(betAmount) > getMaxBet() && (
               <div className="error-message">
-                Insufficient balance. Max: {formatBalance(getMaxBet())} {currency}
+                Insufficient balance. Max: {formatBalance(getMaxBet())} TON
               </div>
             )}
           </div>
@@ -225,7 +168,6 @@ CreateRoomModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   balances: PropTypes.shape({
     ton: PropTypes.number,
-    ruble: PropTypes.number,
     loading: PropTypes.bool,
   }),
   onNavigateToGame: PropTypes.func.isRequired,

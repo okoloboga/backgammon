@@ -7,7 +7,7 @@ export interface RoomInfo {
   createdBy: string;
   creatorAvatar?: string;
   betAmount: number;
-  currency: string;
+  currency: 'TON';
   createdAt: number;
   escrowGameId?: string;
 }

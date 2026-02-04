@@ -11,7 +11,7 @@ export class RoomInfo extends Schema {
   @type('string') createdBy: string; // username
   @type('string') creatorAvatar: string; // avatar URL
   @type('number') betAmount: number;
-  @type('string') currency: string; // 'TON', 'RUBLE'
+  @type('string') currency: string; // 'TON'
   @type('number') createdAt: number;
 }
 

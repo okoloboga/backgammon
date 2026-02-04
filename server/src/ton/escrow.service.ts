@@ -7,20 +7,14 @@ import {
   storeCreateGameTon,
   storeJoinGameTon,
   storeReportWinner,
-  storeClaimJetton,
-  storeOnJettonTransfer,
   CreateGameTon,
   JoinGameTon,
   ReportWinner,
-  ClaimJetton,
-  OnJettonTransfer,
-  JettonPayload,
 } from '../../../blockchain/build/Escrow/Escrow_Escrow';
 
 export interface EscrowConfig {
   contractAddress: string;
   adminMnemonic: string;
-  rubleJettonMaster: string;
   useMockTransactions: boolean;
 }
 
@@ -55,8 +49,6 @@ export class EscrowService implements OnModuleInit {
         this.configService.get<string>('escrow.contractAddress') || '',
       adminMnemonic:
         this.configService.get<string>('escrow.adminMnemonic') || '',
-      rubleJettonMaster:
-        this.configService.get<string>('escrow.rubleJettonMaster') || '',
       useMockTransactions:
         this.configService.get<boolean>('escrow.useMockTransactions') ?? true,
     };
@@ -115,89 +107,6 @@ export class EscrowService implements OnModuleInit {
 
     const cell = beginCell().store(storeJoinGameTon(message)).endCell();
     return cell.toBoc().toString('base64');
-  }
-
-  /**
-   * Build payload for ClaimJetton message (client signs this)
-   * Returns base64-encoded BOC
-   */
-  buildClaimJettonPayload(gameId: bigint): string {
-    const message: ClaimJetton = {
-      $$type: 'ClaimJetton',
-      gameId,
-    };
-
-    const cell = beginCell().store(storeClaimJetton(message)).endCell();
-    return cell.toBoc().toString('base64');
-  }
-
-  /**
-   * Build payload for CreateGameRuble (OnJettonTransfer with action=0)
-   * This is sent directly to the escrow contract
-   * Returns base64-encoded BOC
-   */
-  buildCreateGameRublePayload(senderAddress: string, amount: bigint): string {
-    const sender = Address.parse(senderAddress);
-    const jettonMaster = this.config.rubleJettonMaster
-      ? Address.parse(this.config.rubleJettonMaster)
-      : sender; // Fallback for mock mode
-
-    const payload: JettonPayload = {
-      $$type: 'JettonPayload',
-      action: BigInt(0), // 0 = create game
-      gameId: BigInt(0), // Will be assigned by contract
-    };
-
-    const message: OnJettonTransfer = {
-      $$type: 'OnJettonTransfer',
-      sender,
-      amount,
-      payload,
-      jettonMaster,
-    };
-
-    const cell = beginCell().store(storeOnJettonTransfer(message)).endCell();
-    return cell.toBoc().toString('base64');
-  }
-
-  /**
-   * Build payload for JoinGameRuble (OnJettonTransfer with action=1)
-   * This is sent directly to the escrow contract
-   * Returns base64-encoded BOC
-   */
-  buildJoinGameRublePayload(
-    senderAddress: string,
-    gameId: bigint,
-    amount: bigint,
-  ): string {
-    const sender = Address.parse(senderAddress);
-    const jettonMaster = this.config.rubleJettonMaster
-      ? Address.parse(this.config.rubleJettonMaster)
-      : sender; // Fallback for mock mode
-
-    const payload: JettonPayload = {
-      $$type: 'JettonPayload',
-      action: BigInt(1), // 1 = join game
-      gameId,
-    };
-
-    const message: OnJettonTransfer = {
-      $$type: 'OnJettonTransfer',
-      sender,
-      amount,
-      payload,
-      jettonMaster,
-    };
-
-    const cell = beginCell().store(storeOnJettonTransfer(message)).endCell();
-    return cell.toBoc().toString('base64');
-  }
-
-  /**
-   * Get RUBLE Jetton Master address
-   */
-  getRubleJettonMaster(): string {
-    return this.config.rubleJettonMaster;
   }
 
   /**

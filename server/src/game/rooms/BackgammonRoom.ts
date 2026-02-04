@@ -26,7 +26,7 @@ interface BackgammonRoomOptions {
   creatorUsername?: string;
   creatorAvatar?: string;
   betAmount?: number;
-  currency?: string;
+  currency?: 'TON';
   escrowGameId?: string;
   lobbyService: LobbyService;
   usersService: UsersService;
@@ -467,7 +467,7 @@ export class BackgammonRoom extends Room<GameState> {
 
     // Escrow payout (only for real mode with TON currency)
     let txHash: string | undefined;
-    if (this.roomInfo?.escrowGameId && !this.escrowService?.isMockMode() && this.roomInfo?.currency === 'TON') {
+    if (this.roomInfo?.escrowGameId && !this.escrowService?.isMockMode()) {
       const winnerAddress = winnerClient?.auth?.walletAddress;
       if (winnerAddress) {
         try {

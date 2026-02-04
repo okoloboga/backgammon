@@ -243,7 +243,6 @@ function App() {
           roomId={gameRoomId}
           betAmount={roomInfo?.betAmount} // Pass betAmount
           currency={roomInfo?.currency}   // Pass currency
-          escrowGameId={roomInfo?.escrowGameId} // Pass escrowGameId
           onQuit={handleQuitGame}
           currentUser={user}
         />

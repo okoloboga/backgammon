@@ -6,9 +6,9 @@ export class MatchmakeDto {
   @IsNumber()
   betAmount: number;
 
-  @ApiProperty({ description: 'The currency', enum: ['TON', 'RUBLE'] })
+  @ApiProperty({ description: 'The currency', enum: ['TON'] })
   @IsString()
-  @IsIn(['TON', 'RUBLE'])
+  @IsIn(['TON'])
   currency: string;
 
   @ApiProperty({ description: 'Creator username', type: String, required: false })

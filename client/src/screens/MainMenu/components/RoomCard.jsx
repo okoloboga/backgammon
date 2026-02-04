@@ -20,43 +20,23 @@ const RoomCard = ({ room, onEnter }) => {
     try {
       // Send blockchain transaction (if not mock mode)
       if (!tonTransactionService.isMockMode() && escrowGameId) {
-        if (currency === 'TON') {
-          const txResult = await tonTransactionService.joinGameTon(
-            escrowGameId,
-            betAmount
-          );
-          if (!txResult.success) {
-            throw new Error(txResult.error || 'Transaction failed');
-          }
-
-          // Verify the join transaction
-          await fetch(`${API_BASE_URL}/game-http/verify-join`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              senderAddress: tonTransactionService.getConnectedAddress(),
-              gameId: escrowGameId,
-            }),
-          });
-        } else if (currency === 'RUBLE') {
-          const txResult = await tonTransactionService.joinGameRuble(
-            escrowGameId,
-            betAmount
-          );
-          if (!txResult.success) {
-            throw new Error(txResult.error || 'RUBLE transaction failed');
-          }
-
-          // Verify the join transaction
-          await fetch(`${API_BASE_URL}/game-http/verify-join`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              senderAddress: tonTransactionService.getConnectedAddress(),
-              gameId: escrowGameId,
-            }),
-          });
+        const txResult = await tonTransactionService.joinGameTon(
+          escrowGameId,
+          betAmount
+        );
+        if (!txResult.success) {
+          throw new Error(txResult.error || 'Transaction failed');
         }
+
+        // Verify the join transaction
+        await fetch(`${API_BASE_URL}/game-http/verify-join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderAddress: tonTransactionService.getConnectedAddress(),
+            gameId: escrowGameId,
+          }),
+        });
       }
 
       onEnter(room);

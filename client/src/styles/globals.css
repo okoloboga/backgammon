@@ -77,12 +77,6 @@ button {
   border: 1px solid rgba(0, 184, 255, 0.3);
 }
 
-.currency-ruble {
-  background: rgba(0, 255, 85, 0.2);
-  color: #00FF55;
-  border: 1px solid rgba(0, 255, 85, 0.3);
-}
-
 .app-footer {
   position: fixed;
   bottom: 0;

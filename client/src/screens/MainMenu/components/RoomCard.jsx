@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { tonTransactionService } from '../../../services/tonTransactionService';
 import '../../../styles/RoomCard.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  || `${window.location.origin}/api`;
 
 // Карточка игровой комнаты с оппонентом и ставкой
 const RoomCard = ({ room, onEnter }) => {
@@ -29,7 +30,7 @@ const RoomCard = ({ room, onEnter }) => {
         }
 
         // Verify the join transaction
-        await fetch(`${API_BASE_URL}/game-http/verify-join`, {
+        const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-join`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -37,6 +38,11 @@ const RoomCard = ({ room, onEnter }) => {
             gameId: escrowGameId,
           }),
         });
+
+        const verifyData = await verifyRes.json();
+        if (!verifyData?.verified) {
+          throw new Error('Join transaction verification failed');
+        }
       }
 
       onEnter(room);

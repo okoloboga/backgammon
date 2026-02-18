@@ -69,7 +69,9 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
         escrowGameId = verifyData.gameId?.toString();
 
         if (!escrowGameId) {
-          console.warn('Could not verify escrow gameId, proceeding without it');
+          throw new Error(
+            verifyData?.error || 'Could not verify escrow gameId. Room creation aborted.'
+          );
         }
       }
 

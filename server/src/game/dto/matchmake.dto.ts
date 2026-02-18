@@ -20,4 +20,13 @@ export class MatchmakeDto {
   @IsOptional()
   @IsString()
   creatorAvatar?: string;
+
+  @ApiProperty({
+    description: 'Escrow game ID from smart contract (required in real mode)',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  escrowGameId?: string;
 }

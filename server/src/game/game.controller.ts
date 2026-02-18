@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Logger, Get } from '@nestjs/common';
+import { Body, Controller, Post, Logger, Get, BadRequestException } from '@nestjs/common';
 import { matchMaker } from '@colyseus/core';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MatchmakeDto } from './dto/matchmake.dto';
@@ -34,6 +34,12 @@ async matchmake( @Body() options: MatchmakeDto): Promise<{
     `--- ENTERED create_room method with options: ${JSON.stringify(options)}`,
   );
   try {
+    if (!this.escrowService.isMockMode() && !options.escrowGameId) {
+      throw new BadRequestException(
+        'escrowGameId is required in real transaction mode',
+      );
+    }
+
     const reservation = await matchMaker.joinOrCreate('backgammon', options);
     this.logger.log(`Reservation acquired for room ${reservation.room.roomId}`);
 
@@ -92,7 +98,11 @@ async matchmake( @Body() options: MatchmakeDto): Promise<{
         creator: result.creator,
       };
     }
-    return { gameId: null, error: 'Transaction not found or not verified' };
+    return {
+      gameId: null,
+      error:
+        'Create transaction found but gameId is not derivable from current contract/API flow. Aborting to prevent broken payouts.',
+    };
   }
 
   @Post('verify-join')

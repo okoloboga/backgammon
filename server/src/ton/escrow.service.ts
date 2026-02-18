@@ -220,16 +220,15 @@ export class EscrowService implements OnModuleInit {
           if (op === 1) {
             // CreateGameTon
             const amount = slice.loadCoins();
-            if (amount === expectedAmount) {
-              // Extract gameId from outMessages or state changes
-              // For simplicity, we'll derive it from transaction time
-              const gameId = BigInt(tx.now);
-              return {
-                gameId,
-                amount,
-                creator: senderAddress,
-              };
-            }
+            if (amount !== expectedAmount) continue;
+
+            // IMPORTANT:
+            // We cannot safely derive gameId from tx timestamp.
+            // Returning a synthetic ID causes Join/ReportWinner to fail on-chain.
+            this.logger.error(
+              `CreateGameTon found for ${senderAddress}, but gameId cannot be derived from transaction data. Refusing unsafe fallback.`,
+            );
+            return null;
           }
         } catch {
           continue;

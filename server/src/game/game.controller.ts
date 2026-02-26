@@ -84,12 +84,19 @@ async matchmake( @Body() options: MatchmakeDto): Promise<{
     },
   })
   async verifyCreate(
-    @Body() dto: { senderAddress: string; expectedAmount: number },
+    @Body() dto: {
+      senderAddress: string;
+      expectedAmount: number;
+      expectedJoinTimeout?: number;
+    },
   ) {
-    this.logger.log(`Verifying CreateGameTon: sender=${dto.senderAddress}, amount=${dto.expectedAmount}`);
+    this.logger.log(
+      `Verifying CreateGameTon: sender=${dto.senderAddress}, amount=${dto.expectedAmount}, expectedJoinTimeout=${dto.expectedJoinTimeout ?? 'n/a'}`,
+    );
     const result = await this.escrowService.verifyCreateTx(
       dto.senderAddress,
       BigInt(Math.floor(dto.expectedAmount * 1e9)),
+      dto.expectedJoinTimeout,
     );
     if (result) {
       return {

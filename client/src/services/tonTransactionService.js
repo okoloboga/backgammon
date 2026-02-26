@@ -93,8 +93,14 @@ class TonTransactionService {
     }
 
     try {
+      // Add a small per-transaction entropy so backend can match the exact create tx.
+      const joinTimeoutWithEntropy = this.getVerificationJoinTimeout(joinTimeout);
+
       // Get payload from backend
-      const { payload, escrowAddress } = await this.getCreateGameTonPayload(amountTon, joinTimeout);
+      const { payload, escrowAddress } = await this.getCreateGameTonPayload(
+        amountTon,
+        joinTimeoutWithEntropy,
+      );
 
       if (!escrowAddress) {
         return { success: false, error: 'Escrow contract address not configured' };
@@ -121,7 +127,12 @@ class TonTransactionService {
         // In production, we'd verify the transaction and extract the real gameId
         const gameId = BigInt(Date.now());
         console.log(`CreateGameTon sent: boc=${result.boc.substring(0, 50)}..., gameId=${gameId}`);
-        return { success: true, gameId, boc: result.boc };
+        return {
+          success: true,
+          gameId,
+          boc: result.boc,
+          joinTimeout: joinTimeoutWithEntropy,
+        };
       }
 
       return { success: false, error: 'Transaction rejected' };
@@ -129,6 +140,16 @@ class TonTransactionService {
       console.error('CreateGameTon failed:', error);
       return { success: false, error: error.message || 'Transaction failed' };
     }
+  }
+
+  /**
+   * Creates a bounded timeout value with entropy for tx correlation.
+   * Keeps timeout practical while reducing sender+amount collisions.
+   */
+  getVerificationJoinTimeout(baseTimeout = DEFAULT_JOIN_TIMEOUT) {
+    const clampedBase = Math.max(300, Math.min(3600, Math.floor(baseTimeout)));
+    const entropy = Date.now() % 97; // 0..96
+    return clampedBase + entropy;
   }
 
   /**

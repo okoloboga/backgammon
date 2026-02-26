@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TonClient, WalletContractV4, internal, Address } from '@ton/ton';
 import { mnemonicToPrivateKey } from '@ton/crypto';
-import { beginCell, toNano } from '@ton/core';
+import { beginCell, Cell, toNano } from '@ton/core';
 import {
   storeCreateGameTon,
   storeJoinGameTon,
@@ -182,6 +182,7 @@ export class EscrowService implements OnModuleInit {
   async verifyCreateTx(
     senderAddress: string,
     expectedAmount: bigint,
+    expectedJoinTimeout?: number,
   ): Promise<CreateGameResult | null> {
     if (this.config.useMockTransactions) {
       // In mock mode, generate a random gameId
@@ -198,17 +199,22 @@ export class EscrowService implements OnModuleInit {
 
     try {
       const address = Address.parse(senderAddress);
+      const nextGameId = await this.getNextGameIdFromContractState();
+      if (!nextGameId || nextGameId <= 1n) {
+        this.logger.error(
+          `Cannot derive gameId: invalid nextGameId from contract state (${String(nextGameId)}).`,
+        );
+        return null;
+      }
+
       const transactions = await this.client.getTransactions(
         this.escrowAddress,
-        { limit: 20 },
+        { limit: 100 },
       );
 
+      let createTxSeen = 0n;
       for (const tx of transactions) {
         if (!tx.inMessage) continue;
-
-        const sender = tx.inMessage.info?.src;
-        // Check if sender is Address (not ExternalAddress) and equals the address
-        if (!sender || !(sender instanceof Address) || !sender.equals(address)) continue;
 
         // Check if this is a CreateGameTon message (op = 1)
         const body = tx.inMessage.body;
@@ -218,17 +224,36 @@ export class EscrowService implements OnModuleInit {
           const slice = body.beginParse();
           const op = slice.loadUint(32);
           if (op === 1) {
+            const inferredGameId = nextGameId - 1n - createTxSeen;
+            createTxSeen += 1n;
+            if (inferredGameId < 1n) {
+              continue;
+            }
+
             // CreateGameTon
             const amount = slice.loadCoins();
             if (amount !== expectedAmount) continue;
+            const joinTimeout = Number(slice.loadUintBig(32));
+            if (
+              typeof expectedJoinTimeout === 'number' &&
+              Number.isFinite(expectedJoinTimeout) &&
+              joinTimeout !== Math.floor(expectedJoinTimeout)
+            ) {
+              continue;
+            }
 
-            // IMPORTANT:
-            // We cannot safely derive gameId from tx timestamp.
-            // Returning a synthetic ID causes Join/ReportWinner to fail on-chain.
-            this.logger.error(
-              `CreateGameTon found for ${senderAddress}, but gameId cannot be derived from transaction data. Refusing unsafe fallback.`,
+            const sender = tx.inMessage.info?.src;
+            // Check if sender is Address (not ExternalAddress) and equals the address
+            if (!sender || !(sender instanceof Address) || !sender.equals(address)) continue;
+
+            this.logger.log(
+              `Verified CreateGameTon for ${senderAddress}. Derived gameId=${inferredGameId}, amount=${amount}, joinTimeout=${joinTimeout}.`,
             );
-            return null;
+            return {
+              gameId: inferredGameId,
+              amount,
+              creator: senderAddress,
+            };
           }
         } catch {
           continue;
@@ -305,5 +330,48 @@ export class EscrowService implements OnModuleInit {
         ? 'https://tonviewer.com'
         : 'https://testnet.tonviewer.com';
     return `${baseUrl}/transaction/${txHash}`;
+  }
+
+  /**
+   * Reads `nextGameId` from contract persistent data.
+   * Data layout starts with `nextGameId: uint64`.
+   */
+  private async getNextGameIdFromContractState(): Promise<bigint | null> {
+    try {
+      const state = await this.client.getContractState(this.escrowAddress);
+      const data = (state as { data?: unknown }).data;
+      if (!data) {
+        return null;
+      }
+
+      let dataCell: Cell | null = null;
+
+      // Most @ton/ton versions return Cell for active contract data.
+      if (typeof data === 'object' && data !== null && 'beginParse' in data) {
+        dataCell = data as Cell;
+      } else if (typeof data === 'string') {
+        // Fallback if provider returns base64 BOC string.
+        dataCell = Cell.fromBoc(Buffer.from(data, 'base64'))[0] ?? null;
+      } else if (
+        typeof data === 'object' &&
+        data !== null &&
+        'boc' in data &&
+        typeof (data as { boc?: unknown }).boc === 'string'
+      ) {
+        dataCell = Cell.fromBoc(
+          Buffer.from((data as { boc: string }).boc, 'base64'),
+        )[0] ?? null;
+      }
+
+      if (!dataCell) {
+        return null;
+      }
+
+      const slice = dataCell.beginParse();
+      return slice.loadUintBig(64);
+    } catch (error) {
+      this.logger.error('Failed to read nextGameId from contract state:', error);
+      return null;
+    }
   }
 }

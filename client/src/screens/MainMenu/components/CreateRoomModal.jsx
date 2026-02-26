@@ -63,6 +63,7 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
           body: JSON.stringify({
             senderAddress: tonTransactionService.getConnectedAddress(),
             expectedAmount: parseFloat(betAmount),
+            expectedJoinTimeout: txResult.joinTimeout,
           }),
         });
         const verifyData = await verifyRes.json();

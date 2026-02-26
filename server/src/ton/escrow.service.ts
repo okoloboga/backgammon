@@ -28,6 +28,8 @@ export interface CreateGameResult {
 export class EscrowService implements OnModuleInit {
   private readonly logger = new Logger(EscrowService.name);
   private client: TonClient;
+  private tonEndpoint: string;
+  private tonApiKey?: string;
   private escrowAddress: Address;
   private adminWallet: WalletContractV4 | null = null;
   private adminKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
@@ -38,6 +40,8 @@ export class EscrowService implements OnModuleInit {
       this.configService.get<string>('ton.endpoint') ||
       'https://testnet.toncenter.com/api/v2/jsonRPC';
     const apiKey = this.configService.get<string>('ton.apiKey');
+    this.tonEndpoint = endpoint;
+    this.tonApiKey = apiKey;
 
     this.client = new TonClient({
       endpoint,
@@ -340,27 +344,30 @@ export class EscrowService implements OnModuleInit {
     try {
       const state = await this.client.getContractState(this.escrowAddress);
       const data = (state as { data?: unknown }).data;
-      if (!data) {
-        return null;
-      }
 
       let dataCell: Cell | null = null;
 
-      // Most @ton/ton versions return Cell for active contract data.
-      if (typeof data === 'object' && data !== null && 'beginParse' in data) {
-        dataCell = data as Cell;
-      } else if (typeof data === 'string') {
-        // Fallback if provider returns base64 BOC string.
-        dataCell = Cell.fromBoc(Buffer.from(data, 'base64'))[0] ?? null;
-      } else if (
-        typeof data === 'object' &&
-        data !== null &&
-        'boc' in data &&
-        typeof (data as { boc?: unknown }).boc === 'string'
-      ) {
-        dataCell = Cell.fromBoc(
-          Buffer.from((data as { boc: string }).boc, 'base64'),
-        )[0] ?? null;
+      if (data) {
+        // Most @ton/ton versions return Cell for active contract data.
+        if (typeof data === 'object' && data !== null && 'beginParse' in data) {
+          dataCell = data as Cell;
+        } else if (typeof data === 'string') {
+          // Fallback if provider returns base64 BOC string.
+          dataCell = Cell.fromBoc(Buffer.from(data, 'base64'))[0] ?? null;
+        } else if (
+          typeof data === 'object' &&
+          data !== null &&
+          'boc' in data &&
+          typeof (data as { boc?: unknown }).boc === 'string'
+        ) {
+          dataCell = Cell.fromBoc(
+            Buffer.from((data as { boc: string }).boc, 'base64'),
+          )[0] ?? null;
+        }
+      }
+
+      if (!dataCell) {
+        dataCell = await this.getDataCellViaToncenterRpc();
       }
 
       if (!dataCell) {
@@ -371,6 +378,63 @@ export class EscrowService implements OnModuleInit {
       return slice.loadUintBig(64);
     } catch (error) {
       this.logger.error('Failed to read nextGameId from contract state:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Fallback for providers that don't expose `data` in getContractState().
+   * Uses TON Center JSON-RPC getAddressInformation and parses `result.data` BOC.
+   */
+  private async getDataCellViaToncenterRpc(): Promise<Cell | null> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.tonApiKey) {
+        headers['X-API-Key'] = this.tonApiKey;
+      }
+
+      const response = await fetch(this.tonEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'getAddressInformation',
+          params: {
+            address: this.escrowAddress.toString(),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        this.logger.error(
+          `TON Center getAddressInformation failed: HTTP ${response.status}`,
+        );
+        return null;
+      }
+
+      const payload = (await response.json()) as {
+        result?: { data?: string };
+        error?: { message?: string };
+      };
+
+      if (payload.error) {
+        this.logger.error(
+          `TON Center getAddressInformation error: ${payload.error.message || 'unknown'}`,
+        );
+        return null;
+      }
+
+      const boc = payload.result?.data;
+      if (!boc || boc === 'null') {
+        return null;
+      }
+
+      return Cell.fromBoc(Buffer.from(boc, 'base64'))[0] ?? null;
+    } catch (error) {
+      this.logger.error('Fallback TON Center data fetch failed:', error);
       return null;
     }
   }

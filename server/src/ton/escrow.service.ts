@@ -217,6 +217,9 @@ export class EscrowService implements OnModuleInit {
       );
 
       let createTxSeen = 0n;
+      let createWithAmountMatch = 0;
+      let createWithTimeoutMatch = 0;
+      let createWithSenderMatch = 0;
       for (const tx of transactions) {
         if (!tx.inMessage) continue;
 
@@ -237,6 +240,7 @@ export class EscrowService implements OnModuleInit {
             // CreateGameTon
             const amount = slice.loadCoins();
             if (amount !== expectedAmount) continue;
+            createWithAmountMatch++;
             const joinTimeout = Number(slice.loadUintBig(32));
             if (
               typeof expectedJoinTimeout === 'number' &&
@@ -245,10 +249,12 @@ export class EscrowService implements OnModuleInit {
             ) {
               continue;
             }
+            createWithTimeoutMatch++;
 
             const sender = tx.inMessage.info?.src;
             // Check if sender is Address (not ExternalAddress) and equals the address
             if (!sender || !(sender instanceof Address) || !sender.equals(address)) continue;
+            createWithSenderMatch++;
 
             this.logger.log(
               `Verified CreateGameTon for ${senderAddress}. Derived gameId=${inferredGameId}, amount=${amount}, joinTimeout=${joinTimeout}.`,
@@ -263,6 +269,10 @@ export class EscrowService implements OnModuleInit {
           continue;
         }
       }
+
+      this.logger.warn(
+        `CreateGameTon not matched yet for sender=${senderAddress}. scannedCreate=${createTxSeen.toString()}, amountMatched=${createWithAmountMatch}, timeoutMatched=${createWithTimeoutMatch}, senderMatched=${createWithSenderMatch}, expectedAmount=${expectedAmount.toString()}, expectedJoinTimeout=${typeof expectedJoinTimeout === 'number' ? Math.floor(expectedJoinTimeout) : 'n/a'}`,
+      );
 
       return null;
     } catch (error) {

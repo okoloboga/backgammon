@@ -6,6 +6,8 @@ import '../../../styles/CreateRoomModal.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   || `${window.location.origin}/api`;
+const VERIFY_CREATE_MAX_ATTEMPTS = 8;
+const VERIFY_CREATE_RETRY_DELAY_MS = 2000;
 
 // Функция для форматирования баланса с точностью до 2 знаков после запятой
 const formatBalance = (num) => {
@@ -15,6 +17,8 @@ const formatBalance = (num) => {
   if (rounded >= 1000) return (rounded / 1000).toFixed(2) + 'k';
   return rounded.toFixed(2);
 };
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Модальное окно для создания комнаты
 const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) => {
@@ -56,22 +60,36 @@ const CreateRoomModal = ({ isOpen, onClose, balances, onNavigateToGame, user }) 
           throw new Error(txResult.error || 'Transaction failed');
         }
 
-        setTxStatus('Verifying transaction...');
-        const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            senderAddress: tonTransactionService.getConnectedAddress(),
-            expectedAmount: parseFloat(betAmount),
-            expectedJoinTimeout: txResult.joinTimeout,
-          }),
-        });
-        const verifyData = await verifyRes.json();
-        escrowGameId = verifyData.gameId?.toString();
+        let lastVerifyError = null;
+        for (let attempt = 1; attempt <= VERIFY_CREATE_MAX_ATTEMPTS; attempt++) {
+          setTxStatus(
+            `Verifying transaction... (${attempt}/${VERIFY_CREATE_MAX_ATTEMPTS})`,
+          );
+          const verifyRes = await fetch(`${API_BASE_URL}/game-http/verify-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              senderAddress: tonTransactionService.getConnectedAddress(),
+              expectedAmount: parseFloat(betAmount),
+              expectedJoinTimeout: txResult.joinTimeout,
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          escrowGameId = verifyData.gameId?.toString();
+
+          if (escrowGameId) {
+            break;
+          }
+
+          lastVerifyError = verifyData?.error || null;
+          if (attempt < VERIFY_CREATE_MAX_ATTEMPTS) {
+            await sleep(VERIFY_CREATE_RETRY_DELAY_MS);
+          }
+        }
 
         if (!escrowGameId) {
           throw new Error(
-            verifyData?.error || 'Could not verify escrow gameId. Room creation aborted.'
+            lastVerifyError || 'Could not verify escrow gameId after retries. Room creation aborted.'
           );
         }
       }
